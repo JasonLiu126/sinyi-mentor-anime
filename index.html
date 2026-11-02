@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>信義學長｜動畫版 · 陪你一起上手</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./cabinet-carousel.css">
+  <link rel="stylesheet" href="./awakening.css">
+  <link rel="stylesheet" href="./mentor.css">
+  <link rel="stylesheet" href="./simple-ui.css">
+</head>
+<body class="anime-edition bg-slate-900 font-sans text-slate-900 select-none antialiased min-h-screen flex items-center justify-center p-0 sm:p-2">
+
+  <!-- ======================================================== -->
+  <!-- 手機外框容器 (Max 448px Mobile Mockup, 固定高度 flex 版型)  -->
+  <!-- ======================================================== -->
+  <div id="app-shell" class="w-full max-w-md bg-slate-50 h-screen sm:h-[90vh] sm:max-h-[920px] flex flex-col relative shadow-2xl overflow-hidden border-x-4 border-slate-900 sm:rounded-3xl">
+
+    <!-- 頂部共通狀態欄 (Header: 永遠固定置頂) -->
+    <header class="bg-sinyi-green text-white p-3 border-b-3 border-slate-900 shrink-0 z-40 shadow">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-lg bg-lego-yellow text-slate-900 flex items-center justify-center font-black text-sm lego-card-sm">
+            信
+          </div>
+          <div>
+            <h1 class="text-xs font-black tracking-wide flex items-center gap-1">
+              <span>信義學長・陪你一起上手</span>
+              <span class="text-[9px] bg-white/20 px-1 rounded font-normal">動畫版</span>
+            </h1>
+            <p class="text-[9px] text-emerald-100">阿義陪你，把每一天走穩</p>
+          </div>
+        </div>
+
+        <!-- 玩家等級與代幣資訊 -->
+        <div class="flex items-center space-x-2 text-[10px] font-black">
+          <div class="flex items-center space-x-1 bg-black/20 px-2 py-0.5 rounded-full border border-white/20">
+            <span>⭐ Lv.<span id="header-user-level">1</span></span>
+            <span class="text-emerald-300">|</span>
+            <span id="header-user-exp">0</span> EXP
+          </div>
+          <div class="flex items-center bg-amber-400 text-slate-900 px-2 py-0.5 rounded-full border border-slate-900 lego-card-sm text-[9px]">
+            🪙 <span id="header-user-coins">1,200</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主要內容滾動區 (中間獨立平滑滾動，頂底永遠不動) -->
+    <main id="app-main-scroll" class="flex-1 overflow-y-auto p-3 space-y-3 pb-6">
+
+      <!-- ======================================================== -->
+      <!-- SCREEN 0: 新手適性測驗 (測驗完成後將永久隱藏)              -->
+      <!-- ======================================================== -->
+      
+      <section id="screen-quiz-flow" class="space-y-3">
+        <!-- 說明提示橫幅 -->
+        <div class="bg-gradient-to-r from-lego-yellow to-amber-300 p-3 rounded-2xl lego-card text-slate-900 space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="font-pixel text-[9px] bg-slate-900 text-white px-2 py-0.5 rounded">APTITUDE TEST</span>
+            <span class="text-[10px] font-bold text-amber-950">官方雙軌風格測評</span>
+          </div>
+          <h2 class="text-xs font-black">新人適性啟航：找出最適合你的業務起跑線</h2>
+          <p class="text-[10px] text-slate-700 leading-relaxed">
+            透過 6 道情境選填題，精算推薦最符合你直覺的「開發起步路線」與「銷售起步路線」，完成後即可解鎖正式任務主頁與各大功能！
+          </p>
+        </div>
+
+        <!-- 測驗卡片容器 -->
+        <div id="quiz-container" class="bg-white p-3.5 rounded-2xl lego-card space-y-3">
+          <div class="flex justify-between items-center text-xs">
+            <span id="quiz-qnum-badge" class="font-pixel text-[9px] bg-lego-blue text-white px-2 py-0.5 rounded">第 1 題／共 6 題</span>
+            <span id="quiz-type-label" class="text-[11px] font-bold text-slate-500">開發｜啟動意願排序題</span>
+          </div>
+
+          <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden border border-slate-400">
+            <div id="quiz-progress-bar" class="bg-lego-green h-full w-[16.6%] transition-all duration-300"></div>
+          </div>
+
+          <div>
+            <p id="quiz-question-title" class="text-xs font-black text-slate-900 leading-snug">
+              你剛下分店第一週，店長請你開始找屋主簽委託。以下 6 種具體做法，請依照你「最想先嘗試」的順序排列：
+            </p>
+            <p id="quiz-question-hint" class="text-[10px] text-slate-500 mt-0.5">
+              可點擊按鈕右側「▲ / ▼」上下微調，或直接拖曳調整排序。
+            </p>
+          </div>
+          
+          <!-- 選項清單區域 (第 1、4 題拖曳排序無第X名標籤) -->
+          <div id="quiz-options-area" class="space-y-2 text-xs font-bold"></div>
+
+          <!-- 排序題底部進度與重設 -->
+          <div id="quiz-sort-footer" class="flex justify-between items-center pt-1 border-t border-slate-100 hidden">
+            <span id="sort-progress-text" class="text-[10px] text-slate-500 font-bold">由上至下依序為優先順序</span>
+            <button onclick="resetCurrentQuestionSort()" class="text-[10px] font-bold text-lego-red hover:underline flex items-center gap-0.5">
+              <span>↺</span> 恢復預設
+            </button>
+          </div>
+
+          <!-- 上下題切換按鈕列 -->
+          <div class="flex items-center justify-between pt-2 border-t border-slate-100 gap-2">
+            <button id="btn-prev-q" onclick="navigateQuiz(-1)" class="px-3 py-1.5 rounded-xl border-2 border-slate-800 bg-slate-100 text-slate-700 font-bold text-xs lego-btn disabled:opacity-40 disabled:pointer-events-none">
+              ← 上一題
+            </button>
+            <div class="flex items-center gap-1">
+              <button onclick="autoFillRemainingQuestions()" class="text-[9px] bg-slate-100 border border-slate-400 text-slate-600 px-2 py-1 rounded font-bold hover:bg-slate-200">
+                ⚡ PM 一鍵填完
+              </button>
+              <button id="btn-next-q" onclick="navigateQuiz(1)" class="px-4 py-1.5 rounded-xl border-2 border-slate-900 bg-lego-yellow text-slate-900 font-black text-xs lego-btn">
+                下一題 →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 建議雙軌風格卡片 (即時計算呈現) -->
+        <div id="card-recommendation" class="bg-amber-100 p-4 rounded-2xl lego-card space-y-3">
+          <div class="flex items-center space-x-2">
+            <span class="text-xl">🧭</span>
+            <div>
+              <div class="text-[9px] font-pixel text-lego-darkred">INITIAL RECOMMENDATION</div>
+              <span class="text-xs font-black text-slate-900">適性傾向計算結果！建議雙軌起步路線：</span>
+            </div>
+          </div>
+          
+          <!-- 開發風格建議卡片 -->
+          <div class="bg-white p-3 rounded-xl border-2 border-slate-900 flex justify-between items-center lego-card-sm gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <span>建議開發路線</span>
+                <span id="rec-dev-dimension" class="text-[8px] bg-emerald-100 text-emerald-800 px-1 py-0.2 rounded font-bold">地緣深耕</span>
+              </div>
+              <div class="text-xs font-black text-lego-green mt-0.5 flex items-center gap-1">
+                <span id="rec-dev-icon">🏘️</span> <span id="rec-dev-title" class="truncate">社區經營型</span>
+              </div>
+              <div id="rec-dev-desc" class="text-[10px] text-slate-600 mt-0.5 leading-snug">鎖定特定社區大樓，針對管委會、物業人員與住戶建立長期關係與高頻互動，以掌握第一手屋況動態與委託機會。</div>
+            </div>
+            <button onclick="openChangeRouteModal('dev')" class="px-2.5 py-1.5 bg-lego-blue hover:bg-lego-darkblue text-white rounded-lg text-[10px] font-black shrink-0 lego-btn whitespace-nowrap">
+              更換 ⇄
+            </button>
+          </div>
+
+          <!-- 銷售風格建議卡片 -->
+          <div class="bg-white p-3 rounded-xl border-2 border-slate-900 flex justify-between items-center lego-card-sm gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <span>建議銷售路線</span>
+                <span id="rec-sal-dimension" class="text-[8px] bg-blue-100 text-blue-800 px-1 py-0.2 rounded font-bold">人脈關係</span>
+              </div>
+              <div class="text-xs font-black text-lego-blue mt-0.5 flex items-center gap-1">
+                <span id="rec-sal-icon">🗄️</span> <span id="rec-sal-title" class="truncate">公司既有人脈經營型</span>
+              </div>
+              <div id="rec-sal-desc" class="text-[10px] text-slate-600 mt-0.5 leading-snug">針對公司系統資料庫進行名單經營，對歷年已成交舊客、過往帶看未購客做定期回訪、需求喚醒與精準配案。</div>
+            </div>
+            <button onclick="openChangeRouteModal('sal')" class="px-2.5 py-1.5 bg-lego-blue hover:bg-lego-darkblue text-white rounded-lg text-[10px] font-black shrink-0 lego-btn whitespace-nowrap">
+              更換 ⇄
+            </button>
+          </div>
+
+          <!-- 確認鎖定路線並進入首頁按鈕 -->
+          <button onclick="confirmAndEnterApp()" class="w-full py-3 bg-lego-red hover:bg-lego-darkred text-white rounded-xl text-xs font-black lego-btn flex items-center justify-center space-x-2 shadow-lg">
+            <span>確認路線，進入任務主導首頁</span>
+            <span>➔</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 1: 任務主頁 (Tasks Home)                             -->
+      <!-- ======================================================== -->
+      <section id="tab-tasks" class="space-y-3.5 hidden">
+        <!-- 路線切換三按鈕列 -->
+        <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-200 rounded-2xl border-2 border-slate-900 lego-card-sm">
+          <button onclick="switchRoute('dev')" id="route-tab-dev" class="py-1.5 text-center rounded-xl text-xs font-black bg-lego-yellow text-slate-900 border border-slate-900 shadow-sm transition-all">
+            社區深耕
+          </button>
+          <button onclick="switchRoute('sal')" id="route-tab-sal" class="py-1.5 text-center rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all">
+            既有人脈
+          </button>
+          <button onclick="switchRoute('com')" id="route-tab-com" class="py-1.5 text-center rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 transition-all">
+            冒險基本功
+          </button>
+        </div>
+
+        <!-- 當前進行中 Hero 主線任務大卡片 -->
+        <div id="tasks-hero-card" class="bg-white p-4 rounded-3xl lego-card border-slate-900 space-y-3">
+          <!-- 動態注入 Hero 卡片內容 -->
+        </div>
+
+        <!-- 任務池列表 -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-center px-1">
+            <span id="tasks-pool-title" class="text-xs font-black text-slate-800">接下來的挑戰</span>
+            <span class="text-[9px] text-slate-500 font-bold">完成解鎖更多情資</span>
+          </div>
+          <div id="tasks-slots-container" class="space-y-2">
+            <!-- 動態注入任務槽 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 2: 信義地圖 (PRD 案源/社區生活圈探索)                 -->
+      <!-- ======================================================== -->
+      <section id="tab-map" class="space-y-3 hidden"><div class="simple-page-heading"><h2>認識你的商圈</h2><p>點選社區，了解環境與案源。</p></div>
+        <!-- 頂部查詢切換列 -->
+        <div class="flex items-center justify-between bg-white p-2 rounded-2xl lego-card-sm">
+          <div class="flex space-x-1">
+            <button onclick="switchMapQueryMode('community')" id="btn-query-comm" class="px-3 py-1 rounded-xl text-xs font-black bg-sinyi-green text-white border border-slate-900 transition-all">
+              社區查詢
+            </button>
+            <button onclick="switchMapQueryMode('source')" id="btn-query-source" class="px-3 py-1 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
+              案源查詢
+            </button>
+          </div>
+          <!-- 建築圖例說明按鈕 -->
+          <button onclick="openModal('modal-building-legend')" class="text-[10px] font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg border border-slate-300">
+            <span>ℹ️ 建築圖例說明</span>
+          </button>
+        </div>
+
+        <!-- 4大物件狀態色彩過濾列 (PRD 規格) -->
+<details class="simple-disclosure"><summary>物件狀態說明</summary>        <div id="business-map-legend" class="flex items-center justify-between text-[9px] font-black bg-slate-200/80 p-2 rounded-xl border border-slate-300">
+          <span class="text-slate-500">物件狀態：</span>
+          <span class="flex items-center gap-1 text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300">🟢 可售(信義有效)</span>
+          <span class="flex items-center gap-1 text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">🟡 潛案(市場在售)</span>
+          <span class="flex items-center gap-1 text-slate-700 bg-slate-300 px-1.5 py-0.5 rounded border border-slate-400">⚪ 逾案(歷史過期)</span>
+          <span class="flex items-center gap-1 text-rose-800 bg-rose-100 px-1.5 py-0.5 rounded border border-rose-300">🔴 開發機會</span>
+        </div>
+
+</details>
+        <!-- 模擬地圖舞台 (互動點擊查看大樓與案源) -->
+        <div id="business-map-stage" class="relative w-full h-80 bg-slate-200 rounded-2xl border-3 border-slate-900 overflow-hidden lego-card">
+          <!-- 道路底圖模擬 -->
+          <div id="business-map-ground" class="absolute inset-0 bg-[#e5e9ec]">
+            <div class="absolute top-1/2 left-0 right-0 h-10 bg-slate-300 -translate-y-1/2 border-y-2 border-white/80"></div>
+            <div class="absolute top-0 bottom-0 left-1/3 w-12 bg-slate-300 border-x-2 border-white/80"></div>
+            <span class="absolute top-2 left-2 text-[9px] font-bold text-slate-400 tracking-wider">台北市信義區・松智生活圈</span>
+          </div>
+
+          <!-- 地標建築 1：大器四方 (社區大樓) -->
+          <div onclick="selectMapBuilding('b1')" class="absolute top-12 left-10 p-2 bg-white rounded-xl border-2 border-slate-900 lego-btn cursor-pointer flex items-center space-x-1.5 z-10">
+            <span class="text-xl">🏢</span>
+            <div>
+              <div class="text-[10px] font-black text-slate-900">大器四方</div>
+              <div class="text-[8px] text-emerald-600 font-bold flex items-center gap-0.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> 可售 1 ｜ 潛案 2
+              </div>
+            </div>
+          </div>
+
+          <!-- 地標建築 2：松智金賞華廈 (華廈) -->
+          <div onclick="selectMapBuilding('b2')" class="absolute top-28 right-8 p-2 bg-white rounded-xl border-2 border-slate-900 lego-btn cursor-pointer flex items-center space-x-1.5 z-10">
+            <span class="text-xl">🏬</span>
+            <div>
+              <div class="text-[10px] font-black text-slate-900">松智金賞</div>
+              <div class="text-[8px] text-amber-600 font-bold flex items-center gap-0.5">
+                <span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> 潛案 1 ｜ 逾案 1
+              </div>
+            </div>
+          </div>
+
+          <!-- 地標建築 3：莊敬路透天 (透天) -->
+          <div onclick="selectMapBuilding('b3')" class="absolute bottom-6 left-12 p-2 bg-white rounded-xl border-2 border-slate-900 lego-btn cursor-pointer flex items-center space-x-1.5 z-10">
+            <span class="text-xl">🏡</span>
+            <div>
+              <div class="text-[10px] font-black text-slate-900">莊敬傳家透天</div>
+              <div class="text-[8px] text-rose-600 font-bold flex items-center gap-0.5">
+                <span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span> 🔴 繼承異動機會
+              </div>
+            </div>
+          </div>
+
+          <!-- 地圖右下角快捷浮動資訊 -->
+          <div class="absolute bottom-2 right-2 bg-white/95 px-2.5 py-1 rounded-xl border border-slate-800 text-[9px] font-bold shadow">
+            點選建築，認識社區與案源
+          </div>
+        </div>
+
+        <!-- 社區詳情抽屜面板 (點選建築後展開) -->
+        <div id="building-detail-panel" class="bg-white p-3.5 rounded-2xl lego-card border-slate-900 space-y-3">
+          <!-- 頂部標題與標籤 -->
+          <div class="flex justify-between items-start border-b pb-2">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span id="b-detail-icon" class="text-2xl">🏢</span>
+                <div>
+                  <h3 id="b-detail-name" class="text-xs font-black text-slate-900">大器四方</h3>
+                  <p id="b-detail-type" class="text-[9px] text-slate-500">台北市信義區 ｜ 住宅大樓 (地上7層/地下1層)</p>
+                </div>
+              </div>
+            </div>
+            <button onclick="markCommunityTarget()" class="px-2.5 py-1 bg-lego-yellow hover:bg-amber-400 text-slate-900 rounded-lg text-[9px] font-black lego-btn">
+              🎯 標記為耕耘目標
+            </button>
+          </div>
+
+          <!-- 大樓四大詳細分頁抽屜切換 (PRD 規格) -->
+          <div class="flex border-b border-slate-200 text-xs font-black text-slate-500">
+            <button onclick="switchBuildingSubtab('summary')" id="bsub-tab-summary" class="pb-1.5 px-2 text-sinyi-green border-b-2 border-sinyi-green">社區摘要</button>
+            <button onclick="switchBuildingSubtab('trends')" id="bsub-tab-trends" class="pb-1.5 px-2 hover:text-slate-800">行情走勢</button>
+            <button onclick="switchBuildingSubtab('specs')" id="bsub-tab-specs" class="pb-1.5 px-2 hover:text-slate-800">社區詳情</button>
+            <button onclick="switchBuildingSubtab('listings')" id="bsub-tab-listings" class="pb-1.5 px-2 hover:text-slate-800">在售案源</button>
+          </div>
+
+          <!-- 子頁籤內容區 (動態呈現) -->
+          <div id="building-subtab-content" class="text-xs space-y-2">
+            <!-- 動態注入社區摘要/行情/詳情/案源 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 3: 成長手冊 (PRD 硬實力/軟實力與等級積分)             -->
+      <!-- ======================================================== -->
+      <section id="tab-handbook" class="space-y-3.5 hidden">
+        <!-- 頂部能力總覽卡片 -->
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-3.5 rounded-2xl lego-card border-slate-900 space-y-2">
+          <div class="flex justify-between items-center">
+            <div>
+              <span class="text-[9px] font-pixel text-emerald-200">GROWTH HANDBOOK</span>
+              <h2 class="text-xs font-black">新人全方位能力成長看板</h2>
+            </div>
+            <span class="text-xs font-black bg-white/20 px-2 py-0.5 rounded-full">
+              等級最高 Lv.99
+            </span>
+          </div>
+          <p class="text-[9px] text-emerald-100">
+            每項能力依積分升等（如 10等需 300 分、11等需 350 分）。大分類等級依其所有子項總分精算！
+          </p>
+
+          <!-- 三大分類等級摘要列 -->
+          <div class="grid grid-cols-3 gap-2 pt-1 text-center text-slate-900">
+            <div class="bg-white/95 p-1.5 rounded-xl border border-slate-900">
+              <div class="text-[8px] font-bold text-slate-500">硬實力・專業知識</div>
+              <div class="text-xs font-black text-sinyi-green">Lv.<span id="cat-level-hard">4</span></div>
+              <div class="text-[8px] text-slate-400">總分 <span id="cat-score-hard">120</span></div>
+            </div>
+            <div class="bg-white/95 p-1.5 rounded-xl border border-slate-900">
+              <div class="text-[8px] font-bold text-slate-500">軟實力・開發能力</div>
+              <div class="text-xs font-black text-lego-red">Lv.<span id="cat-level-dev">2</span></div>
+              <div class="text-[8px] text-slate-400">總分 <span id="cat-score-dev">55</span></div>
+            </div>
+            <div class="bg-white/95 p-1.5 rounded-xl border border-slate-900">
+              <div class="text-[8px] font-bold text-slate-500">軟實力・銷售能力</div>
+              <div class="text-xs font-black text-lego-blue">Lv.<span id="cat-level-sal">2</span></div>
+              <div class="text-[8px] text-slate-400">總分 <span id="cat-score-sal">45</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 大能力分類切換 -->
+        <div class="flex border-2 border-slate-900 rounded-xl overflow-hidden bg-slate-200 lego-card-sm text-xs font-black">
+          <button onclick="switchHandbookTab('hard')" id="hb-btn-hard" class="flex-1 py-1.5 bg-sinyi-green text-white transition-all text-center">
+            硬實力：專業知識 (5項)
+          </button>
+          <button onclick="switchHandbookTab('dev')" id="hb-btn-dev" class="flex-1 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-50 transition-all text-center">
+            軟實力：開發 (4項)
+          </button>
+          <button onclick="switchHandbookTab('sal')" id="hb-btn-sal" class="flex-1 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-50 transition-all text-center">
+            軟實力：銷售 (4項)
+          </button>
+        </div>
+
+        <!-- 能力清單卡片展示區 -->
+        <div id="handbook-items-list" class="space-y-2 text-xs">
+          <!-- 動態注入各子項進度、等級、升等所需分數與 PRD 定義 -->
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 4: 主管展櫃 (PRD 盲盒抽卡與 3x3 趣味展示櫃)            -->
+      <!-- ======================================================== -->
+      <section id="tab-showcase" class="space-y-3.5 hidden">
+<details class="simple-disclosure"><summary>抽獎，認識新角色</summary>        <!-- 頂部代幣與扭蛋機橫幅 -->
+        <div class="bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 p-3.5 rounded-2xl lego-card border-slate-900 text-slate-900 space-y-2">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xl">🎰</span>
+              <div>
+                <h2 class="text-xs font-black tracking-wide">角色抽獎</h2>
+                <p id="gacha-active-pool-label" class="text-[9px] text-amber-950 font-bold">當期特選：【⚡ 托尼宇宙限定池 (12款主角)】</p>
+              </div>
+            </div>
+            <!-- 代幣顯示區 -->
+            <div class="flex items-center gap-2 bg-white/90 px-2.5 py-1 rounded-xl border border-slate-800 text-[10px] font-black shadow-sm">
+              <span class="flex items-center gap-0.5">🪙 <span id="currency-coins">1,200</span></span>
+              <span class="text-slate-300">|</span>
+              <span class="flex items-center gap-0.5">🎟️ <span id="currency-tickets">3</span></span>
+            </div>
+          </div>
+
+          <div class="flex gap-2 text-xs" aria-label="選擇獎池">
+            <button id="pool-btn-tony" onclick="switchGachaPool('tony')" class="flex-1 py-1.5 rounded-lg bg-slate-900 text-white font-black border border-slate-900">托尼宇宙</button>
+            <button id="pool-btn-chen" onclick="switchGachaPool('chen')" class="flex-1 py-1.5 rounded-lg bg-white text-slate-800 font-bold border border-slate-300">陳總宇宙</button>
+            <button id="pool-btn-all" onclick="switchGachaPool('all')" class="flex-1 py-1.5 rounded-lg bg-white text-slate-800 font-bold border border-slate-300">雙宇宙混抽</button>
+            <button id="pool-btn-super" onclick="switchGachaPool('super')" class="flex-1 py-1.5 rounded-lg bg-white text-slate-800 font-bold border border-slate-300">超業</button>
+            <button id="pool-btn-family" onclick="switchGachaPool('family')" class="flex-1 py-1.5 rounded-lg bg-white text-slate-800 font-bold border border-slate-300">傳承限定</button>
+          </div>
+          <!-- 抽卡按鈕列 -->
+          <div class="flex gap-2 pt-1">
+            <button onclick="pullExecutiveGacha(1)" class="flex-1 py-2 bg-white hover:bg-slate-50 text-slate-900 rounded-xl text-xs font-black lego-btn flex flex-col items-center justify-center">
+              <span>單抽盲盒</span>
+              <span class="text-[8px] text-slate-500 font-bold mt-0.5">🪙 100 或 🎟️ 1 張</span>
+            </button>
+            <button onclick="pullExecutiveGacha(10)" class="flex-1 py-2 bg-lego-red hover:bg-lego-darkred text-white rounded-xl text-xs font-black lego-btn flex flex-col items-center justify-center shadow">
+              <div class="flex items-center gap-1">
+                <span>十連發盲盒</span>
+                <span id="gacha-ten-badge" class="text-[8px] bg-yellow-300 text-slate-900 px-1 rounded font-pixel">95折・保底R</span>
+              </div>
+              <span id="gacha-ten-cost" class="text-[8px] text-amber-200 font-bold mt-0.5">🪙 950 幣 (保底稀有)</span>
+            </button>
+          </div>
+          <p id="super-pool-note" class="hidden text-[9px] font-bold">超業系列：鼎元 4 款、婉嫣 5 款。每款都有 1～5 星造型；重複角色 +1 專屬碎片，每 5 片升 1 星。一般單抽機率：R 70%、SR 24%、SSR 6%；同稀有度內等機率抽取。與一般獎池共用 50 抽保底。</p>
+          <p id="family-pool-note" class="hidden text-[9px] font-bold">周先生、王小姐各 50%，單抽與十連皆為獨立抽取。重複 IP 保留張數，可投入融合；KEN、HOWARD、HENRY 僅從融合取得。本池不累積一般獎池保底。</p>
+          <div id="gacha-pity-info" class="flex justify-between items-center text-[8px] text-amber-950 font-bold px-0.5">
+            <span>🛡️ 大保底機制：每 50 抽必得 SR 或 SSR 傳說造型</span>
+            <span>已累積：<b id="gacha-pity-counter" class="text-slate-900">0</b>/50 抽</span>
+          </div>
+        </div>
+
+</details><details class="simple-disclosure simple-more-play"><summary>對戰、融合與造型圖鑑</summary>        <button onclick="openAceBattle()" class="w-full py-3 rounded-xl bg-slate-900 text-amber-200 font-black text-sm lego-btn">角色對戰</button>
+        <button onclick="openFamilyFusion()" class="w-full py-3 rounded-xl bg-sinyi-green text-white font-black text-sm lego-btn">角色融合</button>
+
+        <button onclick="openEvolutionCollection()" class="w-full py-2.5 rounded-xl bg-white text-sinyi-green font-black text-xs lego-btn">造型圖鑑</button>
+
+</details>        <section id="ip-carousel" class="ip-carousel" aria-label="IP 角色展示櫃">
+          <div class="carousel-heading"><div><small>THE IP COLLECTION</small><h3>我的角色</h3></div><span id="carousel-total">已收藏 0 款</span></div>
+          <div id="carousel-filters" class="carousel-filters" role="group" aria-label="展示角色分類">
+            <button data-filter="all" onclick="filterCabinetCarousel('all')" aria-pressed="true">全部</button>
+            <button data-filter="chen" onclick="filterCabinetCarousel('chen')" aria-pressed="false">陳總</button>
+            <button data-filter="tony" onclick="filterCabinetCarousel('tony')" aria-pressed="false">托尼</button>
+            <button data-filter="super" onclick="filterCabinetCarousel('super')" aria-pressed="false">超業</button>
+            <button data-filter="family" onclick="filterCabinetCarousel('family')" aria-pressed="false">傳承</button>
+          </div>
+          <div class="carousel-theater">
+            <div id="carousel-stage" class="carousel-stage" role="region" aria-roledescription="角色輪播" aria-label="左右滑動瀏覽角色，亦可使用鍵盤左右鍵" tabindex="0"></div>
+            <div class="carousel-nav"><button id="carousel-prev" onclick="moveCabinetCarousel(-1)" aria-label="上一位角色">‹</button><span id="carousel-position">0 / 0</span><button id="carousel-next" onclick="moveCabinetCarousel(1)" aria-label="下一位角色">›</button></div>
+          </div>
+          <p class="carousel-hint">左右滑動 · 點兩側角色切換 · 點中央角色看造型</p>
+          <div class="carousel-info" aria-live="polite" aria-atomic="true">
+            <div class="carousel-badges"><span id="carousel-category"></span><b id="carousel-rarity"></b></div>
+            <h4 id="carousel-name"></h4><div id="carousel-stars" class="carousel-stars"></div>
+            <p id="carousel-outfit" class="carousel-outfit"></p><p id="carousel-quote" class="carousel-quote"></p>
+          </div>
+          <div style="padding:0 15px"><button id="carousel-wardrobe" class="carousel-wardrobe" onclick="openCabinetCarouselWardrobe()">查看造型衣櫃　↗</button></div>
+          <div id="carousel-thumbnails" class="carousel-thumbnails" role="group" aria-label="快速選擇收藏角色"></div>
+        </section>
+        <details class="cabinet-legacy"><summary>分店日常與陳列管理<small>小劇場・家具・九個陳列位置</small></summary>
+        <!-- 3x3 立體九宮格展示櫃 -->
+        <div class="bg-white p-3.5 rounded-2xl lego-card border-slate-900 space-y-2.5">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-1.5">
+              <span class="text-lg">🏆</span>
+              <div>
+                <h3 class="text-xs font-black text-slate-900">我的分店日常 · 生活小劇場</h3>
+                <p class="text-[9px] text-slate-500">布置家具，看看夥伴們會發生什麼故事</p>
+              </div>
+            </div>
+            <!-- 展櫃材質切換 -->
+            <div class="flex gap-1 text-[8px] font-bold">
+              <button onclick="changePedestalTheme('wood')" class="px-1.5 py-0.5 rounded border border-amber-800 bg-amber-100 text-amber-900">原木</button>
+              <button onclick="changePedestalTheme('marble')" class="px-1.5 py-0.5 rounded border border-slate-300 bg-slate-100 text-slate-700">大理石</button>
+              <button onclick="changePedestalTheme('cyber')" class="px-1.5 py-0.5 rounded border border-purple-400 bg-purple-900 text-purple-200">賽博</button>
+            </div>
+          </div>
+
+          <div class="life-toolbar"><span>BRANCH LIFE · 分店日常</span><button id="life-auto" onclick="toggleLifeAuto()" aria-pressed="true">自動小劇場：開</button></div>
+          <div id="living-branch" class="living-branch life-wood">
+            <div class="life-sign"><span>信</span><div><b>信義・日常俱樂部</b><small>A LITTLE PLACE, A LOT OF STORIES</small></div><i>OPEN</i></div>
+            <div class="life-wall" aria-hidden="true"><div class="life-window"></div><div class="life-wall-note">一起工作<br><b>也一起生活。</b></div><span>🪴</span></div>
+            <div class="life-floor"><div id="life-zones" class="life-zones"></div><div id="life-actors" class="life-actors"></div></div>
+            <div class="life-room-caption">三個活動區 · 家具換個位置，故事也換個舞台</div>
+          </div>
+          <div class="life-dialogue" role="status" aria-live="polite"><div><span id="life-story-label">分店日常</span><button id="life-end-story" class="hidden" onclick="endLifeStory()">結束這段劇情</button></div><p id="life-story-line">歡迎來到你的分店！選一段小劇場，夥伴們就會走過去。</p><div id="life-progress" class="life-progress"></div></div>
+          <div class="life-section-title"><b>① 布置你的分店</b><span>家具免費使用，不消耗材料</span></div>
+          <div id="life-furniture" class="life-furniture"></div>
+          <p id="life-layout-tip" class="life-layout-tip" role="status">先選家具，再點場景裡的活動區；家具會移動或交換位置。</p>
+          <div class="life-section-title"><b>② 讓故事發生</b><span id="life-stamp-count">日常回憶 0 / 3</span></div>
+          <div id="life-stories" class="life-stories"></div>
+          <details class="life-roster-details"><summary>管理陳列夥伴與造型 <span>九個位置 · 點角色看衣櫃 · ⇄ 換角</span></summary>
+          <div id="cabinet-3x3-container" class="grid grid-cols-3 gap-2 p-2.5 rounded-2xl border-2 border-slate-800 transition-all bg-amber-50/80">
+            <!-- 動態注入 9 個立體展示底座 -->
+          </div>
+          </details>
+
+          <!-- 展櫃社交與人氣列 -->
+          <div class="flex items-center justify-between text-[10px] bg-slate-50 p-2 rounded-xl border border-slate-200">
+            <div class="flex items-center gap-2">
+              <span class="flex items-center gap-0.5 text-rose-600 font-black">❤️ 人氣值：<span id="cabinet-hearts-count">38</span></span>
+              <span class="text-slate-400">|</span>
+              <span class="text-slate-500 font-bold">本週排名：第 6 名</span>
+            </div>
+            <button onclick="openColleagueVisitModal()" class="px-2 py-1 bg-lego-blue hover:bg-lego-darkblue text-white rounded text-[9px] font-black lego-btn">
+              👥 參觀同事展櫃
+            </button>
+          </div>
+        </div>
+
+        </details>
+
+        <!-- 背包與升星突破 (Warehouse) -->
+        <div class="bg-white p-3.5 rounded-2xl lego-card border-slate-900 space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-black text-slate-900 flex items-center gap-1">
+              <span>🎒</span> <span>公仔倉庫與升星突破</span>
+            </span>
+            <div class="flex gap-1 text-[9px]">
+              <button onclick="filterWarehouse('all')" class="px-2 py-0.5 rounded bg-slate-900 text-white font-bold">全部</button>
+              <button onclick="filterWarehouse('super')" class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold border border-emerald-300">超業</button>
+              <button onclick="filterWarehouse('SSR')" class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold border border-amber-300">SSR</button>
+              <button onclick="filterWarehouse('SR')" class="px-2 py-0.5 rounded bg-purple-100 text-purple-900 font-bold border border-purple-300">SR</button>
+              <button onclick="filterWarehouse('R')" class="px-2 py-0.5 rounded bg-blue-100 text-blue-900 font-bold border border-blue-300">R</button>
+            </div>
+          </div>
+          <div id="warehouse-grid" class="grid grid-cols-2 gap-2 text-xs">
+            <!-- 動態注入擁有的主管公仔與碎片突破卡片 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 5: 修練學院 (Candy 冒險島 ✕ AI Roleplay 雙子分頁)     -->
+      <!-- ======================================================== -->
+      <section id="tab-academy" class="space-y-3 hidden">
+        <!-- 頂部雙子分頁切換列 -->
+        <div class="grid grid-cols-2 gap-2 p-1 bg-slate-200 rounded-2xl border-2 border-slate-900 lego-card-sm text-xs font-black">
+          <button onclick="switchAcademySubtab('school')" id="acad-subtab-school" class="py-2 rounded-xl bg-lego-yellow text-slate-900 border border-slate-900 shadow-sm transition-all text-center flex items-center justify-center gap-1">
+            <span>🍬</span> <span>知識小學堂</span>
+          </button>
+          <button onclick="switchAcademySubtab('roleplay')" id="acad-subtab-roleplay" class="py-2 rounded-xl text-slate-600 hover:text-slate-900 transition-all text-center flex items-center justify-center gap-1">
+            <span>🤖</span> <span>AI Roleplay</span>
+          </button>
+        </div>
+
+        <!-- 子分頁 A: 知識小學堂 (Candy Crush S型闖關冒險) -->
+        <div id="academy-subtab-school-view" class="space-y-3">
+          <!-- 五大領域切換標籤 -->
+          <div class="flex gap-1 overflow-x-auto pb-1 no-scrollbar text-xs font-black">
+            <button onclick="switchSchoolDomain('tax')" id="school-dom-tax" class="px-3 py-1.5 rounded-xl bg-sinyi-green text-white shrink-0 border border-slate-900">
+              🪙 稅務
+            </button>
+            <button onclick="switchSchoolDomain('mortgage')" id="school-dom-mortgage" class="px-3 py-1.5 rounded-xl bg-white text-slate-700 hover:bg-slate-50 shrink-0 border border-slate-300">
+              🏦 貸款
+            </button>
+            <button onclick="switchSchoolDomain('contract')" id="school-dom-contract" class="px-3 py-1.5 rounded-xl bg-white text-slate-700 hover:bg-slate-50 shrink-0 border border-slate-300">
+              📝 契據
+            </button>
+            <button onclick="switchSchoolDomain('law')" id="school-dom-law" class="px-3 py-1.5 rounded-xl bg-white text-slate-700 hover:bg-slate-50 shrink-0 border border-slate-300">
+              ⚖️ 不動產法規
+            </button>
+            <button onclick="switchSchoolDomain('market')" id="school-dom-market" class="px-3 py-1.5 rounded-xl bg-white text-slate-700 hover:bg-slate-50 shrink-0 border border-slate-300">
+              🏘️ 商圈行情
+            </button>
+          </div>
+
+          <!-- 主題路線標籤 -->
+          <div class="space-y-1">
+            <div class="text-[9px] font-bold text-slate-500">主題冒險路線：</div>
+            <div id="school-routes-container" class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+              <!-- 動態注入主題路線 -->
+            </div>
+          </div>
+
+          <!-- Candy Crush 蜿蜒闖關地圖舞台 -->
+          <div class="relative w-full h-[470px] rounded-3xl border-3 border-slate-900 overflow-hidden shadow-inner bg-gradient-to-b from-sky-300 via-pink-200 to-amber-100 p-3 flex flex-col justify-between">
+            <!-- 裝飾背景雲朵與糖果 -->
+            <div class="absolute top-4 left-6 text-2xl opacity-60 pointer-events-none">☁️</div>
+            <div class="absolute top-20 right-6 text-xl opacity-60 pointer-events-none">🍭</div>
+            <div class="absolute bottom-24 left-4 text-xl opacity-60 pointer-events-none">🍄</div>
+
+            <!-- S 型蜿蜒路徑 SVG -->
+            <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 320 470" preserveAspectRatio="none">
+              <path d="M 60 415 Q 160 415 240 355 T 90 275 T 240 185 T 160 75" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-dasharray="8 6" opacity="0.9"/>
+              <path d="M 60 415 Q 160 415 240 355 T 90 275 T 240 185 T 160 75" fill="none" stroke="#f43f5e" stroke-width="6" stroke-linecap="round" stroke-dasharray="6 6"/>
+            </svg>
+
+            <!-- 6 個闖關節點按鈕 (由下而上) -->
+            <div class="relative w-full h-full">
+              <!-- 第 01 關 (起點) -->
+              <div onclick="launchSchoolStage(1)" class="absolute bottom-3 left-10 flex flex-col items-center cursor-pointer group z-10">
+                <span id="school-node-star-1" class="text-[8px] font-black text-amber-500 leading-none">⭐⭐⭐</span>
+                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 border-2 border-slate-900 flex items-center justify-center text-white font-black text-xs lego-btn shadow-md group-hover:scale-110">
+                  01
+                </div>
+                <span class="text-[8px] font-black text-slate-800 bg-white/90 px-1.5 py-0.5 rounded shadow-sm mt-0.5">名詞基礎</span>
+              </div>
+
+              <!-- 第 02 關 -->
+              <div onclick="launchSchoolStage(2)" class="absolute bottom-24 right-12 flex flex-col items-center cursor-pointer group z-10">
+                <span id="school-node-star-2" class="text-[8px] font-black text-amber-500 leading-none">⭐⭐☆</span>
+                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-300 border-2 border-slate-900 flex items-center justify-center text-white font-black text-xs lego-btn shadow-md group-hover:scale-110">
+                  02
+                </div>
+                <span class="text-[8px] font-black text-slate-800 bg-white/90 px-1.5 py-0.5 rounded shadow-sm mt-0.5">條件判斷</span>
+              </div>
+
+              <!-- 第 03 關 (表單找碴) -->
+              <div onclick="launchSchoolStage(3)" class="absolute top-48 left-14 flex flex-col items-center cursor-pointer group z-10 candy-active-node">
+                <span class="text-xs -mb-1 animate-bounce">🚩</span>
+                <div class="w-13 h-13 rounded-full bg-gradient-to-tr from-rose-500 to-pink-400 border-3 border-slate-900 flex items-center justify-center text-white font-black text-sm lego-btn shadow-lg">
+                  03
+                </div>
+                <span class="text-[8px] font-black text-rose-900 bg-yellow-300 px-1.5 py-0.5 rounded shadow border border-slate-800 mt-0.5">表單找碴</span>
+              </div>
+
+              <!-- 第 04 關 (實務地雷) -->
+              <div onclick="launchSchoolStage(4)" class="absolute top-32 right-12 flex flex-col items-center cursor-pointer group z-10">
+                <span id="school-node-star-4" class="text-[8px] font-black text-slate-400 leading-none">☆☆☆</span>
+                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 border-2 border-slate-900 flex items-center justify-center text-white font-black text-xs lego-btn shadow-md group-hover:scale-110">
+                  04
+                </div>
+                <span class="text-[8px] font-bold text-slate-800 bg-white/90 px-1.5 py-0.5 rounded shadow-sm mt-0.5">實務地雷</span>
+              </div>
+
+              <!-- 第 05 關 (數據試算拉桿) -->
+              <div onclick="launchSchoolStage(5)" class="absolute top-16 left-28 flex flex-col items-center cursor-pointer group z-10">
+                <span id="school-node-star-5" class="text-[8px] font-black text-slate-400 leading-none">☆☆☆</span>
+                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-orange-500 to-amber-300 border-2 border-slate-900 flex items-center justify-center text-white font-black text-xs lego-btn shadow-md group-hover:scale-110">
+                  05
+                </div>
+                <span class="text-[8px] font-bold text-slate-800 bg-white/90 px-1.5 py-0.5 rounded shadow-sm mt-0.5">數據試算</span>
+              </div>
+
+              <!-- 第 06 關 (Boss 關卡) -->
+              <div onclick="launchSchoolStage(6)" class="absolute top-2 right-24 flex flex-col items-center cursor-pointer group z-10">
+                <span class="text-sm">👑</span>
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-500 border-3 border-slate-900 flex items-center justify-center text-yellow-300 font-black text-sm lego-card shadow-xl group-hover:scale-105">
+                  👹 06
+                </div>
+                <span class="text-[8px] font-black text-purple-900 bg-white px-2 py-0.5 rounded shadow mt-0.5">Boss實戰</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 子分頁 B: AI Roleplay (PRD 擬真對練系統) -->
+        <div id="academy-subtab-roleplay-view" class="space-y-3 hidden">
+          <!-- 1. 設定階段面板 (Setup Screen) -->
+          <div id="rp-setup-screen" class="bg-white p-3.5 rounded-2xl lego-card border-slate-900 space-y-3">
+            <div class="flex justify-between items-center border-b pb-2">
+              <div>
+                <h3 class="text-xs font-black text-slate-900">AI 客戶擬真對練設定</h3>
+                <p class="text-[9px] text-slate-500">輸入情境與客製對手標籤，開啟擬真對話訓練</p>
+              </div>
+              <span class="text-[9px] font-pixel bg-purple-100 text-purple-900 px-2 py-0.5 rounded border border-purple-300">PRD 規格版</span>
+            </div>
+
+            <!-- 1. 情境來源切換 -->
+            <div class="space-y-1.5 text-xs">
+              <div class="flex justify-between items-center">
+                <label class="font-black text-slate-800">1. 情境來源</label>
+                <div class="flex gap-1 text-[9px]">
+                  <button onclick="toggleRPSourceMode('official')" id="rp-src-btn-official" class="px-2 py-0.5 rounded bg-lego-yellow font-black border border-slate-900">官方範本</button>
+                  <button onclick="toggleRPSourceMode('custom')" id="rp-src-btn-custom" class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-bold border border-slate-300">完全自訂</button>
+                </div>
+              </div>
+
+              <!-- 官方範本橫向滑動卡 -->
+              <div id="rp-official-templates-list" class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                <!-- 動態注入 5 個官方範本 -->
+              </div>
+
+              <!-- 完全自訂情境輸入框 (預設隱藏) -->
+              <div id="rp-custom-source-inputs" class="space-y-2 p-2.5 rounded-xl border-2 border-amber-400 bg-amber-50 hidden">
+                <div>
+                  <label class="text-[10px] font-black text-amber-950 flex items-center gap-1">
+                    <span>✍️</span> <span>自訂對練情境背景與人物關係：</span>
+                  </label>
+                  <input id="rp-custom-title-input" type="text" placeholder="例如：面對繼承多手產權且急著分產的兄弟姊妹..." class="w-full mt-1 p-2 bg-white rounded-lg border border-slate-800 text-xs font-bold outline-none focus:ring-1 focus:ring-sinyi-green">
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. 對手樣貌特質 (點選 3~5 項 + 行內自訂小框) -->
+            <div class="space-y-2 text-xs pt-1 border-t border-slate-100">
+              <div class="flex justify-between items-center">
+                <label class="font-black text-slate-800">2. 對手樣貌特質 (點選 3～5 項)</label>
+                <span id="rp-tags-count-badge" class="text-[9px] font-bold text-sinyi-green">已選 0 項標籤</span>
+              </div>
+
+              <!-- 【溝通節奏】 -->
+              <div class="space-y-1">
+                <div class="text-[9px] font-bold text-slate-500">【溝通節奏】</div>
+                <div class="flex flex-wrap gap-1 items-center" id="rp-tags-row-pace">
+                  <!-- 行內 +自訂 按鈕 -->
+                  <button id="btn-toggle-custom-pace" onclick="toggleInlineTagInput('pace')" class="btn-custom-toggle px-2 py-0.5 rounded-full border border-dashed border-slate-400 bg-white text-slate-600 text-[10px] font-bold hover:bg-slate-50">
+                    + 自訂
+                  </button>
+                  <div id="inline-input-box-pace" class="hidden flex items-center gap-1">
+                    <input id="inline-input-text-pace" type="text" placeholder="自訂節奏..." class="px-1.5 py-0.5 border border-slate-800 rounded text-[9px] w-20">
+                    <button onclick="addInlineCustomTag('pace')" class="px-1.5 py-0.5 bg-slate-900 text-white rounded text-[8px] font-bold">加入</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 【關注焦點】 -->
+              <div class="space-y-1">
+                <div class="text-[9px] font-bold text-slate-500">【關注焦點】</div>
+                <div class="flex flex-wrap gap-1 items-center" id="rp-tags-row-focus">
+                  <button id="btn-toggle-custom-focus" onclick="toggleInlineTagInput('focus')" class="btn-custom-toggle px-2 py-0.5 rounded-full border border-dashed border-slate-400 bg-white text-slate-600 text-[10px] font-bold hover:bg-slate-50">
+                    + 自訂
+                  </button>
+                  <div id="inline-input-box-focus" class="hidden flex items-center gap-1">
+                    <input id="inline-input-text-focus" type="text" placeholder="自訂焦點..." class="px-1.5 py-0.5 border border-slate-800 rounded text-[9px] w-20">
+                    <button onclick="addInlineCustomTag('focus')" class="px-1.5 py-0.5 bg-slate-900 text-white rounded text-[8px] font-bold">加入</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 【心態與防禦】 -->
+              <div class="space-y-1">
+                <div class="text-[9px] font-bold text-slate-500">【心態與防禦】</div>
+                <div class="flex flex-wrap gap-1 items-center" id="rp-tags-row-mindset">
+                  <button id="btn-toggle-custom-mindset" onclick="toggleInlineTagInput('mindset')" class="btn-custom-toggle px-2 py-0.5 rounded-full border border-dashed border-slate-400 bg-white text-slate-600 text-[10px] font-bold hover:bg-slate-50">
+                    + 自訂
+                  </button>
+                  <div id="inline-input-box-mindset" class="hidden flex items-center gap-1">
+                    <input id="inline-input-text-mindset" type="text" placeholder="自訂心態..." class="px-1.5 py-0.5 border border-slate-800 rounded text-[9px] w-20">
+                    <button onclick="addInlineCustomTag('mindset')" class="px-1.5 py-0.5 bg-slate-900 text-white rounded text-[8px] font-bold">加入</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. 物件資訊與 4. 練習核心目標 (兩欄) -->
+            <div class="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-100">
+              <div>
+                <label class="font-black text-slate-800">3. 標的物件資訊</label>
+                <select id="rp-property-select" class="w-full mt-1 p-2 rounded-xl border-2 border-slate-800 bg-slate-50 font-bold text-xs">
+                  <option value="b1">大器四方 (4房/6280萬/信義在庫)</option>
+                  <option value="b2">松智金賞 (3房/4150萬/市場自售)</option>
+                  <option value="none">無特定物件 (通用諮詢)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="font-black text-slate-800">4. 練習核心目標</label>
+                <select id="rp-goal-select" onchange="handleGoalSelectChange()" class="w-full mt-1 p-2 rounded-xl border-2 border-slate-800 bg-slate-50 font-bold text-xs">
+                  <option value="預約實體帶看 / 碰面">預約實體帶看 / 碰面</option>
+                  <option value="簽立委託 (轉任/續約)">簽立委託 (轉任/續約)</option>
+                  <option value="化解稅費/新青安疑慮">化解稅費/新青安疑慮</option>
+                  <option value="引導下斡旋 / 簽要約">引導下斡旋 / 簽要約</option>
+                  <option value="custom">✍️ 自訂目標 (自行填寫)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 自訂核心目標輸入框 (選取 custom 時展開) -->
+            <div id="rp-custom-goal-box" class="hidden space-y-1 pt-1">
+              <label class="text-[10px] font-black text-slate-800 flex items-center gap-1">
+                <span>🎯</span> <span>請輸入你預計達成的核心目標：</span>
+              </label>
+              <input id="rp-custom-goal-input" type="text" placeholder="例如：讓客戶願意提供權狀影本與鑰匙借看..." class="w-full p-2 bg-slate-50 rounded-lg border border-slate-800 text-xs font-bold outline-none">
+            </div>
+
+            <!-- 互動模式與啟動按鈕 -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold text-slate-500">互動模式：</span>
+                <label class="flex items-center gap-1 text-[10px] font-black cursor-pointer">
+                  <input type="radio" name="rp-mode" value="text" checked class="accent-sinyi-green"> 文字對話
+                </label>
+                <label class="flex items-center gap-1 text-[10px] font-black cursor-pointer">
+                  <input type="radio" name="rp-mode" value="voice" class="accent-sinyi-green"> 語音對練
+                </label>
+              </div>
+            </div>
+
+            <!-- 開始對話大按鈕 -->
+            <button onclick="startRPSessionFromSetup()" class="w-full py-3 bg-sinyi-green hover:bg-emerald-700 text-white rounded-xl text-xs font-black lego-btn flex items-center justify-center space-x-1.5 shadow">
+              <span>🚀</span> <span>開啟對話框，進入實戰對練</span>
+            </button>
+          </div>
+
+          <!-- 2. 真實進行中對話框 (Active Chat Screen) -->
+          <div id="rp-chat-screen" class="bg-white rounded-2xl lego-card border-slate-900 overflow-hidden hidden flex flex-col h-[520px]">
+            <!-- 頂部即時狀態列 (對手資訊 + Trust Meter + 10分鐘倒數) -->
+            <div class="p-2.5 bg-slate-900 text-white flex justify-between items-center border-b border-slate-800">
+              <div class="flex items-center space-x-2">
+                <span id="rp-chat-avatar" class="text-2xl">🧐</span>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span id="rp-chat-name" class="text-xs font-black">陳先生 (自售屋主)</span>
+                    <span id="rp-chat-goal-pill" class="text-[8px] bg-yellow-400 text-slate-900 px-1 rounded font-bold">目標：約見面</span>
+                  </div>
+                  <div id="rp-chat-subtags" class="text-[8px] text-slate-400">急躁 ｜ 在意服務費 ｜ 對仲介防備</div>
+                </div>
+              </div>
+
+              <!-- Trust Meter (0~100%) & 倒數 -->
+              <div class="text-right">
+                <div class="flex items-center gap-1 text-[9px] font-pixel text-emerald-400 justify-end">
+                  <span>TRUST:</span>
+                  <span id="rp-trust-val">40</span>%
+                </div>
+                <div class="w-16 bg-slate-700 h-1.5 rounded-full overflow-hidden mt-0.5 border border-slate-600">
+                  <div id="rp-trust-bar" class="bg-emerald-400 h-full w-[40%] transition-all duration-300"></div>
+                </div>
+                <div id="rp-timer-text" class="text-[8px] text-amber-300 font-pixel mt-0.5">⏱️ 09:45</div>
+              </div>
+            </div>
+
+            <!-- 對話訊息滾動區 -->
+            <div id="rp-messages-scroll" class="flex-1 p-3 overflow-y-auto space-y-3 bg-slate-50 text-xs">
+              <!-- 動態注入對話氣泡 -->
+            </div>
+
+            <!-- 底部對話輸入列 (文字打字 + 麥克風語音 + 快捷決策) -->
+            <div class="p-2.5 bg-white border-t border-slate-200 space-y-2">
+              <!-- 快捷話術決策選項 -->
+              <div id="rp-quick-tactics" class="flex gap-1 overflow-x-auto pb-1 no-scrollbar text-[9px]">
+                <!-- 動態注入快捷話術 -->
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <button onclick="toggleVoiceInput()" id="rp-mic-btn" class="p-2 rounded-xl border border-slate-800 bg-slate-100 hover:bg-slate-200 text-sm lego-btn" title="語音輸入">
+                  🎙️
+                </button>
+                <input id="rp-user-input" type="text" placeholder="輸入你想應對的話術或法規說明..." class="flex-1 p-2 rounded-xl border border-slate-800 text-xs font-bold outline-none focus:ring-1 focus:ring-sinyi-green" onkeydown="if(event.key==='Enter') sendRPUserMessage();">
+                <button onclick="sendRPUserMessage()" class="px-3 py-2 bg-sinyi-green hover:bg-emerald-700 text-white rounded-xl text-xs font-black lego-btn">
+                  送出
+                </button>
+              </div>
+
+              <div class="flex justify-between items-center text-[9px] text-slate-500 pt-0.5">
+                <button onclick="backToRPSetup()" class="text-slate-400 hover:text-slate-700">← 返回重新設定</button>
+                <button onclick="concludeRPSession('manual')" class="text-rose-600 font-bold hover:underline">結算並產出覆盤報告</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ======================================================== -->
+    <!-- 經典手機 APP 底部導覽列 (五大分頁，永遠固定置底)             -->
+    <!-- 依需求順序調整為：地圖 ➔ 成長手冊 ➔ 任務 ➔ 收藏櫃 ➔ 學院    -->
+    <!-- ======================================================== -->
+    <button id="mentor-float" class="mentor-fab mentor-chibi-float" onclick="mentorToggleHome()" aria-label="開啟信義學長陪伴畫面" aria-expanded="false" aria-controls="mentor-companion" aria-haspopup="dialog" title="點開學長陪伴畫面；可拖曳移動位置"><img src="./mentor-chibi.png" alt="Q 版阿義學長" draggable="false"><span class="mentor-float-caption" aria-hidden="true">學長</span></button>
+    <nav id="bottom-navbar" class="w-full bg-white border-t-3 border-slate-900 py-2 px-1 flex justify-around items-center shrink-0 z-40 shadow-2xl hidden">
+      <button onclick="switchTab('tab-map')" id="nav-btn-map" class="flex flex-col items-center flex-1 text-slate-400 hover:text-slate-800 transition-all">
+        <span class="text-base">🗺️</span>
+        <span class="text-[9px] font-bold mt-0.5 whitespace-nowrap">信義地圖</span>
+      </button>
+      <button onclick="switchTab('tab-handbook')" id="nav-btn-handbook" class="flex flex-col items-center flex-1 text-slate-400 hover:text-slate-800 transition-all">
+        <span class="text-base">📊</span>
+        <span class="text-[9px] font-bold mt-0.5 whitespace-nowrap">成長手冊</span>
+      </button>
+      <button onclick="switchTab('tab-tasks')" id="nav-btn-tasks" class="flex flex-col items-center flex-1 text-sinyi-green transition-all">
+        <span class="text-base">📋</span>
+        <span class="text-[9px] font-black mt-0.5 whitespace-nowrap">任務主頁</span>
+      </button>
+      <button onclick="switchTab('tab-showcase')" id="nav-btn-showcase" class="flex flex-col items-center flex-1 text-slate-400 hover:text-slate-800 transition-all">
+        <span class="text-base">🏆</span>
+        <span class="text-[9px] font-bold mt-0.5 whitespace-nowrap">收藏櫃</span>
+      </button>
+      <button onclick="switchTab('tab-academy')" id="nav-btn-academy" class="flex flex-col items-center flex-1 text-slate-400 hover:text-slate-800 transition-all">
+        <span class="text-base">🎓</span>
+        <span class="text-[9px] font-bold mt-0.5 whitespace-nowrap">修練學院</span>
+      </button>
+    </nav>
+
+    <!-- ======================================================== -->
+    <!-- MODALS 彈窗群                                             -->
+    <!-- ======================================================== -->
+
+    <!-- 知識小學堂專屬闖關答題彈窗 (School Stage Challenge Modal) -->
+    <div id="modal-school-stage-play" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl border-4 border-slate-900 p-4 space-y-3.5 lego-card max-h-[92vh] overflow-y-auto">
+        <!-- 頂部標題與關卡資訊 (字級放大) -->
+        <div class="flex justify-between items-center pb-2.5 border-b-2 border-slate-200">
+          <div class="flex items-center gap-2">
+            <span id="stage-play-icon" class="text-2xl">🍭</span>
+            <div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span id="stage-play-domain-tag" class="text-[9px] bg-sinyi-green text-white font-pixel px-2 py-0.5 rounded">稅務</span>
+                <h3 id="stage-play-title" class="text-sm font-black text-slate-900">第 01 關：房地合一稅持有年限與稅率配對</h3>
+              </div>
+              <p id="stage-play-subtitle" class="text-xs text-slate-500 font-bold mt-0.5">全對最高三星 ➔ 連動專業知識 +30 EXP</p>
+            </div>
+          </div>
+          <button onclick="closeModal('modal-school-stage-play')" class="text-slate-400 hover:text-slate-900 font-black text-xl p-1">✕</button>
+        </div>
+
+        <!-- 題型互動專屬動態容器 -->
+        <div id="stage-play-content-area" class="space-y-3">
+          <!-- 動態注入各關卡題目卡片 -->
+        </div>
+
+        <!-- 底部結算/送出按鈕 (字級放大) -->
+        <div id="stage-play-footer" class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+          <button onclick="closeModal('modal-school-stage-play')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm rounded-xl border border-slate-300">
+            離開
+          </button>
+          <button id="btn-submit-stage-answer" onclick="submitCurrentStageAnswer()" class="flex-1 py-2.5 bg-sinyi-green hover:bg-emerald-700 text-white font-black text-xs sm:text-sm rounded-xl lego-btn flex items-center justify-center gap-1">
+            <span>確認送出答案</span>
+            <span>➔</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Roleplay 四大維度覆盤分析報告彈窗 (Review Report Modal) -->
+    <div id="modal-rp-review" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl border-4 border-slate-900 p-4 space-y-3 lego-card max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center pb-2 border-b-2 border-slate-200">
+          <div class="flex items-center gap-1.5">
+            <span class="text-2xl">📊</span>
+            <div>
+              <h3 class="text-xs font-black text-slate-900">AI Roleplay 四大維度覆盤報告</h3>
+              <p class="text-[9px] text-slate-500 font-bold">實戰成果量化 ➔ 連動能力成長積分</p>
+            </div>
+          </div>
+          <button onclick="closeModal('modal-rp-review')" class="text-slate-400 hover:text-slate-900 font-black text-lg p-1">✕</button>
+        </div>
+
+        <!-- 總結星等與戰力積分卡 -->
+        <div class="bg-gradient-to-r from-amber-400 to-yellow-300 p-3 rounded-2xl lego-card border-slate-900 text-slate-900 flex justify-between items-center shadow-sm">
+          <div>
+            <div class="text-[9px] font-black uppercase text-amber-950 font-pixel">FINAL EVALUATION</div>
+            <div id="rp-review-stars" class="text-base font-black">⭐⭐⭐ 三星大師</div>
+            <div id="rp-review-points-badge" class="text-[9px] font-bold text-slate-800 mt-0.5">獲得專業領域能力值 +30 EXP ｜ 🪙 +150 盲盒幣</div>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-black font-pixel" id="rp-review-total-score">18 / 20</div>
+            <div class="text-[8px] text-amber-950 font-bold">總分評級</div>
+          </div>
+        </div>
+
+        <!-- 四大維度評分矩陣 (Rubric 1~5分) -->
+        <div class="space-y-1.5 text-xs">
+          <div class="font-black text-slate-800 text-[10px]">四大維度評分矩陣 (Rubric 各 1~5 分)：</div>
+          <div class="space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <div class="flex justify-between items-center text-[10px]">
+              <span class="font-bold text-slate-700">1. 專業知識正確性 (法規/稅費/行情)：</span>
+              <span class="font-black text-sinyi-green font-pixel" id="rubric-score-1">5 / 5</span>
+            </div>
+            <div class="flex justify-between items-center text-[10px]">
+              <span class="font-bold text-slate-700">2. 探詢與傾聽能力 (痛點與隱藏動機)：</span>
+              <span class="font-black text-sinyi-green font-pixel" id="rubric-score-2">4 / 5</span>
+            </div>
+            <div class="flex justify-between items-center text-[10px]">
+              <span class="font-bold text-slate-700">3. 異議排解技巧 (服務費/同業抗性)：</span>
+              <span class="font-black text-sinyi-green font-pixel" id="rubric-score-3">4 / 5</span>
+            </div>
+            <div class="flex justify-between items-center text-[10px]">
+              <span class="font-bold text-slate-700">4. 促成與主動推進 (行動號召 CTA)：</span>
+              <span class="font-black text-sinyi-green font-pixel" id="rubric-score-4">5 / 5</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 強項肯定與扣分地雷 -->
+        <div class="space-y-2 text-xs">
+          <div class="p-2 rounded-xl bg-emerald-50 border border-emerald-300 space-y-0.5">
+            <div class="font-black text-emerald-900 text-[10px] flex items-center gap-1">
+              <span>🌟 強項肯定：</span>
+            </div>
+            <p id="rp-review-positive" class="text-[10px] text-emerald-800 leading-snug">
+              精準抓住客戶「擔心售後糾紛」的痛點，以信義房屋「漏水保固與產權查核」作為核心價值主張，成功化解服務費抗性！
+            </p>
+          </div>
+
+          <div class="p-2 rounded-xl bg-rose-50 border border-rose-300 space-y-0.5">
+            <div class="font-black text-rose-900 text-[10px] flex items-center gap-1">
+              <span>⚠️ 扣分地雷與改善建議：</span>
+            </div>
+            <p id="rp-review-negative" class="text-[10px] text-rose-800 leading-snug">
+              初期客戶語氣急躁時，略顯急於介紹公司品牌，建議先複誦客戶時間限制並以一句話直切利益核心。
+            </p>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-300 space-y-1">
+            <div class="font-black text-amber-950 text-[10px] flex items-center gap-1">
+              <span>🏆 店長級黃金示範話術：</span>
+            </div>
+            <p id="rp-review-gold" class="text-[10px] text-amber-900 leading-snug italic">
+              「陳大哥我完全理解您時間寶貴。您自售最在意的無非是『實拿金額』與『買方付款安全』。我手上正有兩組已備妥自備款的松智換屋買方，明天下午兩點我先帶買方過來現場看，若滿意我們再談委託，完全不耽誤您的時間，您看可以嗎？」
+            </p>
+          </div>
+        </div>
+
+        <button onclick="applyRPReviewReward()" class="w-full py-2.5 bg-sinyi-green hover:bg-emerald-700 text-white font-black text-xs rounded-xl lego-btn">
+          領取戰力經驗值並返回
+        </button>
+      </div>
+    </div>
+
+    <!-- 更換路線彈窗 (Change Route Modal) -->
+    <div id="modal-change-route" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl border-4 border-slate-900 p-4 space-y-3 lego-card max-h-[85vh] overflow-y-auto">
+        <div class="flex justify-between items-center pb-2 border-b-2 border-slate-200">
+          <h3 id="route-modal-title" class="text-xs font-black text-slate-900">更換起步路線</h3>
+          <button onclick="closeModal('modal-change-route')" class="text-slate-400 hover:text-slate-900 font-black text-lg p-1">✕</button>
+        </div>
+        <div id="route-options-list" class="space-y-2 text-xs">
+          <!-- 動態注入各風格選項 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 盲盒抽卡揭曉彈窗 (Gacha Reveal Modal) -->
+    <div id="modal-gacha-reveal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-sm rounded-3xl border-4 border-slate-900 p-4 space-y-3 lego-card text-center">
+        <div class="flex justify-between items-center border-b pb-1">
+          <span id="gacha-reveal-heading" class="text-[10px] font-pixel text-lego-darkred font-black">GACHA REVEAL</span>
+          <button onclick="closeModal('modal-gacha-reveal')" class="text-slate-400 hover:text-slate-800 font-black text-sm">✕</button>
+        </div>
+        <div id="gacha-reveal-container" class="space-y-2 py-2 max-h-[60vh] overflow-y-auto">
+          <!-- 動態注入抽卡動畫與卡片結果 -->
+        </div>
+        <button onclick="closeModal('modal-gacha-reveal')" class="w-full py-2.5 bg-lego-yellow hover:bg-amber-400 text-slate-900 font-black text-xs rounded-xl lego-btn">
+          收下並放入公仔倉庫
+        </button>
+      </div>
+    </div>
+
+    <!-- 展櫃位置替換公仔選擇彈窗 (Select Figurine Modal) -->
+    <div id="modal-select-figurine" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl border-4 border-slate-900 p-4 space-y-3 lego-card max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center pb-2 border-b">
+          <h3 class="text-xs font-black text-slate-900">選擇要陳列的主管公仔</h3>
+          <button onclick="closeModal('modal-select-figurine')" class="text-slate-400 hover:text-slate-900 font-black text-lg p-1">✕</button>
+        </div>
+        <div id="select-figurine-list" class="space-y-2 text-xs">
+          <!-- 動態注入可陳列的公仔 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 參觀同事展櫃彈窗 (Colleague Visit Modal) -->
+    <div id="modal-colleague-visit" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl border-4 border-slate-900 p-4 space-y-3 lego-card max-h-[85vh] overflow-y-auto">
+        <div class="flex justify-between items-center pb-2 border-b">
+          <div>
+            <h3 class="text-xs font-black text-slate-900">松智旗艦店・小林的 3x3 展櫃</h3>
+            <p class="text-[9px] text-slate-500">本週累積人氣：❤️ 142 ｜ 稱號：陳總與托尼首席收藏家</p>
+          </div>
+          <button onclick="closeModal('modal-colleague-visit')" class="text-slate-400 hover:text-slate-900 font-black text-lg p-1">✕</button>
+        </div>
+        <div id="colleague-cabinet-grid" class="grid grid-cols-3 gap-1.5 p-2 bg-gradient-to-b from-purple-950 to-slate-900 rounded-2xl border-2 border-purple-500 text-center">
+          <!-- 動態載入同事的陳總與托尼公仔 -->
+        </div>
+        <div class="flex gap-2">
+          <button onclick="likeColleagueCabinet()" class="flex-1 py-2 bg-rose-500 hover:bg-rose-600 text-white font-black text-xs rounded-xl lego-btn flex items-center justify-center gap-1 shadow">
+            <span>❤️ 送愛心點讚 (+1 人氣)</span>
+          </button>
+          <button onclick="sendBulletComment()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-300">
+            💬 留言彈幕
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- IP 公仔詳情與故事介紹彈窗 (Figurine Detail Modal) -->
+    <div id="modal-figurine-detail" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-sm rounded-3xl border-4 border-slate-900 p-4 space-y-3 lego-card text-center relative max-h-[85vh] overflow-y-auto">
+        <button onclick="closeModal('modal-figurine-detail')" class="absolute top-3 right-3 text-slate-400 hover:text-slate-800 font-black text-lg">✕</button>
+        
+        <div class="flex items-center justify-center gap-2 pt-1">
+          <span id="fig-detail-universe-badge" class="text-[10px] bg-amber-400 text-slate-900 font-black px-2 py-0.5 rounded border border-slate-900">托尼宇宙（主角）</span>
+          <span id="fig-detail-rarity-badge" class="text-[10px] font-pixel px-2 py-0.5 rounded font-black bg-amber-400 text-slate-900">SSR</span>
+        </div>
+
+        <div id="fig-detail-avatar-container" class="py-2 flex justify-center">
+          <!-- 動態注入大尺寸立體公仔貼紙 -->
+        </div>
+
+        <div>
+          <h3 id="fig-detail-name" class="text-base font-black text-slate-900">恐龍托尼</h3>
+          <p id="fig-detail-title-badge" class="text-xs text-slate-500 font-bold mt-0.5">巨獸霸王龍</p>
+          <div id="fig-detail-stars" class="text-amber-500 text-sm font-pixel mt-1">★★★☆☆</div>
+        </div>
+
+        <div id="fig-evolution-panel" class="hidden bg-amber-50 p-3 rounded-2xl border border-amber-300 space-y-2">
+          <p id="fig-evolution-title" class="text-xs font-black">五星造型衣櫃</p>
+          <p id="fig-evolution-stage" class="text-xs font-bold text-amber-900" aria-live="polite"></p>
+          <div id="fig-evolution-options" class="evolution-options"></div>
+          <p class="text-[10px] text-slate-500">升星會解鎖並換上新造型。已解鎖的造型可自由切換，不消耗碎片。</p>
+          <button id="fig-evolution-equip" class="evolution-upgrade">使用此造型</button>
+          <button id="fig-evolution-upgrade" class="evolution-upgrade">升星突破</button>
+        </div>
+
+        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-left space-y-1.5 text-xs">
+          <div class="font-black text-slate-800 flex items-center gap-1"><span>📖</span> <span>造型由來與人設背景：</span></div>
+          <p id="fig-detail-desc" class="text-slate-600 text-[11px] leading-relaxed">
+            大口張開的呆萌翠綠暴龍皮套裝，托尼從恐龍巨嘴中露出淡定表情！
+          </p>
+        </div>
+
+        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-300 text-left space-y-1 text-xs">
+          <div class="font-black text-amber-950 flex items-center gap-1"><span>💬</span> <span>專屬招牌台詞：</span></div>
+          <p id="fig-detail-quote" class="text-amber-900 font-bold text-[11px] italic">
+            「吼！房仲界巨獸托尼登場，好案子全部一口咬住！」
+          </p>
+        </div>
+
+        <button id="btn-fig-voice-preview" class="w-full py-2.5 bg-sinyi-green hover:bg-emerald-700 text-white font-black text-xs rounded-xl lego-btn flex items-center justify-center gap-1 shadow">
+          <span>🔊 試聽招牌語音金句</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 自訂 Toast 提示浮窗 -->
+    <div id="custom-toast" class="fixed top-14 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-xs font-bold px-4 py-2 rounded-2xl border-2 border-lego-yellow shadow-2xl z-50 pointer-events-none transition-all duration-300 opacity-0 -translate-y-2 flex items-center gap-2">
+      <span id="toast-icon">✨</span>
+      <span id="toast-msg">提示訊息</span>
+    </div>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT 全域邏輯與資料庫                               -->
+  <!-- ======================================================== -->
+  <div id="modal-task-action" role="dialog" aria-modal="true" aria-labelledby="modal-task-title" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl lego-card w-full max-w-md p-4 space-y-3 max-h-[85vh] overflow-y-auto">
+      <div class="flex justify-between items-center"><span id="modal-task-tag" class="text-xs font-black text-sinyi-green"></span><button onclick="closeModal('modal-task-action')" aria-label="關閉任務視窗" class="lego-btn rounded-lg px-3 py-1">✕</button></div>
+      <h2 id="modal-task-title" class="text-sm font-black"></h2>
+      <div id="modal-task-content" class="space-y-3"></div>
+      <p class="text-xs text-slate-500">原型示範：此處的提交不會傳送至公司日報表。</p>
+      <button onclick="submitCurrentTaskDemo()" class="w-full py-3 bg-sinyi-green text-white rounded-xl lego-btn font-black text-xs">確認完成並領取獎勵</button>
+    </div>
+  </div>
+  <div id="modal-evolution-collection" role="dialog" aria-modal="true" aria-labelledby="evolution-collection-title" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl lego-card w-full max-w-md p-4 space-y-3 max-h-[85vh] overflow-y-auto">
+      <div class="flex justify-between items-center"><h2 id="evolution-collection-title" class="text-sm font-black">全角色五星進化圖鑑</h2><button onclick="closeModal('modal-evolution-collection')" aria-label="關閉進化圖鑑" class="px-2 py-1 lego-btn rounded-lg">✕</button></div>
+      <p class="text-xs text-slate-500">點選角色查看 1～5 星造型。圖鑑可預覽尚未獲得的角色。</p>
+      <a href="./evolution-gallery.html" target="_blank" rel="noopener" class="block text-xs font-bold text-sinyi-green underline">攤開全部五星造型一起比較 ↗</a>
+      <a href="./heir-evolution-gallery.html" target="_blank" rel="noopener" class="block text-xs font-bold text-sinyi-green underline">查看 KEN、HOWARD、HENRY 五星造型 ↗</a>
+      <div id="evolution-collection-list" class="grid grid-cols-3 gap-2"></div>
+    </div>
+  </div>
+  <div id="modal-family-fusion" role="dialog" aria-modal="true" aria-labelledby="family-fusion-title" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+    <div id="family-fusion-panel" class="family-fusion-panel w-full max-w-md max-h-[85vh] overflow-y-auto">
+      <div class="family-heading"><div><small>IP FUSION · 傳承融合</small><h2 id="family-fusion-title">IP 融合工坊</h2></div><button id="family-fusion-close" onclick="closeModal('modal-family-fusion')" aria-label="關閉 IP 融合工坊" class="px-2 py-1 font-black">✕</button></div>
+      <div id="family-fusion-controls">
+      <p class="family-intro">從獎池蒐集周先生與王小姐，點選下方素材槽，放入已擁有的兩張 IP。</p>
+      <div id="family-founders" class="family-founders"></div>
+      <div class="family-recipe">周先生 IP ×1 ＋ 王小姐 IP ×1<br><strong>↓ 成功時一次產出 KEN ＋ HOWARD ＋ HENRY</strong><br><b class="family-odds">成功 70% · 失敗 30%</b></div>
+      <div id="family-heirs" class="family-heirs"></div>
+      <p class="family-note">每次獨立判定。無論成功或失敗，都消耗周先生、王小姐各一張；失敗不產出角色。素材無剩餘張數時會從展櫃收回。融合不另扣遊戲幣。</p>
+      <button id="family-fuse-button" class="family-fuse-button" onclick="fuseFamilyIP()" disabled>請放入周先生與王小姐 IP</button>
+      <div class="family-recruit-actions"><button onclick="closeModal('modal-family-fusion'); switchGachaPool('family')">前往獎池抽取素材 IP</button><span class="text-xs text-center self-center">產物收藏 <b id="family-collection-count">0 / 3</b></span></div>
+      </div>
+      <div id="family-fusion-animation" class="family-fusion-animation hidden" role="status" aria-live="polite">
+        <div class="family-energy-scene" aria-hidden="true">
+          <div class="family-energy-orbit"></div><div class="family-energy-orbit orbit-two"></div>
+          <div class="family-energy-card energy-left"><img src="./family-founder_zhou.png" alt="" /></div>
+          <div class="family-energy-card energy-right"><img src="./family-founder_wang.png" alt="" /></div>
+          <div class="family-dance-duo"><img src="./family-founder_fusion.png" alt="" /></div>
+          <div class="family-contact-burst">✦</div>
+          <div class="family-dance-names"><span>周先生</span><span>王小姐</span></div>
+          <i class="family-spark spark-one">✧</i><i class="family-spark spark-two">✧</i><i class="family-spark spark-three">✧</i>
+        </div>
+        <h3 id="family-animation-status">能量融合中…</h3>
+        <div class="family-energy-progress"><span></span></div>
+        <div id="family-failure-details" class="hidden">
+          <p>能量未能穩定成形，本次沒有產出新角色。<br>周先生 ×1、王小姐 ×1 已消耗。</p>
+          <small>下次融合仍為 70% 成功率，每次獨立判定。</small>
+          <button onclick="resetFamilyFusionStage()">返回工坊</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div id="mentor-companion" class="mentor-companion hidden" role="dialog" aria-modal="true" aria-labelledby="mentor-companion-title"><div class="mentor-companion-panel"><div class="mentor-companion-header"><span class="mentor-avatar" role="img" aria-label="阿義學長"></span><div><h2 id="mentor-companion-title">阿義學長</h2><p>陪你把下一步走穩</p></div><button id="mentor-companion-close" onclick="mentorCloseCompanion()" aria-label="關閉學長彈窗">×</button></div><div id="mentor-companion-scroll" class="mentor-companion-scroll"><section id="tab-awakening" aria-label="學長陪伴首頁">
+        <button id="mentor-home-back" class="mentor-home-back" onclick="mentorReturnToPage()">← 回到剛才的畫面</button>
+        <div class="hunter-overline"><span class="hunter-kicker">阿義學長 · 隨時陪你</span><span><i></i> 慢慢來，也是在前進</span></div>
+
+        <section class="hunter-hero" aria-label="阿義學長陪伴介紹">
+          <div class="mentor-hero-art"><img src="./mentor-ayi.png" alt="親切的阿義學長站在溫暖的台灣街區，拿著手機陪新人認識商圈"><span class="mentor-online"><i></i>學長一直在這裡</span></div>
+          <div class="mentor-hero-caption"><span class="hunter-kicker">一起走進街區，一起慢慢上手</span><h2>我是阿義，你的信義學長。</h2><p>剛開始不熟很正常。今天做什麼、卡住怎麼辦，<br>我們一件一件來。</p><button class="mentor-hero-start" onclick="mentorBegin()">今天先做一件小事 →</button>
+            <div class="mentor-player-line"><button onclick="hunterOpenProfile()" aria-label="設定暱稱與成長路線"><b id="hunter-player-name">新夥伴</b><span>的成長旅程 ↗</span></button><span class="mentor-level">Lv.<b id="hunter-level">01</b></span></div>
+            <div class="mentor-status-row"><span id="hunter-path">社區經營</span><span id="hunter-rank">新手起步</span></div>
+            <div class="hunter-xp"><div><span id="hunter-xp-bar" style="width:0%"></span></div><small id="hunter-xp-label">0 / 60 EXP</small></div>
+          </div>
+        </section>
+        <section class="mentor-coach" aria-label="學長的今日建議"><div class="mentor-coach-heading"><span class="mentor-avatar" role="img" aria-label="阿義學長"></span><div><small>阿義學長</small><b>今天先陪你做這一件</b></div></div><h3 id="mentor-suggestion-title">今天，我們先把一件小事做好。</h3><p id="mentor-suggestion-body"></p><button id="mentor-next-action" class="mentor-next" onclick="mentorBegin()">學長帶我開始 →</button><button class="mentor-secondary" onclick="mentorOpen('start')">有點卡住？來找學長聊聊</button></section>
+        <div class="hunter-section-heading"><div><small>DAILY QUESTS</small><h2>今天的小練習</h2></div><span id="hunter-chapter">初次覺醒</span></div>
+        <div class="hunter-progress"><span id="hunter-daily-progress" style="width:0%"></span></div><p class="hunter-status" id="hunter-daily-status">完成 2 項即可延續連續紀錄</p>
+        <div class="hunter-tabs" role="group" aria-label="每日委託篩選"><button data-hunter-filter="todo" aria-pressed="true" onclick="hunterSetFilter('todo')">待完成</button><button data-hunter-filter="done" aria-pressed="false" onclick="hunterSetFilter('done')">已完成</button><button data-hunter-filter="skipped" aria-pressed="false" onclick="hunterSetFilter('skipped')">已略過</button></div>
+        <div id="hunter-quest-list" tabindex="-1" aria-live="polite"></div>
+<details class="simple-disclosure"><summary>成長紀錄與日誌</summary><div>        <div class="hunter-metrics"><div><small>一起成長</small><strong id="hunter-day">01</strong><strong><span>/ 66 天</span></strong></div><div><small>連續行動</small><strong id="hunter-streak">0</strong><strong><span>天</span></strong></div><div><small>今日委託</small><strong id="hunter-done">0</strong><strong><span>/ 3</span></strong><em>每日 04:00 更新</em></div></div>
+        <div class="hunter-section-heading"><div><small>PLAYER ATTRIBUTES</small><h2>正在累積的三種本事</h2></div><span>一點一點，看見自己的進步</span></div>
+        <div class="hunter-skills"><div><small>⌖ 洞察</small><b id="hunter-stat-field">0</b><p>市場與社區情報</p><div class="hunter-skill-track"><span id="hunter-stat-bar-field"></span></div></div><div><small>◇ 交涉</small><b id="hunter-stat-client">0</b><p>客戶與人脈經營</p><div class="hunter-skill-track"><span id="hunter-stat-bar-client"></span></div></div><div><small>✧ 專業</small><b id="hunter-stat-knowledge">0</b><p>知識與成交實務</p><div class="hunter-skill-track"><span id="hunter-stat-bar-knowledge"></span></div></div></div>
+        <div class="hunter-section-heading"><div><small>OUR GROWTH JOURNEY</small><h2>每一步，都留下痕跡</h2></div></div>
+        <div class="hunter-journey"><div class="hunter-journey-top"><span id="hunter-journey-count">0 天達標 / 66 天</span><span>亮格＝當日完成至少 2 項</span></div><div id="hunter-calendar" class="hunter-calendar" aria-label="66 天旅程紀錄"></div><div id="hunter-milestones" class="hunter-milestones"></div><p class="hunter-journey-note">累積達標 7／21／42／66 天可領取突破抽卡券。未達標不扣除既有能力；旅程第 66 天後仍可繼續累積。每次升級都記錄你的努力，從新手起步，慢慢練到獨當一面。</p></div>
+        <div class="hunter-section-heading"><div><small>TODAY WITH AYI</small><h2>今天，有什麼想跟學長說？</h2></div></div>
+        <div class="hunter-journal"><label for="hunter-mood">今日狀態 <select id="hunter-mood"><option value="steady">平穩前進</option><option value="charged">充滿能量</option><option value="tired">需要休息</option></select></label><textarea id="hunter-journal" aria-label="今日成長日誌" maxlength="1000" placeholder="今天哪個瞬間，讓你覺得自己進步了？"></textarea><button class="hunter-primary" onclick="hunterSaveJournal()">保存今日成長日誌 <span>↗</span></button></div>
+</div></details><details class="simple-disclosure"><summary>專注與其他工具</summary><div><button class="simple-profile-entry" onclick="hunterOpenProfile()">暱稱與練習方向 →</button>        <section class="hunter-focus" aria-label="專注訓練"><div><small>FOCUS TRAINING</small><strong id="hunter-timer">10:00</strong><p>學長陪你，專心練習十分鐘。</p></div><button id="hunter-timer-button" onclick="hunterToggleTimer()">開始專注</button></section>
+        <div class="hunter-links"><button onclick="hunterOpenQuiz()">職業適性測評 ↗</button><button onclick="switchTab('tab-map')">探索商圈地圖 ↗</button></div>
+</div></details>        <div id="hunter-render-date" data-date=""></div><p id="hunter-save-status" class="hunter-footer">本機自動儲存 · 台北時間 04:00 換日</p><p class="hunter-footer">動畫版 · 信義學長 / 每一小步，學長都陪你走</p>
+      </section></div></div></div>
+  <div id="hunter-profile" class="hunter-modal hidden" role="dialog" aria-modal="true" aria-labelledby="hunter-profile-title"><div class="hunter-modal-panel"><button class="hunter-modal-close" aria-label="關閉個人設定" onclick="document.getElementById('hunter-profile').classList.add('hidden')">×</button><span class="hunter-kicker">NICE TO MEET YOU</span><h2 id="hunter-profile-title">學長怎麼稱呼你？</h2><p>先告訴學長你的暱稱，再選一條想練習的方向。<br>之後都能調整，我們慢慢找到適合你的節奏。</p><label for="hunter-name-input">你的暱稱<input id="hunter-name-input" maxlength="24" autocomplete="nickname"></label><label for="hunter-path-input">成長路線<select id="hunter-path-input"><option value="community">社區經營 · 深耕社區與商圈</option><option value="luxury">豪宅專研 · 精研高總價物件</option><option value="network">人脈經營 · 經營關係與信任</option></select></label><p>路線會改變今日洞察委託；已完成的獎勵保留。</p><button class="hunter-primary" onclick="hunterSaveProfile()">記住我 · 一起開始 <span>↗</span></button></div></div>
+  <div id="hunter-reward" class="hunter-modal hidden" role="dialog" aria-modal="true" aria-labelledby="hunter-reward-title"><div class="hunter-modal-panel hunter-modal-reward"><span class="hunter-kicker">阿義學長 · 看見你的進步</span><span class="hunter-reward-mark">✦</span><h2 id="hunter-reward-title">做到了！這一步很值得。</h2><p role="status"></p><button class="hunter-primary" onclick="hunterCloseReward()">繼續下一步</button></div></div>
+
+
+  <div id="mentor-help" class="hunter-modal mentor-help hidden" role="dialog" aria-modal="true" aria-labelledby="mentor-help-title"><div class="hunter-modal-panel"><button id="mentor-help-close" class="hunter-modal-close" onclick="mentorClose()" aria-label="關閉學長小抄">×</button><div class="mentor-coach-heading"><span class="mentor-avatar" role="img" aria-label="阿義學長"></span><div><small>阿義學長在這裡</small><b>先說說，你卡在哪一步？</b></div></div><div class="mentor-topic-tabs" role="group" aria-label="想請教學長的情境"><button data-mentor-topic="start" onclick="mentorOpen('start')" aria-pressed="true">不知道先做什麼</button><button data-mentor-topic="opening" onclick="mentorOpen('opening')" aria-pressed="false">不敢跟客戶開口</button><button data-mentor-topic="rejection" onclick="mentorOpen('rejection')" aria-pressed="false">被拒絕，有點挫折</button><button data-mentor-topic="busy" onclick="mentorOpen('busy')" aria-pressed="false">今天只有一點時間</button></div><h2 id="mentor-help-title"></h2><p id="mentor-help-body"></p><ol id="mentor-help-steps"></ol><div class="mentor-example"><small>學長陪你練一句</small><blockquote id="mentor-help-line"></blockquote></div><button class="hunter-primary" onclick="mentorUseAdvice()">好，我先試試這一步 <span>→</span></button><p class="mentor-footnote">隨身情境小抄 · 實際案件與制度問題，記得找店長一起確認。</p></div></div>
+
+  <script src="./evolution-data.js"></script>
+  <script src="./app.js"></script>
+  <script src="./family.js"></script>
+  <script src="./super-sales.js"></script>
+  <script src="./cabinet-carousel.js"></script>
+  <script src="./test-admin.js"></script>
+  <script src="./ace-battle.js"></script>
+  <script src="./awakening.js"></script>
+  <script src="./mentor.js"></script>
+  <script src="./simple-ui.js"></script>
+</body>
+</html>
