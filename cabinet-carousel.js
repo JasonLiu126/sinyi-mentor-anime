@@ -7,7 +7,7 @@ function getCabinetCarouselItems(){
   const seen=new Set();
   return userWarehouse.filter(item=>{
     const fig=executiveFigurineDatabase[item.id];
-    if(!fig||seen.has(item.id))return false;
+    if(!fig||!isFigurineVisible(item.id)||seen.has(item.id))return false;
     seen.add(item.id);
     if(cabinetCarouselFilter==='all')return true;
     if(cabinetCarouselFilter==='family')return !!fig.familyRole;
@@ -55,7 +55,7 @@ function renderCabinetCarousel(scrollSelected=false,direction=0){
     return `<button type="button" class="carousel-figure ${offset===0?'is-center':'is-neighbor'} distance-${distance}" style="--shift:${shift}%;--scale:${scale};--layer:${30-distance*10}" onclick="${offset===0?'openCabinetCarouselWardrobe()':`selectCabinetCarousel('${candidate.id}')`}" aria-label="${offset===0?'查看':'切換到'}${character.name}${offset===0?'的造型衣櫃':''}" ${offset===0?'aria-current="true"':''}><span class="carousel-art">${getFigurineAvatarSVG(candidate.id,'lg')}</span><span class="carousel-plinth" aria-hidden="true"></span>${offset!==0?`<span class="carousel-side-name">${character.name}</span>`:''}</button>`;
   }).join(''):`<div class="carousel-empty"><span>✦</span><b>這一區還沒有收藏角色</b><small>抽到 IP 後，就能在這裡展示與換裝。</small></div>`;
   document.getElementById('carousel-position').textContent=total?`${String(index+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`:'0 / 0';
-  document.getElementById('carousel-total').textContent=`已收藏 ${userWarehouse.filter(w=>executiveFigurineDatabase[w.id]).length} 款`;
+  document.getElementById('carousel-total').textContent=`已收藏 ${userWarehouse.filter(w=>executiveFigurineDatabase[w.id]&&isFigurineVisible(w.id)).length} 款`;
   document.getElementById('carousel-name').textContent=fig?.name??'等待新夥伴登場';
   const category=fig?(fig.category==='super'?`超業 · ${fig.owner==='dingyuan'?'鼎元':'婉嫣'}`:fig.familyRole?'傳承 IP':fig.pool==='tony'?'托尼宇宙':'陳總宇宙'):'';
   document.getElementById('carousel-category').textContent=category;

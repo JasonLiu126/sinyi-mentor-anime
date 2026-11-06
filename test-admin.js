@@ -1,6 +1,6 @@
 // Local prototype test console. Each version has its own copy and storage key.
-const adminEdition='anime';
-const adminEditionLabel='動畫版';
+const adminEdition=location.port==='4319'?'experimental':'normal';
+const adminEditionLabel=adminEdition==='experimental'?'實驗版':'正常版';
 const adminSnapshotKey='sinyi-rpg-test-snapshot-v1-'+adminEdition;
 let adminUndoState=null;
 let adminReturnFocus=null;
@@ -148,8 +148,8 @@ function adminRefresh(){
   document.getElementById('ta-exp').value=currentUserTotalExp%60;
   document.getElementById('ta-coins').value=userCoins;
   document.getElementById('ta-tickets').value=gachaTickets;
-  select.innerHTML=Object.values(executiveFigurineDatabase).map(fig=>`<option value="${fig.id}">${fig.name}${userWarehouse.some(w=>w.id===fig.id)?' · 已收藏':' · 未收藏'}</option>`).join('');
-  select.value=executiveFigurineDatabase[selected]?selected:'fig_muscle';adminSelectCharacter();
+  select.innerHTML=Object.values(executiveFigurineDatabase).filter(fig=>isFigurineVisible(fig.id)).map(fig=>`<option value="${fig.id}">${fig.name}${userWarehouse.some(w=>w.id===fig.id)?' · 已收藏':' · 未收藏'}</option>`).join('');
+  select.value=executiveFigurineDatabase[selected]&&isFigurineVisible(selected)?selected:Object.keys(executiveFigurineDatabase).find(isFigurineVisible);adminSelectCharacter();
   document.getElementById('ta-undo').disabled=!adminUndoState;adminRefreshSnapshot();
 }
 function openTestAdmin(){

@@ -1,3 +1,5 @@
+// Visibility is separate from saved ownership; hidden characters remain recoverable.
+function isFigurineVisible(id){return !(globalThis.hideChenCharacters===true&&(id?.startsWith('fig_')||executiveFigurineDatabase[id]?.pool==='chen'));}
 let isQuizCompleted = false;
     let currentUserTotalExp = 0;
     let currentUserLevel = 1;
@@ -2828,8 +2830,9 @@ let isQuizCompleted = false;
       }
 
       // 所有可用角色（全 27 款：托尼 12 款 + 陳總 15 款）全數平等進池！
-      const availableIds = Object.keys(executiveFigurineDatabase);
+      let availableIds = Object.keys(executiveFigurineDatabase).filter(isFigurineVisible);
 
+      availableIds=availableIds.filter(isFigurineVisible);
       const rPool = availableIds.filter(id => executiveFigurineDatabase[id].rarity === 'R');
       const srPool = availableIds.filter(id => executiveFigurineDatabase[id].rarity === 'SR');
       const ssrPool = availableIds.filter(id => executiveFigurineDatabase[id].rarity === 'SSR');
@@ -2901,7 +2904,7 @@ let isQuizCompleted = false;
       {id:'concert',name:'下班小演唱會',icon:'🎸',furniture:'stage',members:['fig_hiphop','tony_rock'],extra:'fig_ballet',steps:[['fig_hiphop','白天介紹好房，晚上介紹我的新歌！'],['tony_rock','吉他準備好了，三、二、一！'],['fig_hiphop','這首歌送給今天努力的每一位夥伴。'],['tony_rock','下一次，換你來當主唱！']],ending:'沒有售票的演唱會，卻收穫了整間分店的掌聲。',extraLine:'芭蕾陳總輕輕轉了一圈，替今晚的演出加上舞蹈。'},
       {id:'coffee',name:'消失的好房線索',icon:'🔎',furniture:'coffee',members:['tony_detective','tony_ninja'],extra:'tony_dino',steps:[['tony_detective','奇怪，那張寫著好房線索的便條去哪了？'],['tony_ninja','我只看見一個綠色身影經過咖啡桌…'],['tony_detective','找到了！原來被壓在杯墊下面。'],['tony_ninja','下次先喝咖啡，再辦案吧。']],ending:'一杯咖啡的時間，兩人又交換了一個找屋的新點子。',extraLine:'恐龍托尼探頭過來：我只是來問，還有餅乾嗎？'}
     ];
-    function lifeStoryReady(story){return lifeLayout.includes(story.furniture)&&story.members.every(id=>userCabinetSlots.includes(id));}
+    function lifeStoryReady(story){return lifeLayout.includes(story.furniture)&&story.members.every(id=>isFigurineVisible(id)&&userCabinetSlots.includes(id));}
     function selectLifeFurniture(id){
       if(lifeActiveStory||!lifeFurniture[id])return;
       lifeSelectedFurniture=lifeSelectedFurniture===id?null:id;renderLifeFurniture();
@@ -2927,7 +2930,7 @@ let isQuizCompleted = false;
     }
     function renderLifeStories(){
       const el=document.getElementById('life-stories');if(!el)return;
-      el.innerHTML=lifeStoryCatalog.map(story=>{
+      el.innerHTML=lifeStoryCatalog.filter(story=>story.members.every(isFigurineVisible)).map(story=>{
         const missing=story.members.filter(id=>!userCabinetSlots.includes(id)).map(id=>executiveFigurineDatabase[id].name);
         const hint=missing.length?'需陳列：'+missing.join('、'):!lifeLayout.includes(story.furniture)?'請先放置'+lifeFurniture[story.furniture].name:lifeActiveStory?'劇情進行中':lifeMemories.has(story.id)?'已收藏 · 再看一次':'默契就位 · 開演';
         return `<button class="life-story ${lifeMemories.has(story.id)?'has-memory':''}" onclick="startLifeStory('${story.id}')" ${!lifeStoryReady(story)||lifeActiveStory?'disabled':''}><span>${story.icon}</span><div><b>${story.name}</b><small>${story.members.map(id=>executiveFigurineDatabase[id].name).join(' ＋ ')}</small></div><em>${hint}</em></button>`;
@@ -2940,7 +2943,7 @@ let isQuizCompleted = false;
       if(lifeActiveStory)endLifeStory(false);
       room.className='living-branch life-'+cabinetPedestalTheme;
       document.getElementById('life-zones').innerHTML=lifeLayout.map((id,index)=>`<button class="life-zone" onclick="placeLifeFurniture(${index})" aria-label="布置${lifeZoneNames[index]}：${id?lifeFurniture[id].name:'空地'}"><span class="life-zone-label">${lifeZoneNames[index]}</span><div class="life-prop prop-${id||'empty'}" aria-hidden="true"><i></i><b>${id?lifeFurniture[id].icon:'＋'}</b><i></i></div><small>${id?lifeFurniture[id].name:'點此放家具'}</small></button>`).join('');
-      document.getElementById('life-actors').innerHTML=userCabinetSlots.map((id,index)=>id&&executiveFigurineDatabase[id]?`<button id="life-actor-${index}" class="life-actor" style="--x:${17+(index%3)*33}%;--y:${31+Math.floor(index/3)*27}%;--delay:${-index*.3}s" onclick="greetLifeActor(${index})" aria-label="和${executiveFigurineDatabase[id].name}打招呼"><span class="life-actor-art">${getFigurineAvatarSVG(id,'md')}</span><small>${executiveFigurineDatabase[id].name}</small></button>`:'').join('');
+      document.getElementById('life-actors').innerHTML=userCabinetSlots.map((id,index)=>id&&isFigurineVisible(id)&&executiveFigurineDatabase[id]?`<button id="life-actor-${index}" class="life-actor" style="--x:${17+(index%3)*33}%;--y:${31+Math.floor(index/3)*27}%;--delay:${-index*.3}s" onclick="greetLifeActor(${index})" aria-label="和${executiveFigurineDatabase[id].name}打招呼"><span class="life-actor-art">${getFigurineAvatarSVG(id,'md')}</span><small>${executiveFigurineDatabase[id].name}</small></button>`:'').join('');
       renderLifeFurniture();renderLifeStories();
     }
     function greetLifeActor(index){
@@ -2957,7 +2960,7 @@ let isQuizCompleted = false;
     function startLifeStory(id,shouldScroll=true){
       const story=lifeStoryCatalog.find(s=>s.id===id);if(lifeActiveStory||!story||!lifeStoryReady(story))return false;
       lifeActiveStory=story;lifeSelectedFurniture=null;const token=++lifeStoryToken;
-      const actors=[...story.members];if(userCabinetSlots.includes(story.extra))actors.push(story.extra);
+      const actors=[...story.members];if(isFigurineVisible(story.extra)&&userCabinetSlots.includes(story.extra))actors.push(story.extra);
       const zone=lifeLayout.indexOf(story.furniture),center=17+zone*33;
       actors.forEach((actorId,i)=>{
         const actor=document.getElementById('life-actor-'+userCabinetSlots.indexOf(actorId));if(!actor)return;
@@ -3019,7 +3022,8 @@ let isQuizCompleted = false;
         container.className = "grid grid-cols-3 gap-2 p-2.5 rounded-2xl border-2 border-amber-800/60 bg-gradient-to-br from-amber-100/90 to-amber-200/80 shadow-inner";
       }
 
-      userCabinetSlots.forEach((figId, idx) => {
+      userCabinetSlots.forEach((savedId, idx) => {
+        const figId=isFigurineVisible(savedId)?savedId:null;
         const slotEl = document.createElement('div');
         const fig = figId ? executiveFigurineDatabase[figId] : null;
         const warehouseItem = figId ? userWarehouse.find(w => w.id === figId) : null;
@@ -3093,6 +3097,7 @@ let isQuizCompleted = false;
       container.innerHTML = '';
 
       const filteredList = userWarehouse.filter(item => {
+        if(!isFigurineVisible(item.id))return false;
         const fig = executiveFigurineDatabase[item.id];
         if (!fig) return false;
         if (currentWarehouseFilter === 'all') return true;
@@ -3218,6 +3223,7 @@ let isQuizCompleted = false;
     }
 
     function openFigurineDetailModal(figId) {
+      if(!isFigurineVisible(figId))return;
       const fig = executiveFigurineDatabase[figId];
       if (!fig) return;
       const warehouseItem = userWarehouse.find(w => w.id === figId);
@@ -3309,7 +3315,7 @@ let isQuizCompleted = false;
 
     function openEvolutionCollection() {
       const list = document.getElementById('evolution-collection-list');
-      list.innerHTML = Object.keys(globalThis.characterEvolutionCatalog ?? {}).map(id => {
+      list.innerHTML = Object.keys(globalThis.characterEvolutionCatalog ?? {}).filter(isFigurineVisible).map(id => {
         const fig = executiveFigurineDatabase[id];
         const owned = userWarehouse.find(item => item.id === id);
         return `<button class="evolution-collection-card" onclick="closeModal('modal-evolution-collection'); openFigurineDetailModal('${id}')"><span>${getFigurineAvatarSVG(id,'md')}</span><b>${fig.name}</b><small>${owned ? `${owned.stars} 星 · 已擁有` : '尚未擁有'}</small></button>`;
@@ -3336,6 +3342,7 @@ let isQuizCompleted = false;
       });
 
       userWarehouse.forEach(item => {
+        if(!isFigurineVisible(item.id))return;
         const fig = executiveFigurineDatabase[item.id];
         if (!fig) return;
 
@@ -3378,6 +3385,7 @@ let isQuizCompleted = false;
     }
 
     function selectFigurineForSlot(figId) {
+      if(!isFigurineVisible(figId))return;
       // 唯一性防護：若該公仔已在其他格子，自動拔除原位置
       const existingIdx = userCabinetSlots.indexOf(figId);
       if (existingIdx !== -1 && existingIdx !== selectedSlotIndexForEdit) {
@@ -3392,6 +3400,7 @@ let isQuizCompleted = false;
     }
 
     function switchGachaPool(poolKey) {
+      if(globalThis.hideChenCharacters&&poolKey==='chen')poolKey='tony';
       currentGachaPool = poolKey;
       ['all', 'chen', 'tony', 'family', 'super'].forEach(k => {
         const btn = document.getElementById(`pool-btn-${k}`);
@@ -3449,6 +3458,7 @@ let isQuizCompleted = false;
         availableIds = Object.keys(executiveFigurineDatabase).filter(id => !executiveFigurineDatabase[id].familyRole && executiveFigurineDatabase[id].pool !== 'super');
       }
 
+      availableIds=availableIds.filter(isFigurineVisible);
       // 嚴密防呆：若過濾為空，自動取托尼
       if (availableIds.length === 0) {
         availableIds = Object.keys(executiveFigurineDatabase).filter(id => id.startsWith('tony_'));

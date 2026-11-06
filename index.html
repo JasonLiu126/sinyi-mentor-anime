@@ -3,14 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>信義學長｜動畫版 · 陪你一起上手</title>
+  <title>信義新人雙軌冒險系統</title>
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./cabinet-carousel.css">
-  <link rel="stylesheet" href="./awakening.css">
-  <link rel="stylesheet" href="./mentor.css">
-  <link rel="stylesheet" href="./simple-ui.css">
+  <link rel="stylesheet" href="./formal-features.css">
 </head>
-<body class="anime-edition bg-slate-900 font-sans text-slate-900 select-none antialiased min-h-screen flex items-center justify-center p-0 sm:p-2">
+<body class="bg-slate-900 font-sans text-slate-900 select-none antialiased min-h-screen flex items-center justify-center p-0 sm:p-2">
 
   <!-- ======================================================== -->
   <!-- 手機外框容器 (Max 448px Mobile Mockup, 固定高度 flex 版型)  -->
@@ -26,10 +24,10 @@
           </div>
           <div>
             <h1 class="text-xs font-black tracking-wide flex items-center gap-1">
-              <span>信義學長・陪你一起上手</span>
-              <span class="text-[9px] bg-white/20 px-1 rounded font-normal">動畫版</span>
+              <span>信義新星・雙軌冒險</span>
+              <span class="text-[9px] bg-white/20 px-1 rounded font-normal">正式版</span>
             </h1>
-            <p class="text-[9px] text-emerald-100">阿義陪你，把每一天走穩</p>
+            <p class="text-[9px] text-emerald-100">新人培育導引 ✕ 遊戲化系統</p>
           </div>
         </div>
 
@@ -53,7 +51,6 @@
       <!-- ======================================================== -->
       <!-- SCREEN 0: 新手適性測驗 (測驗完成後將永久隱藏)              -->
       <!-- ======================================================== -->
-      
       <section id="screen-quiz-flow" class="space-y-3">
         <!-- 說明提示橫幅 -->
         <div class="bg-gradient-to-r from-lego-yellow to-amber-300 p-3 rounded-2xl lego-card text-slate-900 space-y-1">
@@ -203,7 +200,7 @@
       <!-- ======================================================== -->
       <!-- TAB 2: 信義地圖 (PRD 案源/社區生活圈探索)                 -->
       <!-- ======================================================== -->
-      <section id="tab-map" class="space-y-3 hidden"><div class="simple-page-heading"><h2>認識你的商圈</h2><p>點選社區，了解環境與案源。</p></div>
+      <section id="tab-map" class="space-y-3 hidden">
         <!-- 頂部查詢切換列 -->
         <div class="flex items-center justify-between bg-white p-2 rounded-2xl lego-card-sm">
           <div class="flex space-x-1">
@@ -221,7 +218,7 @@
         </div>
 
         <!-- 4大物件狀態色彩過濾列 (PRD 規格) -->
-<details class="simple-disclosure"><summary>物件狀態說明</summary>        <div id="business-map-legend" class="flex items-center justify-between text-[9px] font-black bg-slate-200/80 p-2 rounded-xl border border-slate-300">
+        <div class="flex items-center justify-between text-[9px] font-black bg-slate-200/80 p-2 rounded-xl border border-slate-300">
           <span class="text-slate-500">物件狀態：</span>
           <span class="flex items-center gap-1 text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300">🟢 可售(信義有效)</span>
           <span class="flex items-center gap-1 text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">🟡 潛案(市場在售)</span>
@@ -229,11 +226,10 @@
           <span class="flex items-center gap-1 text-rose-800 bg-rose-100 px-1.5 py-0.5 rounded border border-rose-300">🔴 開發機會</span>
         </div>
 
-</details>
         <!-- 模擬地圖舞台 (互動點擊查看大樓與案源) -->
-        <div id="business-map-stage" class="relative w-full h-80 bg-slate-200 rounded-2xl border-3 border-slate-900 overflow-hidden lego-card">
+        <div class="relative w-full h-80 bg-slate-200 rounded-2xl border-3 border-slate-900 overflow-hidden lego-card">
           <!-- 道路底圖模擬 -->
-          <div id="business-map-ground" class="absolute inset-0 bg-[#e5e9ec]">
+          <div class="absolute inset-0 bg-[#e5e9ec]">
             <div class="absolute top-1/2 left-0 right-0 h-10 bg-slate-300 -translate-y-1/2 border-y-2 border-white/80"></div>
             <div class="absolute top-0 bottom-0 left-1/3 w-12 bg-slate-300 border-x-2 border-white/80"></div>
             <span class="absolute top-2 left-2 text-[9px] font-bold text-slate-400 tracking-wider">台北市信義區・松智生活圈</span>
@@ -274,7 +270,7 @@
 
           <!-- 地圖右下角快捷浮動資訊 -->
           <div class="absolute bottom-2 right-2 bg-white/95 px-2.5 py-1 rounded-xl border border-slate-800 text-[9px] font-bold shadow">
-            點選建築，認識社區與案源
+            點擊建築圖標查看 PRD 詳情
           </div>
         </div>
 
@@ -373,13 +369,13 @@
       <!-- TAB 4: 主管展櫃 (PRD 盲盒抽卡與 3x3 趣味展示櫃)            -->
       <!-- ======================================================== -->
       <section id="tab-showcase" class="space-y-3.5 hidden">
-<details class="simple-disclosure"><summary>抽獎，認識新角色</summary>        <!-- 頂部代幣與扭蛋機橫幅 -->
+        <!-- 頂部代幣與扭蛋機橫幅 -->
         <div class="bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 p-3.5 rounded-2xl lego-card border-slate-900 text-slate-900 space-y-2">
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-1.5">
               <span class="text-xl">🎰</span>
               <div>
-                <h2 class="text-xs font-black tracking-wide">角色抽獎</h2>
+                <h2 class="text-xs font-black tracking-wide">主管 IP 盲盒扭蛋機</h2>
                 <p id="gacha-active-pool-label" class="text-[9px] text-amber-950 font-bold">當期特選：【⚡ 托尼宇宙限定池 (12款主角)】</p>
               </div>
             </div>
@@ -420,13 +416,13 @@
           </div>
         </div>
 
-</details><details class="simple-disclosure simple-more-play"><summary>對戰、融合與造型圖鑑</summary>        <button onclick="openAceBattle()" class="w-full py-3 rounded-xl bg-slate-900 text-amber-200 font-black text-sm lego-btn">角色對戰</button>
-        <button onclick="openFamilyFusion()" class="w-full py-3 rounded-xl bg-sinyi-green text-white font-black text-sm lego-btn">角色融合</button>
+        <button onclick="openAceBattle()" class="w-full py-3 rounded-xl bg-slate-900 text-amber-200 font-black text-sm lego-btn">⚔ IP 對戰擂台 · 選招出招</button>
+        <button onclick="openFamilyFusion()" class="w-full py-3 rounded-xl bg-sinyi-green text-white font-black text-sm lego-btn">🧬 IP 融合工坊 · 成功率 70%，成功產出 3 張</button>
 
-        <button onclick="openEvolutionCollection()" class="w-full py-2.5 rounded-xl bg-white text-sinyi-green font-black text-xs lego-btn">造型圖鑑</button>
+        <button onclick="openEvolutionCollection()" class="w-full py-2.5 rounded-xl bg-white text-sinyi-green font-black text-xs lego-btn">✨ 全角色五星進化圖鑑</button>
 
-</details>        <section id="ip-carousel" class="ip-carousel" aria-label="IP 角色展示櫃">
-          <div class="carousel-heading"><div><small>THE IP COLLECTION</small><h3>我的角色</h3></div><span id="carousel-total">已收藏 0 款</span></div>
+        <section id="ip-carousel" class="ip-carousel" aria-label="IP 角色展示櫃">
+          <div class="carousel-heading"><div><small>THE IP COLLECTION</small><h3>我的 IP 典藏館</h3></div><span id="carousel-total">已收藏 0 款</span></div>
           <div id="carousel-filters" class="carousel-filters" role="group" aria-label="展示角色分類">
             <button data-filter="all" onclick="filterCabinetCarousel('all')" aria-pressed="true">全部</button>
             <button data-filter="chen" onclick="filterCabinetCarousel('chen')" aria-pressed="false">陳總</button>
@@ -839,7 +835,6 @@
     <!-- 經典手機 APP 底部導覽列 (五大分頁，永遠固定置底)             -->
     <!-- 依需求順序調整為：地圖 ➔ 成長手冊 ➔ 任務 ➔ 收藏櫃 ➔ 學院    -->
     <!-- ======================================================== -->
-    <button id="mentor-float" class="mentor-fab mentor-chibi-float" onclick="mentorToggleHome()" aria-label="開啟信義學長陪伴畫面" aria-expanded="false" aria-controls="mentor-companion" aria-haspopup="dialog" title="點開學長陪伴畫面；可拖曳移動位置"><img src="./mentor-chibi.png" alt="Q 版阿義學長" draggable="false"><span class="mentor-float-caption" aria-hidden="true">學長</span></button>
     <nav id="bottom-navbar" class="w-full bg-white border-t-3 border-slate-900 py-2 px-1 flex justify-around items-center shrink-0 z-40 shadow-2xl hidden">
       <button onclick="switchTab('tab-map')" id="nav-btn-map" class="flex flex-col items-center flex-1 text-slate-400 hover:text-slate-800 transition-all">
         <span class="text-base">🗺️</span>
@@ -1166,41 +1161,7 @@
       </div>
     </div>
   </div>
-
-<div id="mentor-companion" class="mentor-companion hidden" role="dialog" aria-modal="true" aria-labelledby="mentor-companion-title"><div class="mentor-companion-panel"><div class="mentor-companion-header"><span class="mentor-avatar" role="img" aria-label="阿義學長"></span><div><h2 id="mentor-companion-title">阿義學長</h2><p>陪你把下一步走穩</p></div><button id="mentor-companion-close" onclick="mentorCloseCompanion()" aria-label="關閉學長彈窗">×</button></div><div id="mentor-companion-scroll" class="mentor-companion-scroll"><section id="tab-awakening" aria-label="學長陪伴首頁">
-        <button id="mentor-home-back" class="mentor-home-back" onclick="mentorReturnToPage()">← 回到剛才的畫面</button>
-        <div class="hunter-overline"><span class="hunter-kicker">阿義學長 · 隨時陪你</span><span><i></i> 慢慢來，也是在前進</span></div>
-
-        <section class="hunter-hero" aria-label="阿義學長陪伴介紹">
-          <div class="mentor-hero-art"><img src="./mentor-ayi.png" alt="親切的阿義學長站在溫暖的台灣街區，拿著手機陪新人認識商圈"><span class="mentor-online"><i></i>學長一直在這裡</span></div>
-          <div class="mentor-hero-caption"><span class="hunter-kicker">一起走進街區，一起慢慢上手</span><h2>我是阿義，你的信義學長。</h2><p>剛開始不熟很正常。今天做什麼、卡住怎麼辦，<br>我們一件一件來。</p><button class="mentor-hero-start" onclick="mentorBegin()">今天先做一件小事 →</button>
-            <div class="mentor-player-line"><button onclick="hunterOpenProfile()" aria-label="設定暱稱與成長路線"><b id="hunter-player-name">新夥伴</b><span>的成長旅程 ↗</span></button><span class="mentor-level">Lv.<b id="hunter-level">01</b></span></div>
-            <div class="mentor-status-row"><span id="hunter-path">社區經營</span><span id="hunter-rank">新手起步</span></div>
-            <div class="hunter-xp"><div><span id="hunter-xp-bar" style="width:0%"></span></div><small id="hunter-xp-label">0 / 60 EXP</small></div>
-          </div>
-        </section>
-        <section class="mentor-coach" aria-label="學長的今日建議"><div class="mentor-coach-heading"><span class="mentor-avatar" role="img" aria-label="阿義學長"></span><div><small>阿義學長</small><b>今天先陪你做這一件</b></div></div><h3 id="mentor-suggestion-title">今天，我們先把一件小事做好。</h3><p id="mentor-suggestion-body"></p><button id="mentor-next-action" class="mentor-next" onclick="mentorBegin()">學長帶我開始 →</button><button class="mentor-secondary" onclick="mentorOpen('start')">有點卡住？來找學長聊聊</button></section>
-        <div class="hunter-section-heading"><div><small>DAILY QUESTS</small><h2>今天的小練習</h2></div><span id="hunter-chapter">初次覺醒</span></div>
-        <div class="hunter-progress"><span id="hunter-daily-progress" style="width:0%"></span></div><p class="hunter-status" id="hunter-daily-status">完成 2 項即可延續連續紀錄</p>
-        <div class="hunter-tabs" role="group" aria-label="每日委託篩選"><button data-hunter-filter="todo" aria-pressed="true" onclick="hunterSetFilter('todo')">待完成</button><button data-hunter-filter="done" aria-pressed="false" onclick="hunterSetFilter('done')">已完成</button><button data-hunter-filter="skipped" aria-pressed="false" onclick="hunterSetFilter('skipped')">已略過</button></div>
-        <div id="hunter-quest-list" tabindex="-1" aria-live="polite"></div>
-<details class="simple-disclosure"><summary>成長紀錄與日誌</summary><div>        <div class="hunter-metrics"><div><small>一起成長</small><strong id="hunter-day">01</strong><strong><span>/ 66 天</span></strong></div><div><small>連續行動</small><strong id="hunter-streak">0</strong><strong><span>天</span></strong></div><div><small>今日委託</small><strong id="hunter-done">0</strong><strong><span>/ 3</span></strong><em>每日 04:00 更新</em></div></div>
-        <div class="hunter-section-heading"><div><small>PLAYER ATTRIBUTES</small><h2>正在累積的三種本事</h2></div><span>一點一點，看見自己的進步</span></div>
-        <div class="hunter-skills"><div><small>⌖ 洞察</small><b id="hunter-stat-field">0</b><p>市場與社區情報</p><div class="hunter-skill-track"><span id="hunter-stat-bar-field"></span></div></div><div><small>◇ 交涉</small><b id="hunter-stat-client">0</b><p>客戶與人脈經營</p><div class="hunter-skill-track"><span id="hunter-stat-bar-client"></span></div></div><div><small>✧ 專業</small><b id="hunter-stat-knowledge">0</b><p>知識與成交實務</p><div class="hunter-skill-track"><span id="hunter-stat-bar-knowledge"></span></div></div></div>
-        <div class="hunter-section-heading"><div><small>OUR GROWTH JOURNEY</small><h2>每一步，都留下痕跡</h2></div></div>
-        <div class="hunter-journey"><div class="hunter-journey-top"><span id="hunter-journey-count">0 天達標 / 66 天</span><span>亮格＝當日完成至少 2 項</span></div><div id="hunter-calendar" class="hunter-calendar" aria-label="66 天旅程紀錄"></div><div id="hunter-milestones" class="hunter-milestones"></div><p class="hunter-journey-note">累積達標 7／21／42／66 天可領取突破抽卡券。未達標不扣除既有能力；旅程第 66 天後仍可繼續累積。每次升級都記錄你的努力，從新手起步，慢慢練到獨當一面。</p></div>
-        <div class="hunter-section-heading"><div><small>TODAY WITH AYI</small><h2>今天，有什麼想跟學長說？</h2></div></div>
-        <div class="hunter-journal"><label for="hunter-mood">今日狀態 <select id="hunter-mood"><option value="steady">平穩前進</option><option value="charged">充滿能量</option><option value="tired">需要休息</option></select></label><textarea id="hunter-journal" aria-label="今日成長日誌" maxlength="1000" placeholder="今天哪個瞬間，讓你覺得自己進步了？"></textarea><button class="hunter-primary" onclick="hunterSaveJournal()">保存今日成長日誌 <span>↗</span></button></div>
-</div></details><details class="simple-disclosure"><summary>專注與其他工具</summary><div><button class="simple-profile-entry" onclick="hunterOpenProfile()">暱稱與練習方向 →</button>        <section class="hunter-focus" aria-label="專注訓練"><div><small>FOCUS TRAINING</small><strong id="hunter-timer">10:00</strong><p>學長陪你，專心練習十分鐘。</p></div><button id="hunter-timer-button" onclick="hunterToggleTimer()">開始專注</button></section>
-        <div class="hunter-links"><button onclick="hunterOpenQuiz()">職業適性測評 ↗</button><button onclick="switchTab('tab-map')">探索商圈地圖 ↗</button></div>
-</div></details>        <div id="hunter-render-date" data-date=""></div><p id="hunter-save-status" class="hunter-footer">本機自動儲存 · 台北時間 04:00 換日</p><p class="hunter-footer">動畫版 · 信義學長 / 每一小步，學長都陪你走</p>
-      </section></div></div></div>
-  <div id="hunter-profile" class="hunter-modal hidden" role="dialog" aria-modal="true" aria-labelledby="hunter-profile-title"><div class="hunter-modal-panel"><button class="hunter-modal-close" aria-label="關閉個人設定" onclick="document.getElementById('hunter-profile').classList.add('hidden')">×</button><span class="hunter-kicker">NICE TO MEET YOU</span><h2 id="hunter-profile-title">學長怎麼稱呼你？</h2><p>先告訴學長你的暱稱，再選一條想練習的方向。<br>之後都能調整，我們慢慢找到適合你的節奏。</p><label for="hunter-name-input">你的暱稱<input id="hunter-name-input" maxlength="24" autocomplete="nickname"></label><label for="hunter-path-input">成長路線<select id="hunter-path-input"><option value="community">社區經營 · 深耕社區與商圈</option><option value="luxury">豪宅專研 · 精研高總價物件</option><option value="network">人脈經營 · 經營關係與信任</option></select></label><p>路線會改變今日洞察委託；已完成的獎勵保留。</p><button class="hunter-primary" onclick="hunterSaveProfile()">記住我 · 一起開始 <span>↗</span></button></div></div>
-  <div id="hunter-reward" class="hunter-modal hidden" role="dialog" aria-modal="true" aria-labelledby="hunter-reward-title"><div class="hunter-modal-panel hunter-modal-reward"><span class="hunter-kicker">阿義學長 · 看見你的進步</span><span class="hunter-reward-mark">✦</span><h2 id="hunter-reward-title">做到了！這一步很值得。</h2><p role="status"></p><button class="hunter-primary" onclick="hunterCloseReward()">繼續下一步</button></div></div>
-
-
-  <div id="mentor-help" class="hunter-modal mentor-help hidden" role="dialog" aria-modal="true" aria-labelledby="mentor-help-title"><div class="hunter-modal-panel"><button id="mentor-help-close" class="hunter-modal-close" onclick="mentorClose()" aria-label="關閉學長小抄">×</button><div class="mentor-coach-heading"><span class="mentor-avatar" role="img" aria-label="阿義學長"></span><div><small>阿義學長在這裡</small><b>先說說，你卡在哪一步？</b></div></div><div class="mentor-topic-tabs" role="group" aria-label="想請教學長的情境"><button data-mentor-topic="start" onclick="mentorOpen('start')" aria-pressed="true">不知道先做什麼</button><button data-mentor-topic="opening" onclick="mentorOpen('opening')" aria-pressed="false">不敢跟客戶開口</button><button data-mentor-topic="rejection" onclick="mentorOpen('rejection')" aria-pressed="false">被拒絕，有點挫折</button><button data-mentor-topic="busy" onclick="mentorOpen('busy')" aria-pressed="false">今天只有一點時間</button></div><h2 id="mentor-help-title"></h2><p id="mentor-help-body"></p><ol id="mentor-help-steps"></ol><div class="mentor-example"><small>學長陪你練一句</small><blockquote id="mentor-help-line"></blockquote></div><button class="hunter-primary" onclick="mentorUseAdvice()">好，我先試試這一步 <span>→</span></button><p class="mentor-footnote">隨身情境小抄 · 實際案件與制度問題，記得找店長一起確認。</p></div></div>
-
+  <script src="./character-policy.js"></script>
   <script src="./evolution-data.js"></script>
   <script src="./app.js"></script>
   <script src="./family.js"></script>
@@ -1208,8 +1169,10 @@
   <script src="./cabinet-carousel.js"></script>
   <script src="./test-admin.js"></script>
   <script src="./ace-battle.js"></script>
-  <script src="./awakening.js"></script>
-  <script src="./mentor.js"></script>
-  <script src="./simple-ui.js"></script>
+  <script src="./journey-core.js"></script>
+  <script src="./mentor-content.js"></script>
+  <script src="./mentor-float.js"></script>
+  <script src="./formal-features.js"></script>
+  <script src="./manager-tasks.js"></script>
 </body>
 </html>
