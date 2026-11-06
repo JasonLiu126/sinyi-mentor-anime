@@ -13,8 +13,8 @@ function hunterNewState(today=hunterDay()){
 }
 function hunterValidDate(s){return typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!Number.isNaN(Date.parse(s))&&new Date(s+'T00:00:00Z').toISOString().slice(0,10)===s;}
 function hunterValidate(raw){
-  if(!raw||raw.version!==1||!hunterValidDate(raw.start)||typeof raw.name!=='string'||raw.name.length>24||!['community','luxury','network'].includes(raw.path)||!raw.days||typeof raw.days!=='object'||Array.isArray(raw.days)||!Array.isArray(raw.milestones))throw Error('成長存檔格式不正確');
-  const result=hunterNewState(raw.start);result.name=raw.name;result.path=raw.path;
+  if(!raw||raw.version!==1||!hunterValidDate(raw.start)||typeof raw.name!=='string'||raw.name.length>24||!['community','district','social','network','company','market','luxury'].includes(raw.path)||!raw.days||typeof raw.days!=='object'||Array.isArray(raw.days)||!Array.isArray(raw.milestones))throw Error('成長存檔格式不正確');
+  const result=hunterNewState(raw.start);result.name=raw.name;result.path=raw.path;if(['A','B','C','D','E','F'].includes(raw.quizDevRoute))result.quizDevRoute=raw.quizDevRoute;
   for(const [date,day] of Object.entries(raw.days)){
     if(!hunterValidDate(date)||hunterOrdinal(date)<hunterOrdinal(raw.start)||!day||!day.tasks||typeof day.tasks!=='object')throw Error('日誌格式不正確');
     const clean={tasks:{},journal:typeof day.journal==='string'?day.journal.slice(0,1000):'',mood:['steady','charged','tired'].includes(day.mood)?day.mood:'steady'};
@@ -54,6 +54,7 @@ function hunterStats(){
 function hunterQuests(){
   const day=hunterJourneyDay(),stage=day<=7?0:day<=21?1:day<=42?2:3;
   const field={community:['觀察 1 棟社區','走訪 2 棟社區','整理 3 棟社區情報','完成 1 份商圈提案'],luxury:['研究 1 筆豪宅成交','比較 2 筆高總價物件','整理 3 筆競品優劣','完成 1 份豪宅鑑賞提案'],network:['整理 1 位人脈資料','關心 2 位既有客戶','整理 3 位客戶需求','完成 1 份人脈跟進計畫']};
+  Object.assign(field,{district:['認識 1 家在地商店','走訪 2 處商圈節點','整理商圈生活機能','完成 1 份商圈經營計畫'],social:['選定 1 個社群內容主題','完成 1 則房產貼文草稿','整理 3 則社群互動觀察','完成 1 份社群內容企劃'],company:['整理 1 筆可回訪紀錄','更新 2 位舊客近況','整理 3 項舊客需求','完成 1 份舊客跟進計畫'],market:['觀察 1 筆市場新案','比較 2 筆市場物件','整理 3 項物件差異','完成 1 份市場開發提案']});
   return [
     {id:'field',icon:'⌖',name:field[hunterState.path][stage],stat:'洞察',xp:15+stage*5,coins:30,desc:'記錄一項今天實際發現的資訊，累積你的市場判斷力。'},
     {id:'client',icon:'◇',name:['主動關心 1 位客戶','跟進 2 位客戶需求','完成 1 次需求訪談','完成 1 份客製配案'][stage],stat:'交涉',xp:15+stage*5,coins:30,desc:'傾聽真實需求，留下本次互動與下一步。請勿填寫客戶個資。'},
@@ -90,7 +91,7 @@ function hunterClaimMilestone(n){
 function hunterSaveJournal(){const day=hunterToday();day.journal=document.getElementById('hunter-journal').value.slice(0,1000);day.mood=document.getElementById('hunter-mood').value;hunterSave();hunterToast('今日成長日誌已保存。');}
 function hunterSaveProfile(){
   const name=document.getElementById('hunter-name-input').value.trim();const path=document.getElementById('hunter-path-input').value;
-  if(!name||name.length>24||!['community','luxury','network'].includes(path)){hunterToast('告訴學長你的暱稱，1～24 個字就好。');return;}
+  if(!name||name.length>24||!['community','district','social','network','company','market','luxury'].includes(path)){hunterToast('告訴學長你的暱稱，1～24 個字就好。');return;}
   hunterState.name=name;hunterState.path=path;hunterSave();document.getElementById('hunter-profile').classList.add('hidden');hunterRender();
 }
 function hunterOpenProfile(){document.getElementById('hunter-name-input').value=hunterState.name;document.getElementById('hunter-path-input').value=hunterState.path;document.getElementById('hunter-profile').classList.remove('hidden');document.getElementById('hunter-name-input').focus();}

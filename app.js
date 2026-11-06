@@ -1927,7 +1927,7 @@ let isQuizCompleted = false;
         container.innerHTML = `
           <div class="space-y-1.5">
             <label class="text-[10px] font-black text-slate-800 flex items-center gap-1">
-              <span>✍️</span> <span>大樓行情重點與疑難筆記（可自由編輯）：</span>
+              <span>✍️</span> <span>${slot.noteLabel || '大樓行情重點與疑難筆記（可自由編輯）：'}</span>
             </label>
             <textarea id="task-note-textarea" rows="4" class="w-full p-2.5 bg-slate-50 rounded-xl border-2 border-slate-900 text-xs font-bold outline-none leading-relaxed">${slot.defaultNote}</textarea>
             <p class="text-[9px] text-slate-500">將筆記存入系統，後續可隨時於晨會向店長或學長請益探討。</p>
