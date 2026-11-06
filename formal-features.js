@@ -99,5 +99,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   const quizEntry=document.createElement('section');quizEntry.className='ff-quiz-entry';quizEntry.innerHTML='<div><b>業務適性測驗</b><p>查看起步方向，或重新作答。</p></div><button onclick="formalQuizOpen()">開啟適性測驗</button>';document.getElementById('tab-handbook').prepend(quizEntry);
   const restart=document.createElement('button');restart.id='formal-quiz-restart';restart.textContent='重新作答';restart.className='ff-quiz-restart';restart.onclick=()=>formalQuizOpen(true);document.getElementById('screen-quiz-flow').firstElementChild.appendChild(restart);
   const mentorQuiz=document.createElement('button');mentorQuiz.textContent='適性測驗';mentorQuiz.onclick=()=>formalQuizOpen();document.querySelector('#formal-journey-modal .ff-actions').appendChild(mentorQuiz);
+  const directQuiz=document.createElement('button');directQuiz.id='formal-quiz-direct';directQuiz.type='button';directQuiz.textContent='適性測驗';directQuiz.onclick=()=>formalQuizOpen();document.querySelector('.ta-entry').prepend(directQuiz);
   renderQuizQuestion();hunterRender();
+  // A bookmarkable route opens the test even when this browser has a completed result.
+  if(new URLSearchParams(location.search).get('view')==='aptitude')formalQuizOpen();
 });
