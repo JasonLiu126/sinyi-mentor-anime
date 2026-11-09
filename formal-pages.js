@@ -1,5 +1,6 @@
 // GitHub Pages has no server. This adapter stores demo data in the current browser.
 async function requestFormalPreview(path, body) {
+  if (path.startsWith('training/')) return requestFormalPublicTraining(path, body);
   const key = 'sinyi-formal-pages-surveys-v1';
   const state = JSON.parse(localStorage.getItem(key)) ?? { onboarding: null, records: [], drafts: [] };
   const save = () => localStorage.setItem(key, JSON.stringify(state));
