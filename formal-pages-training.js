@@ -6,7 +6,8 @@ const publicTrainingStages = [
     options: ['原始取得成本與可認列的取得、改良及移轉費用', '目前的房貸餘額', '同一條街的平均開價'],
     correct: 0,
     duration: 18,
-    clip: 'school-tax-1.mp4'
+    clip: 'school-tax-1.mp4',
+    youtube: { id: 'ONBJFeDrXu0', label: '中區國稅局的「房地合一稅 2.0：計算方式」', start: 155, end: 210 }
   },
   {
     title: '出售費用與憑證',
@@ -15,7 +16,7 @@ const publicTrainingStages = [
     correct: 1,
     duration: 18,
     clip: 'school-tax-2.mp4?v=public-recap',
-    youtubeId: 'rKbEI-y1Okc'
+    youtube: { id: 'rKbEI-y1Okc', label: '財政部臺北國稅局的「房地合一：成本費用」' }
   },
   {
     title: '自住優惠查證',
@@ -23,7 +24,8 @@ const publicTrainingStages = [
     options: ['只確認出售價格', '只確認戶籍曾經設在這裡', '查證持有與居住期間、房屋用途及以往適用優惠的紀錄'],
     correct: 2,
     duration: 18,
-    clip: 'school-tax-3.mp4'
+    clip: 'school-tax-3.mp4',
+    youtube: { id: 'uBLbxgz82CM', label: '財政部臺北國稅局的「房地合一稅：交易自住房地有優惠」' }
   }
 ];
 
@@ -39,10 +41,10 @@ async function requestFormalPublicTraining(path, body) {
   const match = /^training\/stages\/([1-3])\/(open|answer|play|retry)$/.exec(path);
   if (!match) fail(404, '找不到這個關卡。');
   const [, id, action] = match;
-  const { title, question, options, correct, duration, clip, youtubeId } = publicTrainingStages[Number(id) - 1];
+  const { title, question, options, correct, duration, clip, youtube } = publicTrainingStages[Number(id) - 1];
   const record = progress[id] ?? { passed: false, pending: false, started: null };
   const questionView = { state: 'question', title, question, options };
-  const remediation = { state: 'remediation', title, duration, clipLabel: '公開補課短片', youtubeId };
+  const remediation = { state: 'remediation', title, duration, youtube };
   const save = changes => {
     progress[id] = { ...record, ...changes };
     localStorage.setItem(key, JSON.stringify(progress));

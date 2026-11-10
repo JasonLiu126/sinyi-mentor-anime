@@ -23,12 +23,12 @@ function loadPublicTrainingYouTube() {
   return publicTrainingYouTubeApi;
 }
 
-function mountPublicTrainingVideo(container, videoId, { onReady, onError, onIncomplete, onComplete }) {
+function mountPublicTrainingVideo(container, { id, label, start = 0, end }, { onReady, onError, onIncomplete, onComplete }) {
   let player;
   let interval;
   let readyTimer;
   let disposed = false;
-  let furthest = 0;
+  let furthest = start;
   let lastTime;
   let lastSample;
   function trackPlayback() {
@@ -50,10 +50,12 @@ function mountPublicTrainingVideo(container, videoId, { onReady, onError, onInco
   loadPublicTrainingYouTube().then(YT => {
     if (disposed) return;
     const frame = document.createElement('iframe');
-    const url = new URL('https://www.youtube.com/embed/' + videoId);
+    const url = new URL('https://www.youtube.com/embed/' + id);
     url.search = new URLSearchParams({ enablejsapi: '1', playsinline: '1', rel: '0', origin: location.origin });
+    if (start) url.searchParams.set('start', start);
+    if (end) url.searchParams.set('end', end);
     frame.src = url.href;
-    frame.title = '財政部臺北國稅局公開補課影片';
+    frame.title = label;
     frame.referrerPolicy = 'strict-origin-when-cross-origin';
     frame.allow = 'encrypted-media; picture-in-picture; fullscreen';
     frame.style.cssText = 'display:block;width:100%;height:auto;aspect-ratio:16/9;min-height:200px;border:0';
@@ -71,8 +73,8 @@ function mountPublicTrainingVideo(container, videoId, { onReady, onError, onInco
             if (state === YT.PlayerState.PLAYING && !document.hidden) trackPlayback();
             else if (state === YT.PlayerState.ENDED && !ended) {
               trackPlayback();
-              const duration = player.getDuration();
-              if (duration > 0 && furthest >= duration - 0.8) onComplete();
+              const finish = end ?? player.getDuration();
+              if (finish > start && furthest >= finish - 0.8) onComplete();
               else onIncomplete();
             } else lastTime = undefined;
             ended = state === YT.PlayerState.ENDED;

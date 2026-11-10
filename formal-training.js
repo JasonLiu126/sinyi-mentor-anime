@@ -59,7 +59,7 @@ function renderTrainingLesson(id, content, lesson) {
   if (lesson.state === 'remediation') {
     trainingPending.add(id);
     renderTrainingNodes();
-    if (lesson.youtubeId) showPublicTrainingRemediation(id, content, lesson);
+    if (lesson.youtube) showPublicTrainingRemediation(id, content, lesson);
     else showTrainingRemediation(id, content, lesson.duration, lesson.clipLabel);
     return;
   }
@@ -103,7 +103,7 @@ async function retryTrainingLesson(id, content, retry, status) {
 }
 
 function showPublicTrainingRemediation(id, content, lesson) {
-  content.innerHTML = `<p>看完財政部臺北國稅局的「房地合一：成本費用」，就能再答一次。</p>
+  content.innerHTML = `<p>看完${managerEscape(lesson.youtube.label)}，就能再答一次。</p>
     <div data-player></div>
     <button type="button" data-retry disabled>回到題目</button>
     <p class="fl-result" role="status"></p>`;
@@ -121,10 +121,10 @@ function showPublicTrainingRemediation(id, content, lesson) {
   };
   trainingRequest(id, 'play').then(() => {
     if (!content.contains(container) || !content.closest('dialog').open) return;
-    publicTrainingPlayback = mountPublicTrainingVideo(container, lesson.youtubeId, {
+    publicTrainingPlayback = mountPublicTrainingVideo(container, lesson.youtube, {
       onReady: () => { status.textContent = ''; },
       onError: useRecap,
-      onIncomplete: () => { status.textContent = '請從頭完整觀看，再回到題目。'; },
+      onIncomplete: () => { status.textContent = '請重新播放並完整看完補課片段。'; },
       onComplete: () => {
         retry.disabled = false;
         status.textContent = '補課完成，可以回到題目。';
