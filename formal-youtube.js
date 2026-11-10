@@ -31,10 +31,6 @@ function mountPublicTrainingVideo(container, videoId, { onReady, onError, onInco
   let furthest = 0;
   let lastTime;
   let lastSample;
-  function stopSampling() {
-    clearInterval(interval);
-    lastTime = undefined;
-  }
   function trackPlayback() {
     const now = performance.now();
     const time = player.getCurrentTime();
@@ -55,7 +51,7 @@ function mountPublicTrainingVideo(container, videoId, { onReady, onError, onInco
     if (disposed) return;
     const frame = document.createElement('iframe');
     const url = new URL('https://www.youtube.com/embed/' + videoId);
-    url.search = new URLSearchParams({ enablejsapi: '1', playsinline: '1', origin: location.origin });
+    url.search = new URLSearchParams({ enablejsapi: '1', playsinline: '1', rel: '0', origin: location.origin });
     frame.src = url.href;
     frame.title = '財政部臺北國稅局公開補課影片';
     frame.referrerPolicy = 'strict-origin-when-cross-origin';
@@ -67,23 +63,22 @@ function mountPublicTrainingVideo(container, videoId, { onReady, onError, onInco
       events: {
         onReady: () => {
           clearTimeout(readyTimer);
-          if (!disposed) onReady();
-        },
-        onError: failed,
-        onStateChange: ({ data }) => {
           if (disposed) return;
-          if (data === YT.PlayerState.ENDED) trackPlayback();
-          stopSampling();
-          if (data === YT.PlayerState.PLAYING) {
-            if (document.hidden) { player.pauseVideo(); return; }
-            trackPlayback();
-            interval = setInterval(trackPlayback, 200);
-          }
-          if (data === YT.PlayerState.ENDED) {
-            if (furthest >= player.getDuration() - 0.6) onComplete();
-            else onIncomplete();
-          }
-        }
+          onReady();
+          let ended = false;
+          interval = setInterval(() => {
+            const state = player.getPlayerState();
+            if (state === YT.PlayerState.PLAYING && !document.hidden) trackPlayback();
+            else if (state === YT.PlayerState.ENDED && !ended) {
+              trackPlayback();
+              const duration = player.getDuration();
+              if (duration > 0 && furthest >= duration - 0.8) onComplete();
+              else onIncomplete();
+            } else lastTime = undefined;
+            ended = state === YT.PlayerState.ENDED;
+          }, 200);
+        },
+        onError: failed
       }
     });
   }).catch(failed);
@@ -91,7 +86,7 @@ function mountPublicTrainingVideo(container, videoId, { onReady, onError, onInco
     pause() { player?.pauseVideo?.(); },
     destroy() {
       disposed = true;
-      stopSampling();
+      clearInterval(interval);
       clearTimeout(readyTimer);
       player?.destroy?.();
     }
