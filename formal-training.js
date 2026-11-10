@@ -2,6 +2,7 @@ const trainingStageLabels = ['房地交易試算', '出售費用與憑證', '自
 const trainingPassed = new Set();
 const trainingPending = new Set();
 let legacyPending = null;
+let publicTrainingPlayback;
 
 function loadTraining() {
   try {
@@ -35,6 +36,8 @@ const trainingRequest = (id, action, data = {}) => formalRequest(`training/stage
 async function showTrainingLesson(id) {
   if (!isQuizCompleted) return;
   const dialog = document.getElementById('fl-training-dialog');
+  publicTrainingPlayback?.destroy();
+  publicTrainingPlayback = null;
   if (!dialog.open) dialog.showModal();
   const content = dialog.querySelector('.fl-training-content');
   dialog.querySelector('h2').textContent = '第 ' + id + ' 關';
@@ -56,7 +59,8 @@ function renderTrainingLesson(id, content, lesson) {
   if (lesson.state === 'remediation') {
     trainingPending.add(id);
     renderTrainingNodes();
-    showTrainingRemediation(id, content, lesson.duration, lesson.clipLabel);
+    if (lesson.youtubeId) showPublicTrainingRemediation(id, content, lesson);
+    else showTrainingRemediation(id, content, lesson.duration, lesson.clipLabel);
     return;
   }
   trainingPending.delete(id);
@@ -82,6 +86,51 @@ function renderTrainingLesson(id, content, lesson) {
       buttons.forEach(button => { button.disabled = false; });
     }
   });
+}
+
+async function retryTrainingLesson(id, content, retry, status) {
+  retry.disabled = true;
+  try {
+    const lesson = await trainingRequest(id, 'retry');
+    if (!content.contains(retry)) return;
+    publicTrainingPlayback?.destroy();
+    publicTrainingPlayback = null;
+    renderTrainingLesson(id, content, lesson);
+  } catch (error) {
+    status.textContent = localMessage(error);
+    retry.disabled = false;
+  }
+}
+
+function showPublicTrainingRemediation(id, content, lesson) {
+  content.innerHTML = `<p>看完財政部臺北國稅局的「房地合一：成本費用」，就能再答一次。</p>
+    <div data-player></div>
+    <button type="button" data-retry disabled>回到題目</button>
+    <p class="fl-result" role="status"></p>`;
+  const container = content.querySelector('[data-player]');
+  const retry = content.querySelector('[data-retry]');
+  const status = content.querySelector('.fl-result');
+  retry.onclick = () => retryTrainingLesson(id, content, retry, status);
+  status.textContent = '正在載入公開影片…';
+  const useRecap = () => {
+    if (!content.contains(container)) return;
+    publicTrainingPlayback?.destroy();
+    publicTrainingPlayback = null;
+    showTrainingRemediation(id, content, lesson.duration, '備用補課短片');
+    content.querySelector('.fl-result').textContent = '公開影片無法播放，可以看備用短片完成補課。';
+  };
+  trainingRequest(id, 'play').then(() => {
+    if (!content.contains(container) || !content.closest('dialog').open) return;
+    publicTrainingPlayback = mountPublicTrainingVideo(container, lesson.youtubeId, {
+      onReady: () => { status.textContent = ''; },
+      onError: useRecap,
+      onIncomplete: () => { status.textContent = '請從頭完整觀看，再回到題目。'; },
+      onComplete: () => {
+        retry.disabled = false;
+        status.textContent = '補課完成，可以回到題目。';
+      }
+    });
+  }).catch(useRecap);
 }
 
 function showTrainingRemediation(id, content, duration, clipLabel = '原課程片段') {
@@ -129,13 +178,7 @@ function showTrainingRemediation(id, content, duration, clipLabel = '原課程�
     } catch { status.textContent = '短片暫時無法播放，請再試一次。'; }
     finally { play.disabled = false; }
   };
-  retry.onclick = async () => {
-    retry.disabled = true;
-    try {
-      const lesson = await trainingRequest(id, 'retry');
-      if (content.contains(video)) renderTrainingLesson(id, content, lesson);
-    } catch (error) { status.textContent = localMessage(error); retry.disabled = false; }
-  };
+  retry.onclick = () => retryTrainingLesson(id, content, retry, status);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -165,11 +208,15 @@ window.addEventListener('DOMContentLoaded', () => {
   dialog.querySelector('button').onclick = () => dialog.close();
   dialog.addEventListener('close', () => {
     if (dialog.open) return;
+    publicTrainingPlayback?.destroy();
+    publicTrainingPlayback = null;
     dialog.querySelector('video')?.pause();
     dialog.querySelector('.fl-training-content').replaceChildren();
   });
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) dialog.querySelector('video')?.pause();
+    if (!document.hidden) return;
+    dialog.querySelector('video')?.pause();
+    publicTrainingPlayback?.pause();
   });
   renderTrainingNodes();
   window.addEventListener('formal-profile-ready', async () => {

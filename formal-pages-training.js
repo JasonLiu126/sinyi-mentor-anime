@@ -13,9 +13,9 @@ const publicTrainingStages = [
     question: '屋主要整理出售這間房子所支出的交易費用。下列哪一項應先保留憑證供查核？',
     options: ['持有期間每月的管理費', '這次出售支付的仲介費', '過去持有期間每月的房貸利息'],
     correct: 1,
-    duration: 25,
-    clip: 'school-tax-2.mp4?v=course-25s',
-    clipLabel: '正式課程片段'
+    duration: 18,
+    clip: 'school-tax-2.mp4?v=public-recap',
+    youtubeId: 'rKbEI-y1Okc'
   },
   {
     title: '自住優惠查證',
@@ -39,10 +39,10 @@ async function requestFormalPublicTraining(path, body) {
   const match = /^training\/stages\/([1-3])\/(open|answer|play|retry)$/.exec(path);
   if (!match) fail(404, '找不到這個關卡。');
   const [, id, action] = match;
-  const { title, question, options, correct, duration, clip, clipLabel = '公開補課短片' } = publicTrainingStages[Number(id) - 1];
+  const { title, question, options, correct, duration, clip, youtubeId } = publicTrainingStages[Number(id) - 1];
   const record = progress[id] ?? { passed: false, pending: false, started: null };
   const questionView = { state: 'question', title, question, options };
-  const remediation = { state: 'remediation', title, duration, clipLabel };
+  const remediation = { state: 'remediation', title, duration, clipLabel: '公開補課短片', youtubeId };
   const save = changes => {
     progress[id] = { ...record, ...changes };
     localStorage.setItem(key, JSON.stringify(progress));
