@@ -60,7 +60,7 @@ function renderTrainingLesson(id, content, lesson) {
     trainingPending.add(id);
     renderTrainingNodes();
     if (lesson.youtube) showPublicTrainingRemediation(id, content, lesson);
-    else showTrainingRemediation(id, content, lesson.duration, lesson.clipLabel);
+    else showTrainingRemediation(id, content, lesson.duration, lesson.clipLabel, lesson.watchRequired);
     return;
   }
   trainingPending.delete(id);
@@ -93,6 +93,7 @@ async function retryTrainingLesson(id, content, retry, status) {
   try {
     const lesson = await trainingRequest(id, 'retry');
     if (!content.contains(retry)) return;
+    content.querySelector('video')?.pause();
     publicTrainingPlayback?.destroy();
     publicTrainingPlayback = null;
     renderTrainingLesson(id, content, lesson);
@@ -103,9 +104,12 @@ async function retryTrainingLesson(id, content, retry, status) {
 }
 
 function showPublicTrainingRemediation(id, content, lesson) {
-  content.innerHTML = `<p>看完${managerEscape(lesson.youtube.label)}，就能再答一次。</p>
+  const watchRequired = lesson.watchRequired !== false;
+  const label = managerEscape(lesson.youtube.label);
+  const instruction = watchRequired ? `看完${label}，就能再答一次。` : `可以看${label}複習，也可以直接重答。`;
+  content.innerHTML = `<p>${instruction}</p>
     <div data-player></div>
-    <button type="button" data-retry disabled>回到題目</button>
+    <button type="button" data-retry ${watchRequired ? 'disabled' : ''}>回到題目</button>
     <p class="fl-result" role="status"></p>`;
   const container = content.querySelector('[data-player]');
   const retry = content.querySelector('[data-retry]');
@@ -116,15 +120,17 @@ function showPublicTrainingRemediation(id, content, lesson) {
     if (!content.contains(container)) return;
     publicTrainingPlayback?.destroy();
     publicTrainingPlayback = null;
-    showTrainingRemediation(id, content, lesson.duration, '備用補課短片');
-    content.querySelector('.fl-result').textContent = '公開影片無法播放，可以看備用短片完成補課。';
+    showTrainingRemediation(id, content, lesson.duration, '備用補課短片', watchRequired);
+    content.querySelector('.fl-result').textContent = '公開影片無法播放，已切換為備用短片。';
   };
   trainingRequest(id, 'play').then(() => {
     if (!content.contains(container) || !content.closest('dialog').open) return;
     publicTrainingPlayback = mountPublicTrainingVideo(container, lesson.youtube, {
       onReady: () => { status.textContent = ''; },
       onError: useRecap,
-      onIncomplete: () => { status.textContent = '請重新播放並完整看完補課片段。'; },
+      onIncomplete: () => {
+        if (watchRequired) status.textContent = '請重新播放並完整看完補課片段。';
+      },
       onComplete: () => {
         retry.disabled = false;
         status.textContent = '補課完成，可以回到題目。';
@@ -133,11 +139,13 @@ function showPublicTrainingRemediation(id, content, lesson) {
   }).catch(useRecap);
 }
 
-function showTrainingRemediation(id, content, duration, clipLabel = '原課程片段') {
-  content.innerHTML = `<p>這題需要補課。看完 ${duration} 秒的${managerEscape(clipLabel)}，就能再答一次。</p>
+function showTrainingRemediation(id, content, duration, clipLabel = '原課程片段', watchRequired = true) {
+  const label = managerEscape(clipLabel);
+  const instruction = watchRequired ? `這題需要補課。看完 ${duration} 秒的${label}，就能再答一次。` : `可以看${label}複習，也可以直接重答。`;
+  content.innerHTML = `<p>${instruction}</p>
     <video playsinline preload="none" aria-label="補課短片"></video>
     <button type="button" data-play class="fl-primary">播放短片</button>
-    <button type="button" data-retry disabled>回到題目</button>
+    <button type="button" data-retry ${watchRequired ? 'disabled' : ''}>回到題目</button>
     <p class="fl-result" role="status"></p>`;
   const video = content.querySelector('video');
   const play = content.querySelector('[data-play]');
@@ -154,7 +162,7 @@ function showTrainingRemediation(id, content, duration, clipLabel = '原課程�
   video.addEventListener('pause', () => { play.textContent = '繼續播放'; });
   video.addEventListener('ended', () => {
     const played = video.played;
-    if (played.length === 1 && played.start(0) < 0.2 && played.end(0) >= video.duration - 0.3) {
+    if (!watchRequired || (played.length === 1 && played.start(0) < 0.2 && played.end(0) >= video.duration - 0.3)) {
       retry.disabled = false;
       play.disabled = true;
       status.textContent = '補課完成，可以回到題目。';

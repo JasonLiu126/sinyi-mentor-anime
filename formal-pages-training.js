@@ -1,4 +1,6 @@
 // Public practice questions and recap videos for the static Pages edition.
+const publicTrainingWatchRequired = false;
+
 const publicTrainingStages = [
   {
     title: '房地交易試算',
@@ -44,7 +46,7 @@ async function requestFormalPublicTraining(path, body) {
   const { title, question, options, correct, duration, clip, youtube } = publicTrainingStages[Number(id) - 1];
   const record = progress[id] ?? { passed: false, pending: false, started: null };
   const questionView = { state: 'question', title, question, options };
-  const remediation = { state: 'remediation', title, duration, youtube };
+  const remediation = { state: 'remediation', title, duration, youtube, watchRequired: publicTrainingWatchRequired };
   const save = changes => {
     progress[id] = { ...record, ...changes };
     localStorage.setItem(key, JSON.stringify(progress));
@@ -66,7 +68,9 @@ async function requestFormalPublicTraining(path, body) {
     if (record.started === null) save({ started: Date.now() });
     return { url: './' + clip };
   }
-  if (record.started === null || Date.now() - record.started < duration * 1000) fail(409, '請完整看完補課影片再重答。');
+  if (publicTrainingWatchRequired && (record.started === null || Date.now() - record.started < duration * 1000)) {
+    fail(409, '請完整看完補課影片再重答。');
+  }
   save({ pending: false, started: null });
   return questionView;
 }
