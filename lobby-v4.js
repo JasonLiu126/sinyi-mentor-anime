@@ -162,12 +162,135 @@ function v4RenderHud() {
   }
 }
 
-// 主城夥伴：第 2 批改為讀取 party；這裡先放靜態夥伴
+/* ---------- 夥伴編隊 party（新欄位，獨立存檔、向下相容） ---------- */
+// 格式：{ version: 1, ids: [隊長, 第 2 位, 第 3 位] }；舊使用者沒有這個 key → 預設擁有中星等最高的 3 位
+const V4_PARTY_KEY = 'sinyi-v4-party-v1';
+let v4PartyIds = null;
+let v4PartySelectedSlot = 0;
+
+function v4PartyNormalize(ids) {
+  const owned = new Set(v4OwnedFigures().map(f => f.id));
+  const result = [];
+  for (const id of Array.isArray(ids) ? ids : []) {
+    if (typeof id === 'string' && owned.has(id) && !result.includes(id)) result.push(id);
+    if (result.length === 3) break;
+  }
+  return result;
+}
+function v4PartyGet() {
+  if (v4PartyIds === null) {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(V4_PARTY_KEY) || 'null'); } catch { saved = null; }
+    v4PartyIds = saved && saved.version === 1 && Array.isArray(saved.ids) ? saved.ids : null;
+  }
+  // 存檔中的角色若已不在名冊（例如測試後台還原快照），自動剔除；整隊空了就給預設值
+  const normalized = v4PartyNormalize(v4PartyIds || []);
+  return normalized.length ? normalized : v4DefaultParty();
+}
+function v4PartySet(ids) {
+  v4PartyIds = v4PartyNormalize(ids);
+  try { localStorage.setItem(V4_PARTY_KEY, JSON.stringify({ version: 1, ids: v4PartyIds })); } catch { /* 無法存檔時只在本次生效 */ }
+}
+
+/* ---------- 夥伴編隊畫面（5-2，放在夥伴頁最上方） ---------- */
+// 畫面站位：左＝第 2 位、中＝隊長、右＝第 3 位
+const V4_PARTY_DISPLAY = [1, 0, 2];
+
+function v4BuildPartyPanel() {
+  const tab = document.getElementById('tab-showcase');
+  if (!tab || document.getElementById('v4-party')) return;
+  const panel = document.createElement('section');
+  panel.id = 'v4-party';
+  panel.setAttribute('aria-label', '夥伴編隊');
+  panel.innerHTML = `
+    <div class="v4-section-head">
+      <div><small class="v4-en">MY PARTY</small><h2 class="v4-serif">今天帶誰出門？</h2></div>
+      <span>隊伍會站在主城陪你</span>
+    </div>
+    <div class="v4-party-stage v4-frame" id="v4-party-stage"></div>
+    <p class="v4-party-hint" id="v4-party-hint">點上方格子選位置，再點下方夥伴放入隊伍</p>
+    <div class="v4-section-head v4-roster-head"><h3 class="v4-serif">夥伴名冊</h3><span class="v4-en" id="v4-roster-count">0 / 0</span></div>
+    <div class="v4-roster-grid" id="v4-roster-grid"></div>
+    <div class="v4-party-actions">
+      <button type="button" class="v4-btn-gold" onclick="v4ScrollToSummon()">召喚新夥伴</button>
+      <button type="button" class="v4-btn-ghost" onclick="openFamilyFusion()">融合</button>
+      <button type="button" class="v4-btn-ghost" onclick="openAceBattle()">擂台</button>
+    </div>`;
+  tab.prepend(panel);
+}
+
+function v4RenderParty() {
+  const stage = document.getElementById('v4-party-stage');
+  if (!stage) return;
+  const party = v4PartyGet();
+  if (v4PartySelectedSlot > party.length) v4PartySelectedSlot = party.length;
+  stage.innerHTML = V4_PARTY_DISPLAY.map(slot => {
+    const id = party[slot];
+    const info = id ? v4FigInfo(id) : null;
+    const selected = slot === v4PartySelectedSlot;
+    const label = slot === 0 ? '隊長' : `第 ${slot + 1} 位`;
+    const art = id ? v4FigArt(id) : null;
+    return `<button type="button" class="v4-party-slot ${slot === 0 ? 'is-captain' : ''} ${selected ? 'is-selected' : ''}"
+        onclick="v4PartyPickSlot(${slot})" aria-pressed="${selected}" aria-label="${label}${info ? '：' + v4Esc(info.name) : '：空位'}">
+      <span class="v4-party-art">${art ? `<img src="${v4Esc(art)}" alt="">` : '<span class="v4-party-empty">＋</span>'}</span>
+      ${slot === 0 ? '<span class="v4-captain-tag">隊長</span>' : ''}
+      <b class="v4-serif">${info ? v4Esc(info.name) : '空位'}</b>
+      <small>${info ? '★'.repeat(info.stars) + '<i>' + '★'.repeat(Math.max(0, info.maxStars - info.stars)) + '</i>' : '點此選擇'}</small>
+    </button>`;
+  }).join('');
+
+  const roster = v4RosterAll();
+  const owned = roster.filter(f => f.owned);
+  const sorted = [...owned, ...roster.filter(f => !f.owned)];
+  document.getElementById('v4-roster-count').textContent = `${owned.length} / ${roster.length}`;
+  document.getElementById('v4-roster-grid').innerHTML = sorted.map(f => {
+    const inParty = party.includes(f.id);
+    const art = v4FigArt(f.id);
+    return `<button type="button" class="v4-roster-card r-${f.rarity.toLowerCase()} ${f.owned ? '' : 'is-locked'} ${inParty ? 'in-party' : ''}"
+        ${f.owned ? `onclick="v4PartyAssign('${f.id}')"` : 'disabled'} aria-label="${v4Esc(f.name)}${f.owned ? '' : '（未擁有）'}${inParty ? '（隊伍中）' : ''}">
+      ${art ? `<img src="${v4Esc(art)}" alt="" loading="lazy">` : ''}
+      ${inParty ? '<span class="v4-check" aria-hidden="true">✓</span>' : ''}
+      <span class="v4-rarity v4-en">${f.rarity}</span>
+    </button>`;
+  }).join('');
+  const hint = document.getElementById('v4-party-hint');
+  if (hint) hint.textContent = owned.length ? `選擇「${v4PartySelectedSlot === 0 ? '隊長' : '第 ' + (v4PartySelectedSlot + 1) + ' 位'}」：點下方夥伴放入` : '還沒有夥伴，先召喚一位吧！';
+}
+
+function v4PartyPickSlot(slot) {
+  v4PartySelectedSlot = Math.min(slot, v4PartyGet().length);
+  v4RenderParty();
+}
+function v4PartyAssign(id) {
+  const party = [...v4PartyGet()];
+  const slot = v4PartySelectedSlot;
+  const existing = party.indexOf(id);
+  if (existing === slot) return;
+  if (existing !== -1) {
+    // 已在隊伍中：與選中的位置互換
+    [party[existing], party[slot]] = [party[slot], party[existing]];
+  } else if (slot < party.length) {
+    party[slot] = id;
+  } else {
+    party.push(id);
+  }
+  v4PartySet(party.filter(Boolean));
+  const info = v4FigInfo(id);
+  if (typeof showCustomToast === 'function' && info) showCustomToast(`${info.name} 加入隊伍${slot === 0 ? '，擔任隊長' : ''}！`, '⚔️');
+  v4PartySelectedSlot = Math.min(slot + 1, 2, v4PartyGet().length);
+  v4RenderParty();
+}
+function v4ScrollToSummon() {
+  const target = document.querySelector('#tab-showcase > #v4-party + *');
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// 主城站位：左＝隊長（說話）、右＝第 2 位、後方＝第 3 位
 function v4LobbyPartners() {
-  return [
-    { name: '忍者托尼', img: V4_ASSET + 'ip/ninja3.png' },
-    { name: '恐龍托尼', img: V4_ASSET + 'ip/dino2.png' }
-  ];
+  return v4PartyGet().map(id => {
+    const info = v4FigInfo(id);
+    return { id, name: info?.name || '', img: v4FigArt(id) };
+  }).filter(mate => mate.img);
 }
 
 let v4BubbleTimer = null;
@@ -175,6 +298,7 @@ let v4BubbleIndex = 0;
 function v4BubbleLines() {
   const lines = [];
   const quest = v4CurrentMainQuest();
+  if (!v4PartyGet().length) return ['到夥伴頁召喚第一位夥伴吧！'];
   const target = v4TargetBuilding();
   if (quest.current && target) lines.push(`老大，今天去${target.name}吧！`);
   else if (quest.current) lines.push(`主線「${quest.current.title}」還在等你！`);
@@ -248,6 +372,7 @@ document.addEventListener('pointerdown', event => { if (event.isTrusted) v4BootR
 v4BuildHud();
 v4BuildLobby();
 v4BuildNav();
+v4BuildPartyPanel();
 
 (function v4WrapCore() {
   const originalSwitch = switchTab;
@@ -269,6 +394,16 @@ v4BuildNav();
       else btn.removeAttribute('aria-current');
     });
     if (onLobby) v4RenderLobby(); else v4RenderHud();
+    if (tabId === 'tab-showcase') v4RenderParty();
+  };
+
+  // 名冊變動（抽卡、升星、融合、測試後台）後同步編隊畫面
+  const originalWarehouse = renderWarehouseUI;
+  renderWarehouseUI = function (...args) {
+    const result = originalWarehouse.apply(this, args);
+    v4RenderParty();
+    if (!document.getElementById('tab-lobby')?.classList.contains('hidden')) v4RenderLobby();
+    return result;
   };
 
   const originalConfirm = confirmAndEnterApp;

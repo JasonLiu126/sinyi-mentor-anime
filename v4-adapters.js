@@ -71,3 +71,49 @@ function v4TargetBuilding() {
 
 // 公會長指派中待完成件數（取既有面板顯示值）
 function v4ManagerPending() { return v4NumberFrom('mt-pending-count', 0); }
+
+/* ---------- 夥伴（IP 角色） ---------- */
+const V4_RARITY_ORDER = { SSR: 3, SR: 2, R: 1, N: 0 };
+const V4_FAMILY_ART = { founder_zhou: 'zhou', founder_wang: 'wang', heir_ken: 'ken', heir_howard: 'howard', heir_henry: 'henry' };
+
+function v4FigVisible(id) {
+  return v4Safe(() => Object.hasOwn(executiveFigurineDatabase, id) && (typeof isFigurineVisible !== 'function' || isFigurineVisible(id)), false);
+}
+function v4FigInfo(id) {
+  const fig = v4Safe(() => executiveFigurineDatabase[id], null);
+  if (!fig) return null;
+  const item = v4Safe(() => userWarehouse.find(w => w.id === id), null);
+  return { id, name: fig.name, rarity: fig.rarity || 'R', owned: !!item, stars: item ? item.stars : 0, maxStars: fig.maxStars || 5 };
+}
+// 單張全身圖：托尼／傳承用 assets/v4/ip 去背圖，其餘沿用既有進化圖
+function v4FigArt(id) {
+  const stars = v4Safe(() => getEquippedFigurineStars(id), 1);
+  if (id.startsWith('tony_')) {
+    const key = id.slice(5);
+    return V4_ASSET + 'ip/' + (key === 'ninja' ? 'ninja' + stars : key + '2') + '.png';
+  }
+  if (V4_FAMILY_ART[id]) return V4_ASSET + 'ip/' + V4_FAMILY_ART[id] + '.png';
+  const evo = v4Safe(() => globalThis.characterEvolutionCatalog[id], null);
+  if (evo?.files) return './' + evo.files[stars - 1];
+  const sup = v4Safe(() => globalThis.superSalesCatalog.find(f => f.id === id), null);
+  if (sup?.files) return './' + sup.files[stars - 1];
+  const fam = v4Safe(() => globalThis.familyIPCatalog[id], null);
+  if (fam?.file) return './' + fam.file;
+  return null;
+}
+// 名冊：目前可見的所有角色（已擁有在前）
+function v4RosterAll() {
+  const ids = v4Safe(() => Object.keys(executiveFigurineDatabase), []).filter(v4FigVisible);
+  return ids.map(v4FigInfo).filter(Boolean);
+}
+function v4OwnedFigures() {
+  return v4RosterAll().filter(f => f.owned);
+}
+// 預設隊伍：擁有中星等最高的 3 位（同星比稀有度）
+function v4DefaultParty() {
+  return v4OwnedFigures()
+    .map((f, index) => ({ ...f, index }))
+    .sort((a, b) => b.stars - a.stars || V4_RARITY_ORDER[b.rarity] - V4_RARITY_ORDER[a.rarity] || a.index - b.index)
+    .slice(0, 3)
+    .map(f => f.id);
+}

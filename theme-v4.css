@@ -174,3 +174,43 @@
 @media (prefers-reduced-motion: reduce) {
   .v4-hero, .v4-mate, .v4-sky .v4-lantern { animation: none; }
 }
+
+/* ---------- 夥伴編隊（5-2） ---------- */
+.v4-btn-ghost { border: 2px solid var(--v4-line); background: var(--v4-wood); color: var(--v4-muted); border-radius: 12px; font-family: var(--v4-font-serif); font-weight: 900; cursor: pointer; }
+.v4-btn-ghost:active { transform: translateY(2px); }
+#v4-party { display: flex; flex-direction: column; gap: 10px; padding-bottom: 6px; color: var(--v4-text); }
+.v4-section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
+.v4-section-head small { display: block; font-size: 11px; font-weight: 900; color: var(--v4-gold); letter-spacing: 3px; }
+.v4-section-head h2 { font-size: 24px; font-weight: 900; line-height: 1.2; color: var(--v4-text); }
+.v4-section-head h3 { font-size: 18px; font-weight: 900; color: var(--v4-gold-light); }
+.v4-section-head > span { font-size: 11px; color: var(--v4-muted); white-space: nowrap; }
+.v4-party-stage { display: grid; grid-template-columns: 1fr 1.15fr 1fr; align-items: end; gap: 2px; padding: 12px 4px 10px;
+  background: radial-gradient(60% 55% at 50% 72%, rgba(242,181,68,.28), transparent 70%), var(--v4-wood); border-color: var(--v4-gold-dark); }
+.v4-party-slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px 6px; background: none; border: 2px solid transparent;
+  border-radius: 10px; color: var(--v4-text); cursor: pointer; min-width: 0; }
+.v4-party-slot.is-selected { border-color: var(--v4-gold); box-shadow: 0 0 12px rgba(242,181,68,.45); background: rgba(242,181,68,.06); }
+.v4-party-art { display: flex; align-items: flex-end; justify-content: center; height: 118px; width: 100%; }
+.v4-party-slot.is-captain .v4-party-art { height: 150px; }
+.v4-party-art img { max-height: 100%; max-width: 100%; object-fit: contain; filter: drop-shadow(0 6px 6px rgba(0,0,0,.5)); }
+.v4-party-empty { width: 64px; height: 64px; border-radius: 50%; border: 2px dashed var(--v4-line); display: flex; align-items: center; justify-content: center; font-size: 26px; color: var(--v4-muted); }
+.v4-captain-tag { font-size: 10px; font-weight: 900; color: var(--v4-gold-btn-text); background: var(--v4-gold); border-radius: 4px; padding: 0 6px; }
+.v4-party-slot b { font-size: 14px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.v4-party-slot small { font-size: 11px; color: var(--v4-gold); letter-spacing: -1px; }
+.v4-party-slot small i { font-style: normal; color: var(--v4-line); }
+.v4-party-hint { font-size: 12px; font-weight: 700; color: var(--v4-teal-light); padding: 8px 12px; border: 1.5px solid var(--v4-teal); border-radius: 10px; background: rgba(46,140,131,.12); }
+.v4-roster-head { margin-top: 4px; }
+.v4-roster-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.v4-roster-card { --rc: var(--v4-r); position: relative; aspect-ratio: 3 / 4; border-radius: 10px; border: 2.5px solid var(--rc); padding: 4px 4px 18px; cursor: pointer;
+  background: radial-gradient(80% 60% at 50% 40%, color-mix(in srgb, var(--rc) 28%, transparent), transparent 70%), var(--v4-wood); display: flex; align-items: flex-end; justify-content: center; overflow: hidden; }
+.v4-roster-card.r-sr { --rc: var(--v4-sr); }
+.v4-roster-card.r-ssr { --rc: var(--v4-ssr); }
+.v4-roster-card img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.v4-roster-card.is-locked { --rc: #3A2D22; cursor: default; }
+.v4-roster-card.is-locked img { filter: grayscale(1) brightness(.45); }
+.v4-roster-card .v4-rarity { position: absolute; left: 0; right: 0; bottom: 3px; text-align: center; font-size: 11px; font-weight: 900; color: #fff; text-shadow: 0 1px 2px #000; }
+.v4-roster-card.is-locked .v4-rarity { color: var(--v4-n); }
+.v4-check { position: absolute; right: 4px; top: 4px; width: 20px; height: 20px; border-radius: 50%; background: var(--v4-teal); color: #fff; font-size: 12px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--v4-ink); }
+.v4-party-actions { display: flex; gap: 8px; margin-top: 4px; }
+.v4-party-actions .v4-btn-gold { flex: 1; height: 50px; font-size: 18px; letter-spacing: 3px; }
+.v4-party-actions .v4-btn-ghost { width: 64px; height: 50px; font-size: 16px; }
