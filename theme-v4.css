@@ -761,3 +761,101 @@ details.v4-demo > summary { padding: 8px 12px; cursor: pointer; font-weight: 900
 #fl-training-dialog.v4-darkify button { background: var(--v4-wood-2); color: var(--v4-text); border: 1.5px solid var(--v4-line); border-radius: 8px; }
 #fl-training-dialog .fl-training-content { background: linear-gradient(170deg, var(--v4-parch), var(--v4-parch-2)) !important; color: var(--v4-parch-text) !important; border-radius: 10px; }
 #fl-training-dialog .fl-training-content button { background: var(--v4-wood) !important; color: var(--v4-text) !important; }
+
+/* ---------- 職業覺醒（1-1～1-4） ---------- */
+#screen-quiz-flow { color: var(--v4-text); }
+#screen-quiz-flow > .v4-old-quiz-intro { display: none !important; }
+#v4-quiz-head { display: flex; flex-direction: column; gap: 10px; }
+.v4-quiz-top { display: flex; justify-content: space-between; align-items: flex-end; }
+.v4-quiz-top small { display: block; font-size: 11px; letter-spacing: 4px; color: var(--v4-gold); font-weight: 900; }
+.v4-quiz-top h2 { font-size: 24px; font-weight: 900; }
+.v4-quiz-top > b { font-size: 22px; color: var(--v4-gold); }
+.v4-gems { display: flex; justify-content: center; gap: 14px; }
+.v4-gems i { width: 18px; height: 18px; transform: rotate(45deg); border: 2.5px solid var(--v4-gold-dark); border-radius: 3px; }
+.v4-gems i.is-done { background: var(--v4-gold-dark); }
+.v4-gems i.is-current { background: var(--v4-gold); border-color: var(--v4-gold-light); box-shadow: 0 0 12px rgba(242,181,68,.8); }
+#quiz-container.v4-quiz { background: transparent !important; box-shadow: none !important; border: 0 !important; padding: 0 !important; }
+#quiz-qnum-badge { background: transparent !important; color: var(--v4-teal-light) !important; border: 1.5px solid var(--v4-teal); border-radius: 12px; font-family: var(--v4-font-sans) !important; font-size: 11px !important; }
+#quiz-type-label { color: var(--v4-muted) !important; }
+#quiz-progress-bar { background: var(--v4-gold) !important; }
+#quiz-container .bg-slate-200 { background: var(--v4-ink) !important; border-color: var(--v4-line) !important; }
+.v4-question-card { position: relative; padding: 14px 14px 14px 76px !important; min-height: 84px; }
+.v4-question-mentor { position: absolute; left: 12px; top: 14px; width: 52px; height: 52px; border-radius: 50%; border: 3px solid var(--v4-gold); object-fit: cover; }
+.v4-question-card #quiz-question-title { color: var(--v4-parch-text) !important; font-size: 15px !important; line-height: 1.6; }
+.v4-question-card #quiz-question-hint { color: var(--v4-parch-muted) !important; font-size: 12px !important; }
+#quiz-options-area > * { background: var(--v4-wood) !important; border: 1.5px solid var(--v4-line) !important; box-shadow: none !important; color: var(--v4-text) !important; border-radius: 12px !important; padding: 12px !important; }
+#quiz-options-area > *, #quiz-options-area > * * { color: var(--v4-text) !important; }
+#quiz-options-area > *:first-child[draggable], #quiz-options-area > .bg-lego-yellow, #quiz-options-area > .bg-amber-100, #quiz-options-area > .bg-emerald-50, #quiz-options-area > .border-lego-green {
+  background: linear-gradient(170deg, var(--v4-parch), var(--v4-parch-2)) !important; border-color: var(--v4-gold) !important; }
+#quiz-options-area > .bg-lego-yellow *, #quiz-options-area > .bg-amber-100 *, #quiz-options-area > .bg-emerald-50 *, #quiz-options-area > .border-lego-green * { color: var(--v4-parch-text) !important; }
+#quiz-options-area .font-pixel { font-family: var(--v4-font-en) !important; color: var(--v4-gold) !important; font-size: 14px !important; }
+#quiz-options-area button { background: var(--v4-ink) !important; border-color: var(--v4-line) !important; color: var(--v4-muted) !important; width: 28px !important; height: 28px !important; border-radius: 8px !important; }
+#quiz-options-area .bg-lego-green { background: var(--v4-gold) !important; color: var(--v4-gold-btn-text) !important; }
+#quiz-sort-footer, #quiz-container > .flex:last-child { border-color: var(--v4-line) !important; }
+#sort-progress-text { color: var(--v4-muted) !important; }
+#btn-prev-q { height: 48px; background: var(--v4-wood) !important; color: var(--v4-muted) !important; border: 2px solid var(--v4-line) !important; box-shadow: none !important; font-family: var(--v4-font-serif); }
+#btn-next-q { height: 48px; min-width: 150px; background: linear-gradient(180deg, var(--v4-gold-light), var(--v4-gold) 48%, #D48E1E) !important; color: var(--v4-gold-btn-text) !important;
+  border: 2px solid #7A4A0C !important; box-shadow: 0 4px 0 #5E3A08 !important; font-family: var(--v4-font-serif); font-size: 16px !important; }
+#quiz-container [onclick="autoFillRemainingQuestions()"] { background: transparent !important; color: var(--v4-muted) !important; border-color: var(--v4-line) !important; }
+
+/* 職業揭曉（1-3） */
+#card-recommendation.v4-awaken-card { position: relative; overflow: hidden; background: transparent !important; box-shadow: none !important; border: 0 !important; padding: 0 !important; }
+#card-recommendation.v4-awaken-card > :not(#v4-awaken):not(.v4-confirm-class) { display: none !important; }
+#v4-awaken { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 10px 0 4px; }
+.v4-awaken-rays { position: absolute; inset: -40% -40% 30%; background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,217,120,.08) 0 7deg, transparent 7deg 16deg); animation: v4-spin 50s linear infinite; pointer-events: none; }
+.v4-awaken-title { position: relative; text-align: center; display: flex; flex-direction: column; }
+.v4-awaken-title b { font-size: 34px; letter-spacing: 8px; color: var(--v4-gold-light); text-shadow: 0 0 16px rgba(242,181,68,.7); }
+.v4-awaken-title span { color: var(--v4-muted); }
+.v4-class-pair { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.v4-class-card { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-bottom: 10px; border-radius: 12px; overflow: hidden; border: 2px solid var(--v4-gold-dark);
+  background: radial-gradient(70% 50% at 50% 45%, #2E4A42, var(--v4-wood)); }
+.v4-class-band { align-self: stretch; text-align: center; padding: 5px 0; font-size: 14px; font-weight: 900; letter-spacing: 3px; color: #fff; }
+.is-dev .v4-class-band { background: var(--v4-teal); }
+.is-sal .v4-class-band { background: var(--v4-red-dark); }
+.v4-class-card img { height: 170px; object-fit: contain; margin-top: 4px; }
+.v4-class-card b { font-size: 17px; font-weight: 900; }
+.v4-class-card span { font-size: 12px; color: var(--v4-gold); }
+.v4-class-card button { margin-top: 4px; font-size: 12px; font-weight: 900; color: var(--v4-muted); background: none; border: 1px solid var(--v4-line); border-radius: 10px; padding: 2px 10px; }
+.v4-awaken-mentor { position: relative; display: flex; gap: 10px; align-items: center; padding: 10px 12px; }
+.v4-awaken-mentor img { width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--v4-gold); object-fit: cover; flex: none; }
+.v4-awaken-mentor p { font-size: 14px; font-weight: 700; }
+#card-recommendation .v4-confirm-class { height: 56px; margin-top: 12px; border-radius: 14px !important; background: linear-gradient(180deg, var(--v4-gold-light), var(--v4-gold) 48%, #D48E1E) !important;
+  color: var(--v4-gold-btn-text) !important; border: 2px solid #7A4A0C !important; box-shadow: 0 4px 0 #5E3A08 !important; font-family: var(--v4-font-serif); font-size: 18px !important; letter-spacing: 2px; }
+/* 更換職業（1-4） */
+.v4-route-row { display: flex !important; align-items: center; gap: 10px !important; }
+.v4-route-art { width: 52px; height: 64px; object-fit: cover; object-position: top; flex: none; border-radius: 8px; border: 1.5px solid var(--v4-gold-dark); background: #2E4A42; }
+.v4-route-class { display: block; font-size: 15px; color: var(--v4-gold-light); }
+
+/* ---------- 全域 Modal（7-1～7-4） ---------- */
+.formal-feature-modal, #test-admin-modal { background: rgba(10,6,4,.8) !important; backdrop-filter: blur(2px); }
+.v4-global-panel { background: var(--v4-wood) !important; color: var(--v4-text) !important; border: 2px solid var(--v4-gold-dark) !important; border-radius: 14px !important;
+  box-shadow: inset 0 0 0 3px var(--v4-ink), inset 0 0 0 4px var(--v4-line), 0 10px 30px rgba(0,0,0,.6) !important; font-family: var(--v4-font-sans); }
+.v4-global-panel h2, .v4-global-panel h3, .v4-global-panel h4, .v4-global-panel b, .v4-global-panel strong, .v4-global-panel summary { color: var(--v4-text) !important; }
+.v4-global-panel h2 { font-family: var(--v4-font-serif); }
+.v4-global-panel p, .v4-global-panel small, .v4-global-panel label, .v4-global-panel span, .v4-global-panel li, .v4-global-panel dt, .v4-global-panel dd { color: var(--v4-muted); }
+.v4-global-panel .ff-heading, .v4-global-panel .mt-header, .v4-global-panel .ta-head, .v4-global-panel > header { background: var(--v4-ink) !important; border-color: var(--v4-line) !important; color: var(--v4-text) !important; }
+.v4-global-panel section, .v4-global-panel article, .v4-global-panel details, .v4-global-panel fieldset, .v4-global-panel .mt-card, .v4-global-panel .fl-panel, .v4-global-panel .ff-mentor-intro {
+  background: var(--v4-ink) !important; border-color: var(--v4-line) !important; color: var(--v4-text) !important; box-shadow: none !important; }
+.v4-global-panel input, .v4-global-panel select, .v4-global-panel textarea { background: var(--v4-ink) !important; color: var(--v4-text) !important; border: 1.5px solid var(--v4-line) !important; }
+.v4-global-panel button { background: var(--v4-wood-2) !important; color: var(--v4-text) !important; border: 1.5px solid var(--v4-gold-dark) !important; box-shadow: none !important; border-radius: 10px !important; }
+.v4-global-panel button.fl-primary, .v4-global-panel .ff-actions > button:first-child, .v4-global-panel button[type="submit"]:not([value="draft"]) {
+  background: linear-gradient(180deg, var(--v4-gold-light), var(--v4-gold)) !important; color: var(--v4-gold-btn-text) !important; border-color: #7A4A0C !important; font-weight: 900; }
+.v4-global-panel button[value="returned"] { background: linear-gradient(180deg, #E07A60, var(--v4-red)) !important; color: #fff !important; border-color: #6E2416 !important; }
+.v4-global-panel button[value="approved"] { background: linear-gradient(180deg, #4FB3A6, var(--v4-teal)) !important; color: #fff !important; border-color: #17524C !important; }
+.v4-global-panel .mt-status, .v4-global-panel .mt-notice { background: rgba(46,140,131,.18) !important; color: var(--v4-teal-light) !important; }
+.v4-global-panel a { color: var(--v4-gold-light) !important; }
+.v4-global-panel img { border-radius: 10px; }
+/* 學長浮動頭像 */
+#mentor-float.v4-mentor-float { background: var(--v4-wood) !important; border: 3px solid var(--v4-gold) !important; box-shadow: 0 0 0 2px var(--v4-ink), 0 6px 14px rgba(0,0,0,.5) !important; color: var(--v4-gold-light) !important; }
+#mentor-float.v4-mentor-float img { border-radius: 50%; object-fit: cover; }
+#mentor-float.v4-mentor-float span { color: var(--v4-gold-light) !important; font-family: var(--v4-font-serif); }
+/* Toast */
+#custom-toast { background: rgba(20,13,8,.94) !important; border-color: var(--v4-gold) !important; color: var(--v4-text) !important; font-family: var(--v4-font-sans); }
+
+/* ---------- 動態：按鈕下沉 3px（全域） ---------- */
+.v4-btn-gold:active, .v4-btn-red:active, .v4-btn-teal:active { transform: translateY(3px); }
+@media (prefers-reduced-motion: reduce) {
+  .v4-altar-rays, .v4-altar-ring::after, .v4-awaken-rays, .v4-result-rays, #v4-altar-up, .v4-floor.is-current, .v4-hex-alert { animation: none !important; }
+}
+#formal-quiz-restart { align-self: flex-end; background: var(--v4-wood) !important; color: var(--v4-gold-light) !important; border: 1.5px solid var(--v4-gold-dark) !important; border-radius: 14px !important; box-shadow: none !important; padding: 4px 12px !important; font-weight: 900; }
+#v4-quiz-head { position: relative; }
