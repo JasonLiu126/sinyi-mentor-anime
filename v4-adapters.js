@@ -34,7 +34,7 @@ function v4NumberFrom(id, fallback) {
   return Number.isFinite(n) ? n : fallback;
 }
 
-// 玩家：等級／EXP 以既有 header 顯示值為準（renderHandbookUI 寫入），每 50 EXP 一級
+// 玩家：等級／EXP 以既有 header 顯示值為準（addCapabilityExp 寫入），每 60 EXP 一級
 function v4Player() {
   const exp = v4NumberFrom('header-user-exp', 0);
   const level = v4NumberFrom('header-user-level', 1);
@@ -42,7 +42,7 @@ function v4Player() {
     name: v4Safe(() => hunterState.name && hunterState.name !== '新夥伴' ? hunterState.name : '', '') || '新星',
     level,
     exp,
-    expPct: level >= 99 ? 100 : Math.round(((exp % 50) / 50) * 100),
+    expPct: Math.round(((exp % 60) / 60) * 100),
     coins: v4Safe(() => userCoins, 0),
     tickets: v4Safe(() => gachaTickets, 0)
   };
