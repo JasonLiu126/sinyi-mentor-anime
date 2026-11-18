@@ -522,3 +522,126 @@ div.v4-hex { cursor: default; }
 #tab-handbook .ff-quiz-entry p { color: var(--v4-muted) !important; font-size: 11px; }
 #tab-handbook .ff-quiz-entry button { flex: none; padding: 6px 12px; border-radius: 10px; border: 2px solid #7A4A0C !important; color: var(--v4-gold-btn-text) !important;
   background: linear-gradient(180deg, var(--v4-gold-light), var(--v4-gold)) !important; font-family: var(--v4-font-serif); font-weight: 900; box-shadow: none !important; }
+
+/* ---------- 通用：既有淺色面板換深色（Tailwind 常用淺色 class 對照） ---------- */
+.v4-darkify { background: var(--v4-wood) !important; color: var(--v4-text) !important; border: 2px solid var(--v4-gold-dark) !important; border-radius: 14px !important;
+  box-shadow: inset 0 0 0 3px var(--v4-ink), inset 0 0 0 4px var(--v4-line), 0 10px 30px rgba(0,0,0,.6) !important; }
+.v4-darkify .bg-white, .v4-darkify .bg-slate-50, .v4-darkify .bg-slate-100, .v4-darkify .bg-slate-200, .v4-darkify .bg-gray-50 { background: var(--v4-ink) !important; }
+.v4-darkify .bg-amber-50, .v4-darkify .bg-amber-100, .v4-darkify .bg-yellow-50 { background: linear-gradient(170deg, var(--v4-parch), var(--v4-parch-2)) !important; color: var(--v4-parch-text) !important; }
+.v4-darkify .bg-amber-50 *, .v4-darkify .bg-amber-100 * { color: var(--v4-parch-text) !important; }
+.v4-darkify .bg-emerald-50, .v4-darkify .bg-emerald-100, .v4-darkify .bg-blue-50, .v4-darkify .bg-rose-50, .v4-darkify .bg-purple-50 { background: rgba(46,140,131,.14) !important; }
+.v4-darkify .text-slate-900, .v4-darkify .text-slate-800, .v4-darkify .text-gray-900, .v4-darkify h2, .v4-darkify h3 { color: var(--v4-text) !important; }
+.v4-darkify .text-slate-700, .v4-darkify .text-slate-600, .v4-darkify .text-slate-500, .v4-darkify .text-slate-400 { color: var(--v4-muted) !important; }
+.v4-darkify .text-sinyi-green, .v4-darkify .text-emerald-700, .v4-darkify .text-emerald-800 { color: var(--v4-teal-light) !important; }
+.v4-darkify .border-slate-200, .v4-darkify .border-slate-300, .v4-darkify .border-slate-900, .v4-darkify .border-b, .v4-darkify .border-slate-800 { border-color: var(--v4-line) !important; }
+.v4-darkify .lego-card, .v4-darkify .lego-card-sm, .v4-darkify .lego-btn { box-shadow: none !important; }
+.v4-darkify .bg-sinyi-green, .v4-darkify .bg-lego-yellow { background: linear-gradient(180deg, var(--v4-gold-light), var(--v4-gold)) !important; color: var(--v4-gold-btn-text) !important; border: 2px solid #7A4A0C !important; font-family: var(--v4-font-serif); }
+.v4-darkify .bg-lego-red, .v4-darkify .bg-rose-500 { background: linear-gradient(180deg, #E07A60, var(--v4-red)) !important; color: #fff !important; }
+.v4-darkify input, .v4-darkify select, .v4-darkify textarea { background: var(--v4-ink) !important; color: var(--v4-text) !important; border-color: var(--v4-line) !important; }
+
+/* ---------- 召喚祭壇（5-1） ---------- */
+#tab-showcase { color: var(--v4-text); }
+#tab-showcase > * + * { margin-top: 14px; }
+#v4-altar { position: relative; overflow: hidden; padding: 12px !important; border-radius: 14px !important; border: 2px solid var(--v4-gold-dark) !important; box-shadow: none !important;
+  background: radial-gradient(80% 55% at 50% 42%, #5B3A8E 0%, #2A1A3E 55%, var(--v4-ink) 100%) !important; color: var(--v4-text) !important; }
+#v4-altar > .flex:first-child { display: none !important; }
+#v4-pool-tabs { display: flex !important; gap: 6px !important; overflow-x: auto; scrollbar-width: none; }
+#v4-pool-tabs > button { flex: 1 0 auto !important; padding: 8px 12px !important; border-radius: 10px !important; font-family: var(--v4-font-serif); font-weight: 900 !important; font-size: 14px !important;
+  background: rgba(20,13,8,.7) !important; color: var(--v4-muted) !important; border: 1.5px solid var(--v4-line) !important; box-shadow: none !important; }
+#v4-pool-tabs > button[hidden] { display: none !important; }
+#v4-pool-tabs > button[aria-pressed="true"] { background: linear-gradient(180deg, var(--v4-gold-light), var(--v4-gold)) !important; color: var(--v4-gold-btn-text) !important; border-color: #7A4A0C !important; }
+.v4-altar-head { text-align: center; margin-top: 10px; }
+.v4-altar-head small { display: block; font-size: 11px; font-weight: 900; letter-spacing: 4px; color: var(--v4-gold); }
+.v4-altar-head h2 { font-size: 26px; font-weight: 900; }
+#gacha-active-pool-label { text-align: center; color: var(--v4-muted) !important; font-size: 12px !important; }
+#super-pool-note, #family-pool-note { color: var(--v4-muted) !important; text-align: center; }
+.v4-altar-stage { position: relative; height: 240px; display: flex; align-items: center; justify-content: center; margin: 4px 0 6px; }
+.v4-altar-rays { position: absolute; inset: -60px; background: repeating-conic-gradient(from 0deg, rgba(255,217,120,.12) 0 7deg, transparent 7deg 16deg); animation: v4-spin 40s linear infinite; }
+@keyframes v4-spin { to { transform: rotate(360deg); } }
+.v4-altar-ring { position: absolute; width: 220px; height: 220px; border-radius: 50%; border: 3px solid rgba(242,181,68,.7); box-shadow: 0 0 30px rgba(183,156,240,.6), inset 0 0 40px rgba(183,156,240,.35);
+  background: radial-gradient(closest-side, rgba(183,156,240,.35), transparent); }
+.v4-altar-ring::after { content: ""; position: absolute; inset: 18px; border-radius: 50%; border: 2px dashed rgba(242,181,68,.55); animation: v4-spin 18s linear infinite reverse; }
+#v4-altar-up { position: relative; height: 200px; max-width: 70%; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0,0,0,.6)); animation: v4-bob-mate 3s ease-in-out infinite; }
+.v4-altar-rarity { position: absolute; right: 18%; top: 12px; font-size: 14px; font-weight: 900; color: var(--v4-gold-btn-text); background: var(--v4-gold); border-radius: 6px; padding: 1px 8px; }
+#v4-pull-row { display: flex; gap: 10px; }
+#v4-pull-row > button { height: 56px; border-radius: 14px !important; font-family: var(--v4-font-serif); }
+#v4-pull-row > button:first-child { background: var(--v4-wood) !important; color: var(--v4-gold-light) !important; border: 2px solid var(--v4-gold-dark) !important; box-shadow: none !important; }
+#v4-pull-row > button:first-child > span:first-child, #v4-pull-row > button:last-child > div > span:first-child { font-size: 18px; font-weight: 900; }
+#v4-pull-row > button:first-child > span:last-child { color: var(--v4-muted) !important; }
+#v4-pull-row > button:last-child { background: linear-gradient(180deg, #E07A60, var(--v4-red)) !important; border: 2px solid #6E2416 !important; box-shadow: 0 4px 0 #4E180E, 0 0 18px rgba(200,85,61,.5) !important; }
+#gacha-ten-badge { background: var(--v4-gold) !important; color: var(--v4-gold-btn-text) !important; font-family: var(--v4-font-sans) !important; }
+#gacha-ten-cost { color: #FFE2D6 !important; }
+.v4-pity { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--v4-muted); }
+.v4-pity-bar { flex: 1; height: 8px; border-radius: 4px; background: var(--v4-ink); overflow: hidden; }
+.v4-pity-bar i { display: block; height: 100%; width: 0; background: var(--v4-purple); transition: width .5s; }
+#gacha-pity-info { color: var(--v4-muted) !important; font-size: 10px !important; }
+#gacha-pity-info b { color: var(--v4-text) !important; }
+#v4-altar-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.v4-altar-link { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 0; border-radius: 12px; border: 2px solid var(--v4-gold-dark); background: var(--v4-wood); color: var(--v4-text); }
+.v4-altar-link span { font-size: 20px; color: var(--v4-purple); }
+.v4-altar-link b { font-size: 14px; }
+.v4-altar-link:active { transform: translateY(2px); }
+
+/* ---------- 典藏館／分店日常（收合） ---------- */
+#v4-gallery, #tab-showcase .cabinet-legacy { border-radius: 12px; border: 1.5px solid var(--v4-line); background: var(--v4-wood); overflow: hidden; }
+#v4-gallery > summary, #tab-showcase .cabinet-legacy > summary { padding: 12px 14px; cursor: pointer; color: var(--v4-gold-light); display: flex; gap: 8px; align-items: baseline; }
+#v4-gallery > summary small, #tab-showcase .cabinet-legacy > summary small { color: var(--v4-muted); font-size: 11px; }
+
+/* ---------- 夥伴名冊（5-3） ---------- */
+#v4-roster-panel { background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
+.v4-roster-top { flex-direction: column; align-items: stretch !important; gap: 10px; }
+.v4-roster-top > span:first-child { display: flex !important; justify-content: space-between; align-items: flex-end; }
+.v4-roster-top > span:first-child small { display: block; font-size: 11px; letter-spacing: 4px; color: var(--v4-gold); font-weight: 900; }
+.v4-roster-top > span:first-child b { font-size: 24px; color: var(--v4-text); }
+.v4-visit-entry { font-size: 12px; font-weight: 900; color: var(--v4-gold-light); background: var(--v4-wood); border: 1.5px solid var(--v4-gold-dark); border-radius: 14px; padding: 4px 10px; }
+#v4-roster-filters { gap: 6px !important; }
+#v4-roster-filters button { border-radius: 14px !important; padding: 3px 12px !important; font-size: 13px !important; font-weight: 900 !important; background: transparent !important; color: var(--v4-muted) !important; border: 1.5px solid var(--v4-line) !important; }
+#v4-roster-filters button[aria-pressed="true"] { background: var(--v4-gold) !important; color: var(--v4-gold-btn-text) !important; border-color: var(--v4-gold) !important; }
+#warehouse-grid.v4-roster-cards { gap: 10px !important; margin-top: 10px; }
+.v4-rcard { --rc: var(--v4-r); display: flex; flex-direction: column; gap: 6px; padding: 8px 10px 10px; border-radius: 12px; border: 2.5px solid var(--rc);
+  background: radial-gradient(80% 50% at 50% 30%, color-mix(in srgb, var(--rc) 25%, transparent), transparent 70%), var(--v4-wood); color: var(--v4-text); }
+.v4-rcard.r-sr { --rc: var(--v4-sr); } .v4-rcard.r-ssr { --rc: var(--v4-ssr); }
+.v4-rcard-art { position: relative; height: 120px; display: flex; align-items: flex-end; justify-content: center; background: none; border: 0; padding: 0; }
+.v4-rcard-art img { max-height: 100%; max-width: 100%; object-fit: contain; }
+.v4-rarity-tag { position: absolute; right: 0; top: 0; font-size: 11px; font-weight: 900; color: #fff; background: var(--rc); border-radius: 5px; padding: 0 6px; }
+.v4-rcard.r-ssr .v4-rarity-tag { color: var(--v4-gold-btn-text); }
+.v4-rcard-name { display: flex; justify-content: space-between; align-items: center; gap: 4px; }
+.v4-rcard-name b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v4-rcard-name .v4-stars { font-size: 10px; flex: none; }
+.v4-rcard-frag { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--v4-muted); }
+.v4-frag-bar { flex: 1; height: 6px; border-radius: 3px; background: var(--v4-ink); overflow: hidden; }
+.v4-frag-bar i { display: block; height: 100%; background: linear-gradient(90deg, #B98E4E, var(--v4-gold)); }
+.v4-rcard-up { height: 36px; font-size: 15px; letter-spacing: 3px; }
+.v4-rcard-note { font-size: 11px; color: var(--v4-muted); }
+
+/* ---------- 參觀同事主城（5-8） ---------- */
+#v4-visit { position: absolute; inset: 0; z-index: 25; display: flex; flex-direction: column; overflow: hidden; }
+#v4-visit[hidden] { display: none; }
+#app-shell.v4-visiting #app-main-scroll { visibility: hidden; }
+#app-shell.v4-visiting #v4-hud { position: absolute; left: 0; right: 0; top: 0; }
+.v4-visit-head { position: relative; z-index: 5; margin: 76px 12px 0; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: rgba(20,13,8,.85); border: 1.5px solid var(--v4-gold-dark); }
+.v4-visit-head > div { flex: 1; min-width: 0; }
+.v4-visit-head small { display: block; font-size: 10px; letter-spacing: 3px; color: var(--v4-gold); font-weight: 900; }
+.v4-visit-head b { font-size: 15px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v4-visit-title { flex: none; font-size: 11px; font-weight: 900; color: var(--v4-gold-light); border: 1.5px solid var(--v4-gold); border-radius: 12px; padding: 2px 8px; }
+.v4-visit-hearts { flex: 1; display: flex; align-items: center; gap: 6px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--v4-gold-dark); background: rgba(20,13,8,.85); }
+.v4-visit-hearts > span { color: #F08AA0; font-size: 20px; }
+.v4-visit-hearts b { font-size: 20px; }
+.v4-visit-hearts small { color: var(--v4-muted); font-size: 11px; flex: 1; }
+.v4-visit-cabinet { font-size: 11px; color: var(--v4-muted); background: none; border: 1px solid var(--v4-line); border-radius: 10px; padding: 2px 8px; }
+.v4-like { flex: none; width: 120px; height: 56px; font-size: 18px; }
+
+/* ---------- 融合工坊、IP 擂台（既有自帶樣式的面板） ---------- */
+#family-fusion-panel { background: var(--v4-wood) !important; color: var(--v4-text) !important; border: 2px solid var(--v4-gold-dark) !important; border-radius: 14px !important;
+  box-shadow: inset 0 0 0 3px var(--v4-ink), 0 10px 30px rgba(0,0,0,.6) !important; }
+#family-fusion-panel .family-heading small { color: var(--v4-gold) !important; letter-spacing: 3px; }
+#family-fusion-panel h2, #family-fusion-panel h3 { color: var(--v4-text) !important; }
+#family-fusion-panel .family-intro { color: var(--v4-muted) !important; }
+#ace-modal .db-panel { border: 2px solid var(--v4-gold-dark) !important; border-radius: 14px !important; }
+#ace-modal .db-heading { background: var(--v4-ink) !important; color: var(--v4-text) !important; border-color: var(--v4-line) !important; }
+#ace-modal .db-heading small { color: var(--v4-gold) !important; letter-spacing: 2px; }
+#ace-modal .db-heading h2 { color: var(--v4-text) !important; font-family: var(--v4-font-serif); }
+#modal-gacha-reveal #gacha-reveal-heading { color: var(--v4-gold) !important; letter-spacing: 3px; }
+#modal-figurine-detail #fig-evolution-panel { background: linear-gradient(170deg, var(--v4-parch), var(--v4-parch-2)) !important; color: var(--v4-parch-text) !important; }
+#modal-figurine-detail #fig-evolution-panel * { color: var(--v4-parch-text); }
+#app-shell.v4-visiting #mentor-float { display: none; }
