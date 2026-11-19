@@ -8,7 +8,6 @@
    ========================================================= */
 
 // 日報欄位、任務設定、系統參數改由 content-v4.js 提供（PM 後台修改、PO 核准後生效）
-const V4_REPORT_FIELDS = V4C_REPORT_FIELDS;
 const V4_TIER_EXP = { S: 20, M: 40, L: 80 };
 const V4_TIER_NAME = { S: '小', M: '中', L: '大' };
 const V4_TASK_VERIFY = {};
@@ -59,10 +58,11 @@ function v4Log(entry) {
 // 舊格式（直接存數字）視為已核可
 const v4ReportValues = entry => (entry && entry.values) || (entry && !entry.status ? entry : {});
 const v4ReportApproved = entry => !!entry && (!entry.status || entry.status === 'approved');
-function v4ReportSum(field, sinceDate, state = v4VerifyLoad()) {
+// trips：行程代碼清單（公司日報的「項目|方式|行為」），累計接任務當天起的筆數
+function v4ReportSum(trips, sinceDate, state = v4VerifyLoad()) {
   return Object.entries(state.reports)
     .filter(([date, entry]) => date >= sinceDate && v4ReportApproved(entry))
-    .reduce((sum, [, entry]) => sum + (Number(v4ReportValues(entry)[field]) || 0), 0);
+    .reduce((sum, [, entry]) => sum + v4cTripCount(v4ReportValues(entry), trips), 0);
 }
 
 /* ---------- 個資檢查 ---------- */
@@ -111,7 +111,7 @@ function v4VerifyStatus(slot) {
   return state.accepted[slot.id] ? 'waiting' : null;
 }
 function v4ReportProgress(cfg, sinceDate, state) {
-  return { have: v4ReportSum(cfg.field, sinceDate || v4Today(), state), need: cfg.min || 1 };
+  return { have: v4ReportSum(cfg.trips, sinceDate || v4Today(), state), need: cfg.min || 1 };
 }
 
 // 完成任務：依設定分配能力，再呼叫既有完成流程（發經驗、金幣、播動畫）
@@ -171,12 +171,12 @@ function v4HandleSubmit(original, args) {
     if (p.have >= p.need) {
       closeModal('modal-task-action');
       v4CompleteTask(routeKey, slot.id, '', 'report');
-      showCustomToast(`📊 日報核對通過：${V4_REPORT_FIELDS[cfg.field]} ${p.have}/${p.need}`, '✅');
+      showCustomToast(`📊 日報核對通過：${p.have}/${p.need} 筆`, '✅');
       v4AfterVerifyChange();
       return;
     }
     closeModal('modal-task-action');
-    showCustomToast(`日報「${V4_REPORT_FIELDS[cfg.field]}」目前 ${p.have}/${p.need}，公司日報同步後達標會自動完成`, '📊');
+    showCustomToast(`日報行程目前 ${p.have}/${p.need} 筆，公司日報同步後達標會自動完成`, '📊');
     v4AfterVerifyChange();
     return;
   }
@@ -230,8 +230,8 @@ function v4SyncAssigned() {
   let changed = false;
   for (const task of state.tasks) {
     if (task.member !== state.active) continue;
-    if (task.status === 'todo' && task.verify === 'report' && task.reportField) {
-      const have = v4ReportSum(task.reportField, (task.created || '').slice(0, 10) || v4Today(), verify);
+    if (task.status === 'todo' && task.verify === 'report' && task.reportTrips?.length) {
+      const have = v4ReportSum(task.reportTrips, (task.created || '').slice(0, 10) || v4Today(), verify);
       if (have >= (task.reportMin || 1)) { task.status = 'done'; task.reviewed = new Date().toISOString(); task.feedback = `日報核對通過（${have}/${task.reportMin || 1}）`; changed = true; }
     }
     if (task.status === 'done' && !task.rewarded) {
@@ -263,10 +263,10 @@ function v4DecorateAssignCards() {
     meta.textContent = `${task.verify === 'report' ? '📊 日報判定' : '👑 店長判定'}${exp ? `・難度${V4_TIER_NAME[task.tier] || ''} +${exp} EXP` : ''}`;
     card.querySelector('h4')?.after(meta);
     if (task.verify === 'report' && task.status === 'todo' && area) {
-      const have = v4ReportSum(task.reportField, (task.created || '').slice(0, 10), verify);
+      const have = v4ReportSum(task.reportTrips || [], (task.created || '').slice(0, 10), verify);
       const p = document.createElement('p');
       p.className = 'v4-assign-progress';
-      p.textContent = `日報「${V4_REPORT_FIELDS[task.reportField] || task.reportField}」${have}/${task.reportMin || 1}，公司日報同步後達標會自動完成`;
+      p.textContent = `日報「${v4cRuleText(task.reportTrips, task.reportMin).replace(/ 累計.*$/, '')}」${have}/${task.reportMin || 1} 筆，公司日報同步後達標會自動完成`;
       area.replaceWith(p);
     }
   }
@@ -292,7 +292,7 @@ function v4DecorateVerifyModal(routeKey, id) {
   const growth = `<p>難度${V4_TIER_NAME[cfg.tier] || ''}・+${V4_TIER_EXP[cfg.tier] || slot.rewardExp} EXP・成長：${abilities}</p>`;
   if (cfg.mode === 'report') {
     const p = v4ReportProgress(cfg, state.accepted[slot.id], state);
-    box.innerHTML = `<b>📊 日報判定</b><p>${state.accepted[slot.id]} 起公司日報（店長已審核）的「${V4_REPORT_FIELDS[cfg.field]}」：<em>${p.have}</em> / ${p.need}</p>${growth}
+    box.innerHTML = `<b>📊 日報判定</b><p>${state.accepted[slot.id]} 起公司日報（店長已審核）中「${v4Esc((cfg.trips || []).map(v4cTripLabel).join('、'))}」的行程：<em>${p.have}</em> / ${p.need} 筆</p>${growth}
       <p class="v4-verify-state">請照常在公司日報系統填寫；每天同步 2 次，累計達標會自動完成</p>`;
     if (submit) submit.textContent = '核對日報';
   } else {
@@ -342,7 +342,7 @@ function v4RenderReportCard() {
   const values = v4ReportValues(entry);
   card.className = `v4-report-card ${entry ? 'is-approved' : 'is-none'}`;
   card.innerHTML = `<div><small class="v4-en">DAILY REPORT</small><b class="v4-serif">今日日報（公司系統同步）</b>
-    <p>${entry ? Object.entries(V4_REPORT_FIELDS).map(([k, l]) => `${l} ${Number(values[k]) || 0}`).join('・') : '今天還沒有同步到店長已審核的日報'}</p>
+    <p>${entry ? (Object.entries(values).filter(([, n]) => Number(n) > 0).map(([k, n]) => `${v4Esc(v4cTripLabel(k))} ${n} 筆`).join('<br>') || '今天的日報沒有行程') : '今天還沒有同步到店長已審核的日報'}</p>
     <p>請在公司日報系統填寫，每天同步 2 次${state.lastSync ? `・上次同步 ${new Date(state.lastSync).toLocaleString('zh-TW', { hour12: false, month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}` : ''}</p></div>`;
 }
 
@@ -419,7 +419,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const originalSwitchTab = switchTab;
   switchTab = function (...args) { const r = originalSwitchTab.apply(this, args); v4SyncFromManager(); return r; };
   window.addEventListener('storage', event => {
-    if (event.key === V4_RESET_KEY) v4HandleReset();
+    if (event.key === V4_RESET_KEY || event.key === V4R_ACTIVE_KEY) v4HandleReset();
     else if (event.key === V4_VERIFY_KEY || event.key === 'sinyi-formal-manager-tasks-v1') v4SyncFromManager();
     else if (event.key === V4_CONTENT_KEY) { v4ApplyTaskConfig(); v4AfterVerifyChange(); }
   });

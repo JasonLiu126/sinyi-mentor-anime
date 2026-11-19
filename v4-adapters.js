@@ -39,7 +39,7 @@ function v4Player() {
   const exp = v4NumberFrom('header-user-exp', 0);
   const level = v4NumberFrom('header-user-level', 1);
   return {
-    name: v4Safe(() => hunterState.name && hunterState.name !== '新夥伴' ? hunterState.name : '', '') || '新星',
+    name: v4Safe(() => hunterState.name && hunterState.name !== '新夥伴' ? hunterState.name : '', '') || (typeof v4rActive === 'function' ? v4rRookie(v4rActive()).name : '新星'),
     level,
     exp,
     expPct: Math.round(((exp % 60) / 60) * 100),

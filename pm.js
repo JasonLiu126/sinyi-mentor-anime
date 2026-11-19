@@ -22,11 +22,11 @@ let pEditing = null; // { type: 'task', target } 或 { type: 'params' }
 const pEsc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const pTime = iso => iso ? new Date(iso).toLocaleString('zh-TW', { hour12: false, month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
 const pJson = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback; } catch { return fallback; } };
-const pPanel = (title, en, body, extra = '') => `<section class="m-panel"><header class="m-panel-head"><div><small class="m-en">${en}</small><h2 class="m-serif">${title}</h2></div>${extra}</header>${body}</section>`;
+const pPanel = (title, en, body, extra = '') => `<section class="m-panel"><header class="m-panel-head"><h2 class="m-serif">${title}</h2>${extra}</header>${body}</section>`;
 const pEmpty = text => `<p class="m-empty">${text}</p>`;
 const pSkill = key => Object.values(V4C_SKILLS).map(g => g.items[key]).find(Boolean) || key;
 const pAbilities = list => (list || []).map(([, k, w]) => `${pSkill(k)} ${Math.round(w * 100)}%`).join('、');
-const pRule = t => t.mode === 'report' ? `📊 ${V4C_REPORT_FIELDS[t.field] || ''} ≥ ${t.min || 1}` : t.native ? '👑 社區勘查審核' : '👑 店長判定';
+const pRule = t => t.mode === 'report' ? `📊 ${pEsc(v4cRuleText(t.trips, t.min))}` : t.native ? '👑 社區勘查審核' : '👑 店長判定';
 function pToast(text) {
   const el = document.getElementById('m-toast');
   el.textContent = text;
@@ -58,8 +58,8 @@ function pNewChange(fields) {
 function pDiff(c) {
   if (c.type === 'restore') return `<p>還原到第 ${c.restoreTo} 版的完整內容</p>`;
   const before = c.before || {}, after = c.after || {};
-  const label = { title: '任務名稱', mode: '判定方式', field: '日報欄位', min: '門檻', tier: '難度', abilities: '成長能力', ...V4C_PARAM_NAMES };
-  const show = (k, v) => k === 'abilities' ? pAbilities(v) : k === 'mode' ? (v === 'report' ? '日報判定' : '店長判定') : k === 'field' ? (V4C_REPORT_FIELDS[v] || '—') : k === 'tier' ? V4C_TIERS[v]?.[0] : v ?? '—';
+  const label = { title: '任務名稱', mode: '判定方式', trips: '日報行程', min: '門檻（筆）', tier: '難度', abilities: '成長能力', ...V4C_PARAM_NAMES };
+  const show = (k, v) => k === 'abilities' ? pAbilities(v) : k === 'mode' ? (v === 'report' ? '日報判定' : '店長判定') : k === 'trips' ? ((v || []).map(v4cTripLabel).join('、') || '—') : k === 'tier' ? V4C_TIERS[v]?.[0] : v ?? '—';
   const rows = Object.keys(after).filter(k => JSON.stringify(before[k]) !== JSON.stringify(after[k]));
   return rows.length ? `<table class="m-table"><thead><tr><th>欄位</th><th>原本</th><th>改成</th></tr></thead><tbody>${rows.map(k => `<tr><td>${label[k] || k}</td><td>${pEsc(show(k, before[k]))}</td><td><b>${pEsc(show(k, after[k]))}</b></td></tr>`).join('')}</tbody></table>` : '<p class="m-muted">沒有實際差異</p>';
 }
@@ -77,7 +77,7 @@ function pTasksView() {
   const mine = state.changes.filter(c => ['draft', 'pending', 'returned'].includes(c.status) && c.type !== 'params' && c.type !== 'restore');
   const open = id => state.changes.find(c => c.type === 'task' && c.target === id && ['draft', 'pending'].includes(c.status));
   const editor = pEditing?.type === 'task' ? pTaskEditor(pEditing.target, pub.tasks[pEditing.target]) : '';
-  return `<div class="m-title"><small class="m-en">QUEST TEMPLATES</small><h1 class="m-serif">任務範本</h1><p>修改系統任務的名稱、判定方式、難度與成長能力。改完送 PO 核准，核准後（到生效日）新人 APP 套用；新人已接取的任務沿用接取當時的設定。</p></div>
+  return `<div class="m-title"><h1 class="m-serif">任務範本</h1><p>修改系統任務的名稱、判定方式、難度與成長能力。改完送 PO 核准，核准後（到生效日）新人 APP 套用；新人已接取的任務沿用接取當時的設定。</p></div>
     ${editor}
     ${mine.length ? pPanel('我的草稿與送審', 'CHANGES', mine.map(c => pChangeCard(c, c.status === 'pending' ? '' : `<div class="m-actions"><button type="button" class="m-btn-gold" data-submit="${c.id}">送 PO 核准</button><button type="button" class="m-btn-ghost" data-drop="${c.id}">刪除草稿</button></div>`)).join('')) : ''}
     ${pPanel('系統任務', 'TEMPLATES', `<table class="m-table"><thead><tr><th>路線</th><th>任務</th><th>判定</th><th>難度</th><th>成長能力</th><th></th></tr></thead><tbody>
@@ -93,8 +93,8 @@ function pTaskEditor(id, t) {
     ${t.native ? '<p class="m-muted">社區勘查沿用既有流程（店長在後台審核勘查內容），判定方式不可修改。</p>' : `<fieldset class="m-field"><legend>判定方式</legend>
       <label class="m-check"><input type="radio" name="mode" value="report" ${t.mode === 'report' ? 'checked' : ''}>📊 日報判定</label>
       <label class="m-check"><input type="radio" name="mode" value="manager" ${t.mode === 'manager' ? 'checked' : ''}>👑 店長判定</label></fieldset>
-    <div class="m-form-row m-report-rule" ${t.mode === 'report' ? '' : 'hidden'}><label class="m-field">日報欄位<select name="field">${Object.entries(V4C_REPORT_FIELDS).map(([k, l]) => `<option value="${k}" ${t.field === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-      <label class="m-field">門檻<input type="number" name="min" min="1" max="99" value="${t.min || 1}"></label></div>`}
+    <div class="m-report-rule" ${t.mode === 'report' ? '' : 'hidden'}><fieldset class="m-field"><legend>日報行程（公司日報的行程項目／方式／經營行為，任一筆都算）</legend>${v4cTripPickerHTML('trips', t.trips || [])}</fieldset>
+      <label class="m-field">門檻（接任務起累計幾筆）<input type="number" name="min" min="1" max="99" value="${t.min || 1}"></label></div>`}
     <label class="m-field">難度<select name="tier">${Object.entries(V4C_TIERS).map(([k, [n, e]]) => `<option value="${k}" ${t.tier === k ? 'selected' : ''}>${n}（+${e} EXP）</option>`).join('')}</select></label>
     <fieldset class="m-field"><legend>成長能力（1～3 項，權重合計 100%）</legend>${ab.map((a, i) => `<div class="m-ability-row"><select name="ability${i}">${skillOptions(a ? `${a[0]}:${a[1]}` : '')}</select><input type="number" name="weight${i}" min="0" max="100" step="10" value="${a ? Math.round(a[2] * 100) : 0}"><span>%</span></div>`).join('')}</fieldset>
     <div class="m-form-row"><label class="m-field">生效日（選填，空白＝核准後立即生效）<input type="date" name="effectiveAt" min="${v4cToday()}"></label>
@@ -106,7 +106,7 @@ function pParamsView() {
   const state = pState();
   const pub = v4cPublished(state);
   const open = state.changes.filter(c => c.type === 'params' && ['draft', 'pending', 'returned'].includes(c.status));
-  return `<div class="m-title"><small class="m-en">SETTINGS</small><h1 class="m-serif">系統參數</h1><p>店長派發上限、審核期限、退回上限由總部統一設定，修改同樣要 PO 核准。</p></div>
+  return `<div class="m-title"><h1 class="m-serif">系統參數</h1><p>店長派發上限、審核期限、退回上限由總部統一設定，修改同樣要 PO 核准。</p></div>
     ${open.length ? pPanel('送審中的修改', 'CHANGES', open.map(c => pChangeCard(c, c.status === 'pending' ? '' : `<div class="m-actions"><button type="button" class="m-btn-gold" data-submit="${c.id}">送 PO 核准</button><button type="button" class="m-btn-ghost" data-drop="${c.id}">刪除草稿</button></div>`)).join('')) : ''}
     ${pPanel('目前生效的參數', 'PARAMS', `<form id="p-params-form" class="m-assign-form">
       ${Object.entries(V4C_PARAM_NAMES).map(([k, l]) => `<label class="m-field">${l}<input type="number" name="${k}" min="1" max="999" value="${pub.params[k]}" ${open.some(c => c.status === 'pending') ? 'disabled' : ''}></label>`).join('')}
@@ -118,7 +118,7 @@ function pApprovalsView() {
   const state = pState();
   const pending = state.changes.filter(c => c.status === 'pending');
   const me = pMe();
-  return `<div class="m-title"><small class="m-en">APPROVAL</small><h1 class="m-serif">PO 核准</h1><p>所有遊戲內容的修改都要產品負責人（PO）核准才會上架；不能核准自己送出的修改。</p></div>
+  return `<div class="m-title"><h1 class="m-serif">PO 核准</h1><p>所有遊戲內容的修改都要產品負責人（PO）核准才會上架；不能核准自己送出的修改。</p></div>
     ${pIsPO() ? '' : '<div class="m-alert">目前身分是 PM：只能查看。切換成 PO 身分才能核准或退回。</div>'}
     ${pPanel('待核准', 'PENDING', pending.length ? pending.map(c => pChangeCard(c, pIsPO() && c.createdBy !== me.emp ? `<label class="m-field">退回原因（退回時必填）<textarea rows="2" maxlength="300" data-feedback></textarea></label>
       <div class="m-actions"><button type="button" class="m-btn-gold" data-approve="${c.id}">核准上架</button><button type="button" class="m-btn-red" data-return="${c.id}">退回</button></div>` : pIsPO() ? '<p class="m-muted">這是你自己送出的修改，需由其他 PO 核准。</p>' : '')).join('') : pEmpty('目前沒有待核准的修改。'), `<span class="m-badge">${pending.length} 件</span>`)}`;
@@ -128,7 +128,7 @@ function pVersionsView() {
   const state = pState();
   const approved = v4cApproved(state);
   const today = v4cToday();
-  return `<div class="m-title"><small class="m-en">VERSIONS</small><h1 class="m-serif">版本紀錄</h1><p>每次核准都是一個新版本。出問題時可還原到任一版，還原也要 PO 核准。</p></div>
+  return `<div class="m-title"><h1 class="m-serif">版本紀錄</h1><p>每次核准都是一個新版本。出問題時可還原到任一版，還原也要 PO 核准。</p></div>
     ${pPanel('版本', 'HISTORY', `<table class="m-table"><thead><tr><th>版本</th><th>內容</th><th>送出／核准</th><th>生效</th><th></th></tr></thead><tbody>
       <tr><td class="m-en">v0</td><td>預設內容</td><td>—</td><td>已生效</td><td>${approved.length ? '<button type="button" class="m-btn-ghost" data-restore="0">還原到此版</button>' : ''}</td></tr>
       ${approved.map((c, i) => `<tr><td class="m-en">v${i + 1}</td><td>${pTarget(c)}${c.note ? `<br><small class="m-muted">${pEsc(c.note)}</small>` : ''}</td><td>${pEsc(c.createdBy)} → ${pEsc(c.approvedBy)}<br><small class="m-muted">${pTime(c.approvedAt)}</small></td><td>${!c.effectiveAt || c.effectiveAt <= today ? '已生效' : `${pEsc(c.effectiveAt)} 生效`}</td><td>${i + 1 < approved.length ? `<button type="button" class="m-btn-ghost" data-restore="${i + 1}">還原到此版</button>` : '<span class="m-tag is-teal">最新</span>'}</td></tr>`).join('')}</tbody></table>`)}`;
@@ -136,7 +136,7 @@ function pVersionsView() {
 
 function pStaffView() {
   const state = pState();
-  return `<div class="m-title"><small class="m-en">STAFF</small><h1 class="m-serif">名單</h1><p>輸入員工編號加入 PM 或 PO。登入一樣用公司 SSO，系統用員工編號對照這份名單決定能不能進 PM 後台。</p></div>
+  return `<div class="m-title"><h1 class="m-serif">名單</h1><p>輸入員工編號加入 PM 或 PO。登入一樣用公司 SSO，系統用員工編號對照這份名單決定能不能進 PM 後台。</p></div>
     <div class="m-grid2">
       ${pPanel('加入成員', 'ADD', `<form id="p-staff-form" class="m-assign-form">
         <label class="m-field">員工編號<input name="emp" required maxlength="10" pattern="[A-Za-z0-9]{4,10}" placeholder="例如：000123" inputmode="numeric"></label>
@@ -147,17 +147,20 @@ function pStaffView() {
 }
 
 /* ---------- 使用統計 ---------- */
-function pLocalStats() {
-  const usage = pJson('sinyi-v4-usage-v1', { sessions: [] }).sessions || [];
-  const verify = pJson('sinyi-v4-task-verify-v1', {}) || {};
+// 某位新人的個人存檔（rookie-v4.js）
+const pR = (rid, key, fallback) => { try { return JSON.parse(v4rRead(rid, key) || 'null') ?? fallback; } catch { return fallback; } };
+function pRookieStats(r) {
+  const rid = r.id;
+  const usage = pR(rid, 'sinyi-v4-usage-v1', { sessions: [] }).sessions || [];
+  const verify = pR(rid, 'sinyi-v4-task-verify-v1', {}) || {};
   const assign = pJson('sinyi-formal-manager-tasks-v1', { tasks: [] }) || { tasks: [] };
-  const log = [...(pJson('sinyi-v4-task-log-v1', []) || []), ...(pJson('sinyi-v4-manager-log-v1', []) || [])];
-  const practice = pJson('sinyi-v4-practice-v1', []) || [];
-  const journey = pJson('sinyi-rpg-formal-journey-v1', {}) || {};
+  const log = [...(pR(rid, 'sinyi-v4-task-log-v1', []) || []), ...(pJson('sinyi-v4-manager-log-v1', []) || []).filter(e => (e.rookie || 'self') === rid)];
+  const practice = pR(rid, 'sinyi-v4-practice-v1', []) || [];
+  const journey = pR(rid, 'sinyi-rpg-formal-journey-v1', {}) || {};
   const minutes = Math.round(usage.reduce((s, x) => s + Math.max(0, Date.parse(x.end) - Date.parse(x.start)), 0) / 60000);
   const features = {};
   usage.forEach(x => Object.entries(x.features || {}).forEach(([k, v]) => { features[k] = (features[k] || 0) + v; }));
-  const mineAssigned = (assign.tasks || []).filter(t => t.member === 'self');
+  const mineAssigned = (assign.tasks || []).filter(t => t.member === rid);
   const acceptedSys = Object.keys(verify.accepted || {});
   const completed = log.filter(e => e.type === 'completed');
   const doneSys = new Set(completed.filter(e => e.source === 'system').map(e => e.taskId));
@@ -174,7 +177,7 @@ function pLocalStats() {
   }
   const avgH = list => list.length ? Math.round(list.reduce((a, b) => a + b, 0) / list.length / 36e5 * 10) / 10 : 0;
   return {
-    name: journey.name && journey.name !== '新夥伴' ? journey.name : '新星（本機新人）', branch: '信義松仁店', live: true,
+    name: journey.name && journey.name !== '新夥伴' ? journey.name : r.name, branch: V4R_BRANCHES[r.branch], live: true, id: rid,
     sessions: usage.length, minutes, features, accepted, done, active: Math.max(0, accepted - done - closed), ended: closed,
     workH: avgH(work), waitH: avgH(wait), practice: practice.length,
     passRate: practice.length ? Math.round(practice.filter(p => p.passed).length / practice.length * 100) : 0,
@@ -182,24 +185,32 @@ function pLocalStats() {
   };
 }
 const P_STAT_COLS = [['name', '新人'], ['branch', '分店'], ['sessions', '使用次數'], ['minutes', '使用時間（分）'], ['accepted', '任務數'], ['done', '完成'], ['active', '進行中'], ['ended', '結束／取消'], ['workH', '平均作業時間（時）'], ['waitH', '平均等待審核（時）'], ['practice', 'AI 對練次數'], ['passRate', '對練通過率（%）'], ['avgScore', '對練平均分']];
+function pStatRows() {
+  return V4R_ROOKIES.map(r => v4rHasData(r.id) ? pRookieStats(r) : { ...(P_DEMO_STATS.find(d => d.name === r.name) || { name: r.name, branch: V4R_BRANCHES[r.branch] }), id: r.id, live: false });
+}
 function pStatsView() {
-  const local = pLocalStats();
-  const rows = [local, ...P_DEMO_STATS];
+  const rows = pStatRows();
+  const local = rows.find(r => r.id === v4rActive() && r.live) || { features: {}, name: '' };
   const sum = k => rows.reduce((s, r) => s + (Number(r[k]) || 0), 0);
-  const feat = Object.entries(local.features).sort((a, b) => b[1] - a[1]);
-  return `<div class="m-title"><small class="m-en">ANALYTICS</small><h1 class="m-serif">使用統計</h1><p>全公司陪伴期新人的使用與成效。正式版可依期間、區、分店篩選；匯出格式依公司資料庫做法定案，原型先匯出 Excel 可開啟的 CSV。</p></div>
-    <div class="m-stats">
-      <div class="m-stat"><span>⏱</span><b class="m-en">${sum('minutes')}</b><small>總使用分鐘</small></div>
-      <div class="m-stat"><span>📜</span><b class="m-en">${sum('accepted')}</b><small>任務數</small></div>
-      <div class="m-stat"><span>✅</span><b class="m-en">${sum('done')}</b><small>已完成</small></div>
-      <div class="m-stat"><span>⚔</span><b class="m-en">${sum('practice')}</b><small>AI 對練次數</small></div>
+  const feat = Object.entries(local.features || {}).sort((a, b) => b[1] - a[1]);
+  const live = rows.filter(r => r.live);
+  const base = live.length ? live : rows;
+  const avg = k => base.length ? Math.round(base.reduce((t, r) => t + (Number(r[k]) || 0), 0) / base.length * 10) / 10 : 0;
+  const doneRate = sum('accepted') ? Math.round(sum('done') / sum('accepted') * 100) : 0;
+  return `<div class="m-title"><h1 class="m-serif">使用統計</h1><p>全公司陪伴期新人的使用與成效（正式版可依期間、區、分店篩選）。</p></div>
+    <div class="m-stats m-stats-5">
+      <div class="m-stat"><b class="m-en">${rows.length}</b><small>陪伴中新人</small></div>
+      <div class="m-stat"><b class="m-en">${avg('minutes')}</b><small>平均每人使用分鐘</small></div>
+      <div class="m-stat"><b class="m-en">${doneRate}%</b><small>任務完成率</small></div>
+      <div class="m-stat"><b class="m-en">${avg('waitH')}</b><small>平均等待審核（小時）</small></div>
+      <div class="m-stat"><b class="m-en">${avg('passRate')}%</b><small>AI 對練通過率</small></div>
     </div>
-    ${pPanel('新人明細', 'ROOKIES', `<div class="m-table-wrap"><table class="m-table"><thead><tr>${P_STAT_COLS.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${P_STAT_COLS.map(([k]) => `<td>${k === 'name' ? `${pEsc(r.name)}${r.live ? '' : '<br><small class="m-muted">示範</small>'}` : pEsc(r[k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`,
-      '<button type="button" class="m-btn-gold" id="p-export">匯出 Excel</button>')}
-    ${pPanel('本機新人：各功能停留時間', 'FEATURES', feat.length ? `<table class="m-table"><thead><tr><th>功能</th><th>停留時間（分）</th></tr></thead><tbody>${feat.map(([k, v]) => `<tr><td>${P_TAB_NAMES[k] || pEsc(k)}</td><td class="m-en">${Math.round(v / 6) / 10}</td></tr>`).join('')}</tbody></table>` : pEmpty('還沒有使用紀錄。'))}`;
+    ${pPanel('明細', '', `<details class="m-advanced"><summary>展開每位新人的明細（${P_STAT_COLS.length} 項指標）</summary><div class="m-table-wrap"><table class="m-table"><thead><tr>${P_STAT_COLS.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${P_STAT_COLS.map(([k]) => `<td>${k === 'name' ? `${pEsc(r.name)}${r.live ? '' : '<br><small class="m-muted">尚未開始・示範數字</small>'}` : pEsc(r[k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+      ${feat.length ? `<p class="m-muted" style="margin-top:12px">新人 APP 目前新人（${pEsc(local.name)}）各功能停留：${feat.map(([k, v]) => `${P_TAB_NAMES[k] || pEsc(k)} ${Math.round(v / 6) / 10} 分`).join('、')}</p>` : ''}</details>`,
+      '<button type="button" class="m-btn-gold" id="p-export">匯出 Excel</button>')}`;
 }
 function pExport() {
-  const rows = [pLocalStats(), ...P_DEMO_STATS];
+  const rows = pStatRows();
   const cell = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
   const csv = [P_STAT_COLS.map(([, l]) => l), ...rows.map(r => P_STAT_COLS.map(([k]) => r[k]))].map(line => line.map(cell).join(',')).join('\r\n');
   const url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
@@ -226,7 +237,11 @@ function pSubmitTask(form, mode) {
   if (!after.title) return pToast('請填寫任務名稱');
   if (!before.native) {
     after.mode = String(data.get('mode'));
-    if (after.mode === 'report') { after.field = String(data.get('field')); after.min = Math.max(1, parseInt(data.get('min'), 10) || 1); }
+    if (after.mode === 'report') {
+      try { after.trips = JSON.parse(String(data.get('trips') || '[]')); } catch { after.trips = []; }
+      if (!after.trips.length) return pToast('日報判定請至少選一種行程');
+      after.min = Math.max(1, parseInt(data.get('min'), 10) || 1);
+    }
   }
   const pick = Object.fromEntries(Object.keys(after).map(k => [k, before[k]]));
   if (JSON.stringify(pick) === JSON.stringify(after)) return pToast('內容沒有修改');
@@ -264,6 +279,7 @@ function pBind(main) {
   main.querySelector('[data-cancel-edit]')?.addEventListener('click', () => { pEditing = null; pRender(); });
   const taskForm = document.getElementById('p-task-form');
   if (taskForm) {
+    v4cBindTripPickers(taskForm);
     const rule = taskForm.querySelector('.m-report-rule');
     taskForm.querySelectorAll('[name="mode"]').forEach(r => r.addEventListener('change', () => { rule.hidden = taskForm.elements.mode.value !== 'report'; }));
     taskForm.addEventListener('submit', e => { e.preventDefault(); pSubmitTask(taskForm, e.submitter?.dataset.mode || 'draft'); });

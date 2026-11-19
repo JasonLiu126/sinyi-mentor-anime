@@ -1009,3 +1009,5 @@ svg.v5-hero { width: 80%; }
 .v4-notify-list p { margin: 2px 0 0; font-size: 12px; color: var(--v4-muted); }
 .v4-notify-list small { font-size: 11px; color: var(--v4-muted); }
 .v4-report-card.is-none { border-color: var(--v4-gold-dark); }
+.v4-notify-list li > div { flex: 1; min-width: 0; }
+.v4-rookie-go { flex: none; align-self: center; padding: 6px 12px; font-size: 13px; }

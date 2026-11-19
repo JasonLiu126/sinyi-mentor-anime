@@ -33,7 +33,7 @@ function v4NotifySnapshot() {
 function v4NotifyScan() {
   const now = v4NotifySnapshot();
   const state = v4NotifyLoad();
-  if (!state) { v4JsonSave(V4_NOTIFY_KEY, { items: [], seen: { ...now, due: {} } }); return; } // 第一次：只記現況，不補發
+  if (!state) { v4JsonSave(V4_NOTIFY_KEY, { items: [], seen: { ...now, tasks: {}, due: {} } }); return v4NotifyScan(); } // 第一次：送審狀態只記現況，未完成的指派任務照樣通知
   const seen = state.seen || {};
   const verify = v4VerifyLoad();
   const assign = v4AssignLoad();
@@ -109,11 +109,45 @@ function v4OpenNotify() {
 }
 function v4CloseNotify() { document.getElementById('v4-notify-modal')?.classList.add('hidden'); }
 
+/* ---------- 示範：切換新人（正式版每位新人用自己的帳號登入） ---------- */
+function v4BuildRookieSwitch() {
+  const hud = document.getElementById('v4-hud');
+  if (!hud || document.getElementById('v4-rookie-btn')) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'v4-rookie-btn';
+  btn.className = 'v4-notify-btn';
+  btn.setAttribute('aria-label', '切換新人（示範）');
+  btn.innerHTML = '<span aria-hidden="true">👤</span>';
+  btn.addEventListener('click', v4OpenRookieSwitch);
+  document.getElementById('v4-notify-btn')?.before(btn);
+}
+function v4OpenRookieSwitch() {
+  const modal = document.getElementById('v4-notify-modal');
+  const panel = modal.firstElementChild;
+  const active = v4rActive();
+  panel.innerHTML = `<div class="v4-quest-kicker"><small class="v4-en">DEMO</small><b class="v4-serif">切換新人</b></div>
+    <p class="v4-report-hint">示範用：正式版每位新人用自己的帳號登入。每位新人有自己的存檔，切換後會重新載入。</p>
+    <ul class="v4-notify-list">${V4R_ROOKIES.map(r => `<li class="${r.id === active ? 'is-new' : ''}"><span aria-hidden="true">${r.id === active ? '✅' : '👤'}</span><div><b>${v4Esc(r.name)}</b><p>${V4R_BRANCHES[r.branch]}${r.id === active ? '・目前' : v4rHasData(r.id) ? '' : '・尚未開始'}</p></div>${r.id === active ? '' : `<button type="button" class="v4-btn-gold v4-rookie-go" data-rookie="${r.id}">切換</button>`}</li>`).join('')}</ul>
+    <div class="v4-report-actions"><button type="button" class="v4-btn-ghost" onclick="v4CloseNotify()">取消</button></div>`;
+  panel.querySelectorAll('[data-rookie]').forEach(b => b.addEventListener('click', () => v4SwitchRookie(b.dataset.rookie)));
+  modal.classList.remove('hidden');
+}
+function v4SwitchRookie(id) {
+  v4UsageTick(0);
+  // 停止本頁寫入（避免重新載入前把目前新人的資料寫到下一位新人身上）
+  try { hunterStorageBlocked = true; } catch { /* 略過 */ }
+  try { formalQuizBlocked = true; } catch { /* 略過 */ }
+  try { managerStorageBlocked = true; } catch { /* 略過 */ }
+  v4UsageSession = 'blocked';
+  if (v4rSwitch(id)) location.reload();
+}
+
 /* ---------- 使用紀錄 ---------- */
 let v4UsageTab = 'tab-lobby';
 let v4UsageSession = null;
 function v4UsageTick(seconds) {
-  if (document.hidden) return;
+  if (document.hidden || v4UsageSession === 'blocked') return;
   const usage = v4JsonLoad(V4_USAGE_KEY, { sessions: [] });
   const now = new Date().toISOString();
   let session = usage.sessions.find(s => s.id === v4UsageSession);
@@ -153,6 +187,7 @@ function v4RecordPractice(reason) {
 /* ---------- 啟動與包裝 ---------- */
 window.addEventListener('DOMContentLoaded', () => {
   v4BuildNotify();
+  v4BuildRookieSwitch();
   const originalComplete = v4CompleteTask;
   v4CompleteTask = function (routeKey, id, content, via) {
     const done = originalComplete.call(this, routeKey, id, content, via);
