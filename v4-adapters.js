@@ -39,7 +39,7 @@ function v4Player() {
   const exp = v4NumberFrom('header-user-exp', 0);
   const level = v4NumberFrom('header-user-level', 1);
   return {
-    name: v4Safe(() => hunterState.name && hunterState.name !== '新夥伴' ? hunterState.name : '', '') || '新星',
+    name: v4Safe(() => hunterState.name && hunterState.name !== '新夥伴' ? hunterState.name : '', '') || (typeof v4rActive === 'function' ? v4rRookie(v4rActive()).name : '新星'),
     level,
     exp,
     expPct: Math.round(((exp % 60) / 60) * 100),
@@ -116,4 +116,23 @@ function v4DefaultParty() {
     .sort((a, b) => b.stars - a.stars || V4_RARITY_ORDER[b.rarity] - V4_RARITY_ORDER[a.rarity] || a.index - b.index)
     .slice(0, 3)
     .map(f => f.id);
+}
+
+// 依星等回傳角色圖 HTML（升星後換新造型）：
+// - 有單張去背圖（忍者 1～5、托尼 2★、傳承）就用 <img>
+// - 進化圖是多張檔案（超業、傳承五星）用對應星等的 <img>
+// - 進化圖是一張拼圖（托尼、陳總）就用 SVG 裁出該星等那一格
+function v4FigArtHTML(id, { stars = null, cls = '', alt = '' } = {}) {
+  const star = Math.max(1, Math.min(5, stars ?? v4Safe(() => getEquippedFigurineStars(id), 1)));
+  const img = src => `<img class="${cls}" src="${v4Esc(src)}" alt="${v4Esc(alt)}">`;
+  if (id === 'tony_ninja') return img(V4_ASSET + `ip/ninja${star}.png`);
+  const evo = v4Safe(() => globalThis.characterEvolutionCatalog[id], null);
+  if (id.startsWith('tony_') && star === 2) return img(V4_ASSET + 'ip/' + id.slice(5) + '2.png');
+  if (evo?.files) return img('./' + evo.files[star - 1]);
+  if (evo?.file && evo.frames?.[star - 1]) {
+    const [x, y, w, h] = evo.frames[star - 1];
+    return `<svg class="${cls}" viewBox="${x} ${y} ${w} ${h}" preserveAspectRatio="xMidYMax meet" role="img" aria-label="${v4Esc(alt)}"><image href="./${v4Esc(evo.file)}" width="${evo.width}" height="${evo.height}"/></svg>`;
+  }
+  const src = v4FigArt(id);
+  return src ? img(src) : '';
 }

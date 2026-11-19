@@ -164,17 +164,13 @@ function playStarUpAnimation({ id, from, to } = {}) {
   const info = v4FigInfo(id);
   const evo = v4Safe(() => globalThis.characterEvolutionCatalog[id], null) || v4Safe(() => globalThis.superSalesCatalog.find(f => f.id === id), null);
   const outfit = evo?.names?.[to - 1] || '';
-  const newArt = v4FigArt(id);
-  const oldArt = (() => {
-    if (id.startsWith('tony_ninja')) return V4_ASSET + `ip/ninja${from}.png`;
-    if (evo?.files) return './' + evo.files[from - 1];
-    return newArt;
-  })();
+  // 依星等取舊／新造型（托尼等拼圖式進化圖用 SVG 裁出對應那一格）
+  const art = (n, cls) => v4FigArtHTML(id, { stars: n, cls, alt: info?.name || '' });
   const stars = n => Array.from({ length: info?.maxStars || 5 }, (_, k) => `<i class="${k < n ? 'on' : ''} ${k === to - 1 ? 'is-new' : ''}">★</i>`).join('');
   return v5Play('starup', [
-    { ms: 1000, html: `<div class="v5-frags">${'<i>💎</i>'.repeat(5)}</div>${v5Img(oldArt, 'v5-hero')}<div class="v5-stars">${stars(to)}</div>` },
-    { ms: 1100, html: `${v5Img(oldArt, 'v5-hero is-dissolve')}${v5Img(newArt, 'v5-hero is-scan')}<div class="v5-stars">${stars(to)}</div>` },
-    { html: `${v5Rays('is-purple')}${v5Img(newArt, 'v5-hero')}<p class="v5-awaken-name v5-serif">${v4Esc(info?.name || '')}</p>
+    { ms: 1000, html: `<div class="v5-frags">${'<i>💎</i>'.repeat(5)}</div>${art(from, 'v5-hero')}<div class="v5-stars">${stars(to)}</div>` },
+    { ms: 1100, html: `${art(from, 'v5-hero is-dissolve')}${art(to, 'v5-hero is-scan')}<div class="v5-stars">${stars(to)}</div>` },
+    { html: `${v5Rays('is-purple')}${art(to, 'v5-hero')}<p class="v5-awaken-name v5-serif">${v4Esc(info?.name || '')}</p>
       <ul class="v5-gains"><li>星等 <b>${to}★</b></li>${outfit ? `<li>新外觀 <b>${v4Esc(outfit)}</b></li>` : ''}</ul>
       <div class="v5-actions"><button type="button" class="v4-btn-ghost v5-btn" data-v5-close>關閉</button><button type="button" class="v4-btn-gold v5-btn" data-v5-action="lobby">回到主城看看</button></div>` }
   ]);

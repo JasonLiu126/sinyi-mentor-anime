@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PM 後台・信義新星</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Noto+Serif+TC:wght@700;900&family=Cinzel:wght@700;900&display=swap">
+  <link rel="stylesheet" href="./manager.css?v=m6">
+</head>
+<body>
+  <div class="m-shell">
+    <aside class="m-side">
+      <div class="m-brand">
+        <img src="./assets/v4/mentor_guild.jpg" alt="">
+        <div><b class="m-serif">PM 後台</b></div>
+      </div>
+      <label class="m-viewer">示範身分（正式版由 SSO＋名單判斷）<select id="p-me"></select></label>
+      <nav class="m-nav" aria-label="PM 後台功能">
+        <button type="button" data-view="tasks" aria-current="page"><span aria-hidden="true">📜</span>任務範本</button>
+        <button type="button" data-view="params"><span aria-hidden="true">⚙</span>系統參數</button>
+        <button type="button" data-view="approvals"><span aria-hidden="true">✅</span>PO 核准<i class="m-count" data-count="approvals"></i></button>
+        <button type="button" data-view="versions"><span aria-hidden="true">🕘</span>版本紀錄</button>
+        <button type="button" data-view="staff"><span aria-hidden="true">👥</span>名單</button>
+        <button type="button" data-view="stats"><span aria-hidden="true">📈</span>使用統計</button>
+      </nav>
+      <p class="m-note">尚未連接資料庫：內容變更存在這台瀏覽器，新人 APP 與店長後台在同一台瀏覽器會即時套用。</p>
+      <a class="m-link" href="./index.html" target="_blank" rel="noopener">開啟新人 APP ↗</a>
+      <a class="m-link" href="./manager.html" target="_blank" rel="noopener">開啟店長後台 ↗</a>
+    </aside>
+    <main class="m-main" id="m-main" tabindex="-1"></main>
+  </div>
+  <div class="m-toast" id="m-toast" role="status" aria-live="polite"></div>
+  <script src="./rookie-v4.js?v=m5"></script>
+  <script src="./trip-catalog.local.js" onerror="this.remove()"></script>
+  <script src="./content-v4.js?v=c7"></script>
+  <script src="./pm.js?v=m6"></script>
+</body>
+</html>

@@ -31,21 +31,32 @@ function v4GroupLevel(groupKey) {
   return calculateLevelFromScore(total);
 }
 
-function v4RadarSVG() {
+// 雷達分類：綜合（上方六軸）／專業／開發／銷售（各分類全部技能）
+const V4_RADAR_SHORT = { market: '行情', law: '法規', dev_resource: '資源盤點', sal_resource: '資源盤點' };
+let v4RadarCat = 'all';
+function v4RadarAxes(cat) {
+  if (cat === 'all' || !V4_HB_GROUP[cat]) return V4_RADAR_AXES;
+  const group = V4_HB_GROUP[cat];
+  return v4Safe(() => handbookDatabase[group].items, []).map(item => [V4_RADAR_SHORT[item.key] || item.name, group, item.key]);
+}
+function v4RadarSVG(cat = 'all') {
+  const axes = v4RadarAxes(cat);
+  const n = Math.max(3, axes.length);
   const cx = 110, cy = 110, r = 80;
   const point = (i, k) => {
-    const a = -Math.PI / 2 + i * Math.PI / 3;
+    const a = -Math.PI / 2 + i * (Math.PI * 2 / n);
     return [cx + Math.cos(a) * r * k, cy + Math.sin(a) * r * k];
   };
-  const ring = k => V4_RADAR_AXES.map((_, i) => point(i, k).map(n => n.toFixed(1)).join(',')).join(' ');
-  const values = V4_RADAR_AXES.map(([, g, key]) => v4SkillRatio(v4Skill(g, key)));
+  const ring = k => axes.map((_, i) => point(i, k).map(n => n.toFixed(1)).join(',')).join(' ');
+  const values = axes.map(([, g, key]) => v4SkillRatio(v4Skill(g, key)));
   const shape = values.map((v, i) => point(i, v).map(n => n.toFixed(1)).join(',')).join(' ');
-  const labels = V4_RADAR_AXES.map(([name], i) => {
+  const V4_RADAR_AXES_ = axes;
+  const labels = V4_RADAR_AXES_.map(([name], i) => {
     const [x, y] = point(i, 1.22);
     return `<text x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="middle">${name}</text>`;
   }).join('');
-  const spokes = V4_RADAR_AXES.map((_, i) => { const [x, y] = point(i, 1); return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; }).join('');
-  return `<svg class="v4-radar" viewBox="-14 -6 248 232" role="img" aria-label="能力雷達：${V4_RADAR_AXES.map(([n], i) => n + ' ' + Math.round(values[i] * 100) + '%').join('、')}">
+  const spokes = axes.map((_, i) => { const [x, y] = point(i, 1); return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; }).join('');
+  return `<svg class="v4-radar" viewBox="-14 -6 248 232" role="img" aria-label="能力雷達：${axes.map(([n], i) => n + ' ' + Math.round(values[i] * 100) + '%').join('、')}">
     <g class="v4-radar-grid"><polygon points="${ring(1)}"/><polygon points="${ring(0.66)}"/><polygon points="${ring(0.33)}"/>${spokes}</g>
     <polygon class="v4-radar-shape" points="${shape}"/>${labels}</svg>`;
 }
@@ -64,7 +75,13 @@ function v4BuildHandbook() {
   const tabs = document.getElementById('hb-btn-hard')?.parentElement;
   if (tabs) tabs.id = 'v4-hb-tabs';
   const labels = { hard: '專業天賦', dev: '開發天賦', sal: '銷售天賦' };
-  for (const [k, v] of Object.entries(labels)) { const b = document.getElementById('hb-btn-' + k); if (b) b.textContent = v; }
+  for (const [k, v] of Object.entries(labels)) {
+    const b = document.getElementById('hb-btn-' + k);
+    if (!b) continue;
+    b.textContent = v;
+    // 點下方天賦分頁時，上方雷達也切到同一分類
+    b.addEventListener('click', () => { v4RadarCat = k; v4RenderHandbook(); });
+  }
   const tree = document.createElement('section');
   tree.id = 'v4-talent-tree';
   document.getElementById('handbook-items-list')?.before(tree);
@@ -80,19 +97,27 @@ function v4RenderHandbook() {
   hero.innerHTML = `<div class="v4-hero-rays" aria-hidden="true"></div>
     <img class="v4-hero-art" src="${v4ClassArt(code)}" alt="${cls.name}">
     <span class="v4-hero-name v4-serif">Lv.${player.level} ${cls.name}</span>
-    ${v4RadarSVG()}
-    <div class="v4-hero-levels">
-      <div class="is-hard"><b class="v4-serif">Lv${lv.hard}</b><span>專業</span></div>
-      <div class="is-dev"><b class="v4-serif">Lv${lv.dev}</b><span>開發</span></div>
-      <div class="is-sal"><b class="v4-serif">Lv${lv.sal}</b><span>銷售</span></div>
+    ${v4RadarSVG(v4RadarCat)}
+    <div class="v4-hero-levels" role="group" aria-label="切換雷達：綜合、專業、開發、銷售">
+      <button type="button" class="is-all" aria-pressed="${v4RadarCat === 'all'}" onclick="v4SetRadar('all')"><b class="v4-serif">綜合</b><span>能力</span></button>
+      <button type="button" class="is-hard" aria-pressed="${v4RadarCat === 'hard'}" onclick="v4SetRadar('hard')"><b class="v4-serif">Lv${lv.hard}</b><span>專業</span></button>
+      <button type="button" class="is-dev" aria-pressed="${v4RadarCat === 'dev'}" onclick="v4SetRadar('dev')"><b class="v4-serif">Lv${lv.dev}</b><span>開發</span></button>
+      <button type="button" class="is-sal" aria-pressed="${v4RadarCat === 'sal'}" onclick="v4SetRadar('sal')"><b class="v4-serif">Lv${lv.sal}</b><span>銷售</span></button>
     </div>`;
   const partyCount = v4Safe(() => v4PartyGet().length, 0);
   const title = player.level >= 10 ? '王牌' : player.level >= 5 ? '新銳' : '新星';
   document.getElementById('v4-gear').innerHTML = `
     <div class="v4-gear-slot"><span aria-hidden="true">🛡</span><b>${V4_OUTFITS[code] || '冒險披風'}</b></div>
     <div class="v4-gear-slot"><span aria-hidden="true">👑</span><b>稱號：${title}</b></div>
-    <button type="button" class="v4-gear-slot" onclick="switchTab('tab-showcase')"><span aria-hidden="true">👥</span><b>夥伴 ×${partyCount}</b></button>
+    <div class="v4-gear-slot"><span aria-hidden="true">👥</span><b>夥伴 ×${partyCount}</b></div>
     <div class="v4-gear-slot is-locked"><span aria-hidden="true">🔒</span><b>Lv.5 解鎖</b></div>`;
+}
+
+// 切換雷達分類；選專業／開發／銷售時，下方天賦分頁也一起切過去
+function v4SetRadar(cat) {
+  v4RadarCat = cat;
+  v4RenderHandbook();
+  if (cat !== 'all' && typeof switchHandbookTab === 'function') switchHandbookTab(cat);
 }
 
 // 天賦樹：第一個技能為根，其餘為分支；有分數的節點亮起並與根連線

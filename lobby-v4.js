@@ -56,11 +56,10 @@ function v4BuildHud() {
   const hud = document.createElement('div');
   hud.id = 'v4-hud';
   hud.innerHTML = `
-    <button type="button" class="v4-hud-avatar" id="v4-hud-avatar" onclick="switchTab('tab-handbook')" aria-label="角色"><span class="v4-hud-lv">Lv.<span id="v4-hud-level">1</span></span></button>
+    <div class="v4-hud-avatar" id="v4-hud-avatar" role="img" aria-label="我的角色"><span class="v4-hud-lv">Lv.<span id="v4-hud-level">1</span></span></div>
     <div class="v4-hud-name"><b id="v4-hud-name">新星</b><div class="v4-expbar" title="EXP"><i id="v4-hud-exp"></i></div></div>
-    <div class="v4-chip" title="金幣">${V4_ICON.coin}<span id="v4-hud-coins">0</span></div>
-    <div class="v4-chip" title="盲盒券">${V4_ICON.gem}<span id="v4-hud-tickets">0</span></div>
-    <button type="button" class="v4-icon-btn" id="v4-hud-mail" onclick="switchTab('tab-tasks')" aria-label="冒險日誌">${V4_ICON.mail}<span class="v4-badge" id="v4-hud-mail-badge" hidden></span></button>`;
+    <div class="v4-chip" title="金幣"><span class="v4-chip-emoji" aria-hidden="true">🪙</span><span id="v4-hud-coins">0</span></div>
+    <div class="v4-chip" title="盲盒券"><span class="v4-chip-emoji" aria-hidden="true">🎟️</span><span id="v4-hud-tickets">0</span></div>`;
   const shell = document.getElementById('app-shell');
   shell.insertBefore(hud, document.getElementById('app-main-scroll'));
 }
@@ -77,35 +76,33 @@ function v4BuildLobby() {
   lobby.className = 'hidden';
   lobby.setAttribute('aria-label', '主城');
   lobby.innerHTML = `${v4Skyline()}
-    <div class="v4-side v4-side-left">
-      <button type="button" class="v4-side-btn" onclick="v4OpenGuild()"><span class="v4-side-icon">${V4_ICON.crown}<span class="v4-badge" id="v4-badge-guild" hidden></span></span><span>公會長</span></button>
-      <button type="button" class="v4-side-btn" onclick="hunterHome()"><span class="v4-side-icon">${V4_ICON.calendar}<span class="v4-badge" id="v4-badge-daily" hidden>!</span></span><span>每日修練</span></button>
-      <button type="button" class="v4-side-btn" onclick="formalQuizOpen()"><span class="v4-side-icon">${V4_ICON.spark}</span><span>覺醒試煉</span></button>
-    </div>
     <div class="v4-side v4-side-right">
-      <button type="button" class="v4-limited" onclick="switchTab('tab-showcase')" aria-label="限時召喚">
+      <div class="v4-limited" role="img" aria-label="本期限時召喚 UP">
         <span class="v4-limited-clip"><img src="${V4_ASSET}ip/dino2.png" alt=""><small>LIMITED</small><b>限時<br>召喚</b><em>本期 UP</em></span>
-        <span class="v4-badge"></span>
-      </button>
-      <button type="button" class="v4-side-btn" onclick="openAceBattle()"><span class="v4-side-icon">${V4_ICON.arena}</span><span>IP 擂台</span></button>
+      </div>
     </div>
     <div class="v4-stage" id="v4-stage">
       <div class="v4-stage-glow"></div>
-      <img class="v4-mate v4-mate-back" id="v4-mate-3" alt="" hidden>
-      <img class="v4-mate v4-mate-l" id="v4-mate-1" alt="">
-      <img class="v4-mate v4-mate-r" id="v4-mate-2" alt="">
+      <div class="v4-mate v4-mate-back" id="v4-mate-3" hidden></div>
+      <div class="v4-mate v4-mate-l" id="v4-mate-1"></div>
+      <div class="v4-mate v4-mate-r" id="v4-mate-2"></div>
       <img class="v4-hero" id="v4-hero" alt="我的角色">
       <div class="v4-bubble v4-parch" id="v4-bubble" aria-live="polite"></div>
     </div>
     <div class="v4-ribbon" id="v4-class-ribbon">社區開發刺客</div>
     <div class="v4-lobby-floor">
       <div class="v4-lobby-bottom">
-        <button type="button" class="v4-quest-track" onclick="switchTab('tab-tasks')">
+        <div class="v4-quest-track" aria-label="目前主線">
           <div><span class="v4-tag-main">主線</span><span class="v4-quest-title" id="v4-quest-title">—</span></div>
           <div><span class="v4-mini-bar"><i id="v4-quest-bar"></i></span><span class="v4-quest-count" id="v4-quest-count">0/0</span></div>
-        </button>
+        </div>
         <button type="button" class="v4-btn-gold v4-go" onclick="v4GoAdventure()">出發冒險<small id="v4-go-target">→ 冒險地圖</small></button>
       </div>
+      <button type="button" class="v4-all-quests" onclick="switchTab('tab-tasks')" aria-label="查看全部任務（冒險日誌）">
+        <span class="v4-all-quests-icon" aria-hidden="true">📜</span>
+        <span class="v4-all-quests-text"><b class="v4-serif">全部任務</b><small>冒險日誌・主線／支線／公會長指派</small></span>
+        <span class="v4-all-quests-count" id="v4-all-quests-count">0 項進行中</span><span aria-hidden="true">›</span>
+      </button>
     </div>`;
   const main = document.getElementById('app-main-scroll');
   main.insertBefore(lobby, document.getElementById('tab-tasks'));
@@ -214,7 +211,6 @@ function v4BuildPartyPanel() {
     <div class="v4-party-actions">
       <button type="button" class="v4-btn-gold" onclick="v4ScrollToSummon()">召喚新夥伴</button>
       <button type="button" class="v4-btn-ghost" onclick="openFamilyFusion()">融合</button>
-      <button type="button" class="v4-btn-ghost" onclick="openAceBattle()">擂台</button>
     </div>`;
   tab.prepend(panel);
 }
@@ -281,7 +277,7 @@ function v4PartyAssign(id) {
   v4RenderParty();
 }
 function v4ScrollToSummon() {
-  const target = document.querySelector('#tab-showcase > #v4-party + *');
+  const target = document.getElementById('v4-altar');
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -330,7 +326,9 @@ function v4RenderLobby() {
     if (!img) return;
     const mate = mates[i];
     img.hidden = !mate;
-    if (mate) { if (img.getAttribute('src') !== mate.img) img.src = mate.img; img.alt = '夥伴 ' + mate.name; }
+    // 依穿用星等顯示造型（升星後主城夥伴也換新外觀）
+    const key = mate ? mate.id + ':' + v4Safe(() => getEquippedFigurineStars(mate.id), 1) : '';
+    if (mate && img.dataset.v4Art !== key) { img.dataset.v4Art = key; img.innerHTML = v4FigArtHTML(mate.id, { alt: '夥伴 ' + mate.name }); }
   });
 
   const quest = v4CurrentMainQuest();
@@ -340,6 +338,13 @@ function v4RenderLobby() {
 
   const target = v4TargetBuilding();
   document.getElementById('v4-go-target').textContent = target ? '→ ' + target.name : '→ 冒險地圖';
+
+  // 全部任務入口：目前路線未完成且已解鎖的任務＋公會長指派待完成
+  const openSlots = v4Safe(() => routeTasksData[currentActiveRouteKey || 'dev'].slots.filter(s => !s.isCompleted && !s.isHidden).length, 0);
+  const openCount = openSlots + v4ManagerPending();
+  document.getElementById('v4-all-quests-count').textContent = `${openCount} 項進行中`;
+  const questBadge = document.getElementById('v4-badge-quests');
+  if (questBadge) { questBadge.hidden = openCount <= 0; questBadge.textContent = openCount > 9 ? '9+' : openCount; }
 
   v4RotateBubble();
   clearInterval(v4BubbleTimer);
