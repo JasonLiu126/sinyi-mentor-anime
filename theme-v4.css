@@ -941,3 +941,28 @@ svg.v5-hero { width: 80%; }
 .v4-quest-open { font-size: 11px; color: var(--v4-muted); }
 .v4-hud-avatar { cursor: default; }
 .v4-limited { cursor: default; }
+
+/* ---------- 任務檢核：📊 日報表／👑 公會長 ---------- */
+.v4-verify-tag { display: inline-block; margin-left: 6px; font-family: var(--v4-font-sans); font-size: 10px; font-weight: 900; letter-spacing: 0; padding: 0 6px; border-radius: 8px; color: #fff; vertical-align: 1px; }
+.v4-verify-tag.is-report { background: var(--v4-teal); }
+.v4-verify-tag.is-manager { background: #8A5A1C; }
+.v4-strip-btn.is-status { background: var(--v4-wood-2) !important; color: var(--v4-gold-light) !important; border: 2px solid var(--v4-gold-dark) !important; box-shadow: none !important; font-size: 13px; }
+.v4-strip-btn.is-returned { background: var(--v4-red-dark) !important; color: #fff !important; border-color: #6E2416 !important; }
+.v4-verify-box { padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--v4-line); background: var(--v4-ink); font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+.v4-verify-box.is-report { border-color: var(--v4-teal); }
+.v4-verify-box.is-manager { border-color: var(--v4-gold-dark); }
+.v4-verify-box b { color: var(--v4-gold-light); }
+.v4-verify-box p { color: var(--v4-muted); }
+.v4-verify-box em { font-style: normal; font-weight: 900; color: var(--v4-teal-light); }
+.v4-verify-state { color: var(--v4-gold-light) !important; font-weight: 900; }
+.v4-verify-state.is-returned { color: #F0907A !important; }
+.v4-quest-modal > button:last-of-type:disabled { opacity: .55; }
+.v4-report-form, .v4-review-queue { display: flex; flex-direction: column; gap: 8px; padding: 12px !important; border-radius: 12px; margin-bottom: 12px; }
+.v4-report-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.v4-report-grid label { display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
+.v4-report-grid input { height: 36px; border-radius: 8px; padding: 0 8px; font-size: 16px; }
+.v4-review-queue h3 small { font-size: 12px; margin-left: 6px; }
+.v4-review-item { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 10px; border: 1px solid var(--v4-line); }
+.v4-review-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.v4-review-content { white-space: pre-wrap; font-family: var(--v4-font-sans); font-size: 12px; line-height: 1.5; margin: 0; padding: 8px; border-radius: 8px; background: rgba(0,0,0,.25); color: var(--v4-text); }
+.v4-review-item textarea { width: 100%; border-radius: 8px; padding: 6px 8px; }

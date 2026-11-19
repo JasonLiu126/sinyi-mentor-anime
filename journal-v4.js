@@ -200,9 +200,15 @@ function v4DecorateTaskModal(routeKey, taskId) {
     meta.id = 'v4-task-meta';
     document.getElementById('modal-task-title').before(meta);
   }
-  document.getElementById('modal-task-tag').classList.add('v4-tag-main');
-  meta.innerHTML = `<span class="v4-en">+${slot.rewardCoins || 150} · +${slot.rewardExp || 20}EXP</span>`;
-  meta.prepend(document.getElementById('modal-task-tag'));
+  // 任務標籤（#modal-task-tag）是既有程式要讀的元素：只搬位置、不可被 innerHTML 清掉
+  let tag = document.getElementById('modal-task-tag');
+  if (!tag) { tag = document.createElement('span'); tag.id = 'modal-task-tag'; tag.textContent = slot.tag || ''; }
+  tag.classList.add('v4-tag-main');
+  let reward = meta.querySelector('.v4-meta-reward');
+  if (!reward) { reward = document.createElement('span'); reward.className = 'v4-en v4-meta-reward'; meta.appendChild(reward); }
+  reward.textContent = `+${slot.rewardCoins || 150} · +${slot.rewardExp || 20}EXP`;
+  if (tag.parentElement !== meta) meta.prepend(tag);
+  [...meta.childNodes].forEach(n => { if (n.nodeType === 3) n.remove(); });
 
   const items = slot.checkItems;
   const content = document.getElementById('modal-task-content');
