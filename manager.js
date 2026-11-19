@@ -330,7 +330,7 @@ function mAssignView() {
           <label class="m-field">任務類型<select name="category">${M_CATEGORIES.map(c => `<option>${c}</option>`).join('')}</select></label></div>
         <fieldset class="m-field"><legend>成長能力（1～3 項，權重合計 100%）</legend>${abilityRow(1, 100)}${abilityRow(2, 0)}${abilityRow(3, 0)}</fieldset>
         <label class="m-field">完成期限（選填，逾期未完成即失效）<input type="date" name="due" min="${mToday()}"></label>
-        <fieldset class="m-field"><legend>指派對象（今天已派件數／經驗／進行中）</legend>${scope.map(r => { const u = mAssignToday(state, r.id); return `<label class="m-check"><input type="checkbox" name="member" value="${mEsc(r.id)}" ${r.id === mSelected()?.id ? 'checked' : ''}>${mEsc(r.name)}<small class="m-muted">　${u.count}/${limits.perDay} 件・${u.exp}/${limits.expPerDay} EXP・進行中 ${u.active}/${limits.active}${r.live ? '' : '・示範'}</small></label>`; }).join('')}</fieldset>
+        <fieldset class="m-field"><legend>指派對象（今天已派件數／經驗／進行中）</legend>${scope.map(r => { const u = mAssignToday(state, r.id); return `<label class="m-check"><input type="checkbox" name="member" value="${mEsc(r.id)}" ${r.id === (mLocalInScope() ? M_LOCAL_ID : mSelected()?.id) ? 'checked' : ''}>${mEsc(r.name)}${r.live ? '<span class="m-tag is-teal">新人 APP 看得到</span>' : '<span class="m-tag">示範・沒有 APP</span>'}<small class="m-muted">　${u.count}/${limits.perDay} 件・${u.exp}/${limits.expPerDay} EXP・進行中 ${u.active}/${limits.active}</small></label>`; }).join('')}</fieldset>
         <button type="submit" class="m-btn-gold">發布任務</button></form>`)}
       ${mPanel('任務清單', 'BOUNTY LIST', `<div class="m-filters">${[['all', '全部'], ['todo', '待完成'], ['review', '待確認'], ['done', '已完成'], ['cancelled', '已取消']].map(([k, l]) => `<button type="button" data-filter="${k}" aria-pressed="${k === filter}">${l}</button>`).join('')}</div>
         ${list.length ? list.map(t => `<article class="m-card is-compact" data-kind="assign" data-id="${t.id}"><div class="m-card-top"><span class="m-tag ${t.status === 'done' ? 'is-teal' : t.status === 'review' ? 'is-gold' : ''}">${M_ASSIGN_STATUS[t.status]}</span><b class="m-serif">${mEsc(t.title)}</b><small>${mEsc(nameOf(t.member))}${t.due ? '・期限 ' + mEsc(t.due) : ''}</small></div>
@@ -431,7 +431,7 @@ function mSubmitAssign(form) {
     s.tasks.push(task);
     if (member === M_LOCAL_ID) mLog({ type: 'assigned', source: 'assign', taskId: task.id, title: task.title, detail: `${verify === 'report' ? '日報判定' : '店長判定'}・難度${M_TIERS[tier][0]}` });
   }
-  if (mSave('assign', s)) { mToast(`已發布給 ${members.length} 位新人`); mRender(); }
+  if (mSave('assign', s)) { mToast(members.includes(M_LOCAL_ID) ? `已發布給 ${members.length} 位新人，新人 APP 會收到通知` : `已發布給 ${members.length} 位示範新人（示範新人沒有 APP，要在新人 APP 看到請指派給本機新人）`); mRender(); }
 }
 
 function mBindView(main) {
