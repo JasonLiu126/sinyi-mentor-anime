@@ -141,3 +141,13 @@ button, input, select, textarea { font: inherit; }
 .m-ability-row select, .m-ability-row input { padding: 7px 8px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--wood-2); color: var(--text); }
 .m-card-top .m-tag + .m-tag { margin-left: -4px; }
 .m-form-row[hidden] { display: none; }
+.m-viewer { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted); }
+.m-viewer select, .m-picker select { padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--wood-2); color: var(--text); font-weight: 700; }
+.m-picker { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+.m-picker label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.m-rookie-table td { vertical-align: middle; }
+.m-rookie-table .m-bar { margin-top: 4px; }
+.m-comment { max-width: 280px; font-size: 12px; }
+.m-check small { font-size: 12px; }
+.m-table-wrap { overflow-x: auto; }
+.m-table-wrap .m-table { min-width: 900px; }

@@ -1,43 +1,30 @@
 /* =========================================================
    任務檢核（新人端）：依《信義新星 任務與成長系統規格》
-   - 📊 日報判定：新人填日報 → 店長審核通過 → 從「接任務當天」起累計達標即完成
+   - 📊 日報判定：讀公司日報系統（店長已在該系統審核）每天同步 2 次的數字，從「接任務當天」起累計達標即完成
    - 👑 店長判定：新人送審 → 店長核可／退回（最多退回 3 次，第 3 次退回任務結束）
    - 經驗值依難度（小 20／中 40／大 80），分配到最多 3 項能力
    - 每筆任務的接取、送審、審核、完成都寫入任務紀錄，給公會長後台查看
    - 尚未接資料庫：資料存在本機瀏覽器；之後替換 v4VerifyLoad／v4VerifySave／v4Log 即可
    ========================================================= */
 
-// 日報表欄位（模擬公司日報表；正式版需對應公司日報系統）
-const V4_REPORT_FIELDS = {
-  visits: '社區拜訪',
-  gatekeeper: '管理員／守門人接觸',
-  calls: '電話／訊息聯繫',
-  appointments: '帶看預約',
-  cold: '陌生接觸（派報／舉牌）'
-};
+// 日報欄位、任務設定、系統參數改由 content-v4.js 提供（PM 後台修改、PO 核准後生效）
+const V4_REPORT_FIELDS = V4C_REPORT_FIELDS;
 const V4_TIER_EXP = { S: 20, M: 40, L: 80 };
 const V4_TIER_NAME = { S: '小', M: '中', L: '大' };
-// 系統任務設定：判定方式、日報規則、難度、能力（[分類, 技能, 權重]，最多 3 項，權重合計 1）
-// native：既有流程本來就有店長審核（社區勘查），只顯示標籤不另外攔截送審
-const V4_TASK_VERIFY = {
-  dev_m_01: { mode: 'manager', native: true, tier: 'M', abilities: [['soft_dev', 'dev_local', 0.5], ['hard_know', 'market', 0.5]] },
-  dev_m_02: { mode: 'report', field: 'visits', min: 1, tier: 'S', abilities: [['soft_dev', 'dev_local', 0.6], ['soft_dev', 'dev_track', 0.4]] },
-  dev_m_03: { mode: 'manager', tier: 'M', abilities: [['hard_know', 'market', 0.6], ['soft_dev', 'dev_local', 0.4]] },
-  dev_m_04: { mode: 'report', field: 'gatekeeper', min: 1, tier: 'M', abilities: [['soft_dev', 'dev_local', 1]] },
-  sal_m_01: { mode: 'manager', tier: 'M', abilities: [['soft_sal', 'sal_resource', 0.6], ['soft_dev', 'dev_resource', 0.4]] },
-  sal_m_02: { mode: 'manager', tier: 'S', abilities: [['soft_sal', 'sal_present', 1]] },
-  sal_m_03: { mode: 'report', field: 'calls', min: 1, tier: 'S', abilities: [['soft_sal', 'sal_resource', 0.5], ['soft_sal', 'sal_stranger', 0.5]] },
-  sal_m_04: { mode: 'report', field: 'appointments', min: 1, tier: 'L', abilities: [['soft_sal', 'sal_present', 0.6], ['soft_sal', 'sal_resource', 0.4]] },
-  com_m_01: { mode: 'report', field: 'cold', min: 1, tier: 'S', abilities: [['soft_sal', 'sal_stranger', 1]] },
-  com_m_02: { mode: 'manager', tier: 'M', abilities: [['hard_know', 'market', 1]] },
-  com_m_03: { mode: 'manager', tier: 'M', abilities: [['hard_know', 'market', 0.5], ['soft_dev', 'dev_track', 0.5]] }
-};
+const V4_TASK_VERIFY = {};
+let V4_MAX_RETURNS = 3;
+// 套用目前生效的內容；已接取的任務沿用接取當時的設定，不受後續改版影響
+function v4ApplyContent() {
+  const pub = v4cPublished();
+  const snaps = v4VerifyLoad().acceptedCfg;
+  for (const [id, cfg] of Object.entries(pub.tasks)) V4_TASK_VERIFY[id] = snaps[id] || cfg;
+  V4_MAX_RETURNS = pub.params.maxReturns || 3;
+}
 const V4_SKILL_NAMES = {
   tax: '稅務', mortgage: '貸款', contract: '契據', law: '不動產法規', market: '商圈行情',
   dev_local: '地緣深耕', dev_track: '踩線', dev_resource: '資源盤點', dev_brand: '個人品牌',
   sal_stranger: '陌生獲客', sal_present: '物件介紹', sal_resource: '資源盤點', sal_market: '行銷'
 };
-const V4_MAX_RETURNS = 3;
 const V4_VERIFY_KEY = 'sinyi-v4-task-verify-v1';
 const V4_LOG_KEY = 'sinyi-v4-task-log-v1';
 const V4_RESET_KEY = 'sinyi-v4-reset-at';
@@ -52,12 +39,12 @@ function v4Today() {
 function v4VerifyLoad() {
   try {
     const data = JSON.parse(localStorage.getItem(V4_VERIFY_KEY) || 'null');
-    if (data && data.version === 1) return { reports: data.reports || {}, reviews: data.reviews || {}, accepted: data.accepted || {} };
+    if (data && data.version === 1) return { reports: data.reports || {}, reviews: data.reviews || {}, accepted: data.accepted || {}, acceptedCfg: data.acceptedCfg || {}, lastSync: data.lastSync || null };
   } catch { /* 讀不到就用空資料 */ }
-  return { reports: {}, reviews: {}, accepted: {} };
+  return { reports: {}, reviews: {}, accepted: {}, acceptedCfg: {}, lastSync: null };
 }
 function v4VerifySave(state) {
-  try { localStorage.setItem(V4_VERIFY_KEY, JSON.stringify({ version: 1, reports: state.reports, reviews: state.reviews, accepted: state.accepted })); } catch { /* 無法存檔時只在本次生效 */ }
+  try { localStorage.setItem(V4_VERIFY_KEY, JSON.stringify({ version: 1, reports: state.reports, reviews: state.reviews, accepted: state.accepted, acceptedCfg: state.acceptedCfg || {}, lastSync: state.lastSync || null })); } catch { /* 無法存檔時只在本次生效 */ }
 }
 // 任務紀錄：只新增不覆寫
 function v4Log(entry) {
@@ -68,7 +55,7 @@ function v4Log(entry) {
   } catch { /* 無法寫入時略過 */ }
 }
 
-/* ---------- 日報（新人填寫、店長審核後才計入） ---------- */
+/* ---------- 日報（公司日報系統同步；只會同步店長已審核的數字） ---------- */
 // 舊格式（直接存數字）視為已核可
 const v4ReportValues = entry => (entry && entry.values) || (entry && !entry.status ? entry : {});
 const v4ReportApproved = entry => !!entry && (!entry.status || entry.status === 'approved');
@@ -96,9 +83,13 @@ function v4AllSlots() {
 }
 // 依難度設定任務經驗（任務條、委託視窗顯示的數字也跟著變）
 function v4ApplyTaskConfig() {
+  v4ApplyContent();
   for (const [, slot] of v4AllSlots()) {
     const cfg = V4_TASK_VERIFY[slot.id];
     if (cfg?.tier) slot.rewardExp = V4_TIER_EXP[cfg.tier];
+    if (slot.v4BaseTitle === undefined) slot.v4BaseTitle = slot.title;
+    const base = V4C_BASE_TASKS[slot.id];
+    if (cfg && base) slot.title = cfg.title && cfg.title !== base.title ? cfg.title : slot.v4BaseTitle;
   }
 }
 function v4AcceptTask(routeKey, slot) {
@@ -106,6 +97,7 @@ function v4AcceptTask(routeKey, slot) {
   const state = v4VerifyLoad();
   if (state.accepted[slot.id]) return;
   state.accepted[slot.id] = v4Today();
+  if (V4_TASK_VERIFY[slot.id]) state.acceptedCfg[slot.id] = JSON.parse(JSON.stringify(V4_TASK_VERIFY[slot.id]));
   v4VerifySave(state);
   const cfg = V4_TASK_VERIFY[slot.id];
   v4Log({ type: 'accepted', source: 'system', taskId: slot.id, title: slot.title, mode: cfg?.mode || 'manager' });
@@ -184,7 +176,7 @@ function v4HandleSubmit(original, args) {
       return;
     }
     closeModal('modal-task-action');
-    showCustomToast(`日報「${V4_REPORT_FIELDS[cfg.field]}」目前 ${p.have}/${p.need}，日報經公會長審核通過後自動完成`, '📊');
+    showCustomToast(`日報「${V4_REPORT_FIELDS[cfg.field]}」目前 ${p.have}/${p.need}，公司日報同步後達標會自動完成`, '📊');
     v4AfterVerifyChange();
     return;
   }
@@ -274,7 +266,7 @@ function v4DecorateAssignCards() {
       const have = v4ReportSum(task.reportField, (task.created || '').slice(0, 10), verify);
       const p = document.createElement('p');
       p.className = 'v4-assign-progress';
-      p.textContent = `日報「${V4_REPORT_FIELDS[task.reportField] || task.reportField}」${have}/${task.reportMin || 1}，日報審核通過後自動完成`;
+      p.textContent = `日報「${V4_REPORT_FIELDS[task.reportField] || task.reportField}」${have}/${task.reportMin || 1}，公司日報同步後達標會自動完成`;
       area.replaceWith(p);
     }
   }
@@ -300,8 +292,8 @@ function v4DecorateVerifyModal(routeKey, id) {
   const growth = `<p>難度${V4_TIER_NAME[cfg.tier] || ''}・+${V4_TIER_EXP[cfg.tier] || slot.rewardExp} EXP・成長：${abilities}</p>`;
   if (cfg.mode === 'report') {
     const p = v4ReportProgress(cfg, state.accepted[slot.id], state);
-    box.innerHTML = `<b>📊 日報判定</b><p>${state.accepted[slot.id]} 起經公會長審核通過的日報「${V4_REPORT_FIELDS[cfg.field]}」：<em>${p.have}</em> / ${p.need}</p>${growth}
-      <p class="v4-verify-state">日報審核通過、累計達標後會自動完成</p>`;
+    box.innerHTML = `<b>📊 日報判定</b><p>${state.accepted[slot.id]} 起公司日報（店長已審核）的「${V4_REPORT_FIELDS[cfg.field]}」：<em>${p.have}</em> / ${p.need}</p>${growth}
+      <p class="v4-verify-state">請照常在公司日報系統填寫；每天同步 2 次，累計達標會自動完成</p>`;
     if (submit) submit.textContent = '核對日報';
   } else {
     const review = state.reviews[slot.id];
@@ -333,54 +325,25 @@ function v4DecorateVerifyStrips() {
   });
 }
 
-/* ---------- 新人端：今日日報（冒險日誌裡唯一的日報入口） ---------- */
+/* ---------- 新人端：今日日報（唯讀，資料來自公司日報系統） ---------- */
 function v4BuildReportCard() {
   if (document.getElementById('v4-report-card')) return;
   const card = document.createElement('section');
   card.id = 'v4-report-card';
   card.className = 'v4-report-card';
   document.getElementById('tasks-hero-card')?.after(card);
-  const modal = document.createElement('div');
-  modal.id = 'v4-report-modal';
-  modal.className = 'v4-report-modal hidden';
-  modal.setAttribute('role', 'dialog');
-  modal.setAttribute('aria-modal', 'true');
-  modal.innerHTML = '<form class="v4-darkify v4-report-panel"></form>';
-  document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
 }
+// 新人不在這裡填日報（照常在公司日報系統填寫），這裡只顯示同步進來的已審核數字
 function v4RenderReportCard() {
   const card = document.getElementById('v4-report-card');
   if (!card) return;
-  const entry = v4VerifyLoad().reports[v4Today()];
-  const status = !entry ? 'none' : entry.status || 'approved';
-  const text = { none: '還沒填寫今天的日報', pending: '已送出，等待公會長審核（2 天內）', approved: '公會長已審核通過，已計入任務', returned: `被退回：${entry?.feedback || ''}` }[status];
+  const state = v4VerifyLoad();
+  const entry = state.reports[v4Today()];
   const values = v4ReportValues(entry);
-  card.className = `v4-report-card is-${status}`;
-  card.innerHTML = `<div><small class="v4-en">DAILY REPORT</small><b class="v4-serif">今日日報</b><p>${v4Esc(text)}</p>
-    ${entry ? `<p class="v4-report-values">${Object.entries(V4_REPORT_FIELDS).map(([k, l]) => `${l} ${Number(values[k]) || 0}`).join('・')}</p>` : ''}</div>
-    ${status === 'none' || status === 'returned' ? `<button type="button" class="v4-btn-gold" onclick="v4OpenReportForm()">${status === 'returned' ? '修改重送' : '填寫日報'}</button>` : ''}`;
-}
-function v4OpenReportForm() {
-  const modal = document.getElementById('v4-report-modal');
-  const form = modal.querySelector('form');
-  const values = v4ReportValues(v4VerifyLoad().reports[v4Today()]);
-  form.innerHTML = `<div class="v4-quest-kicker"><small class="v4-en">DAILY REPORT</small><b class="v4-serif">今日日報 ${v4Today()}</b></div>
-    <p class="v4-report-hint">填寫今天的行程數字，送出後由公會長審核；審核通過才會計入 📊 任務。</p>
-    <div class="v4-report-fields">${Object.entries(V4_REPORT_FIELDS).map(([k, l]) => `<label>${l}<input type="number" name="${k}" min="0" max="99" inputmode="numeric" value="${Number(values[k]) || 0}"></label>`).join('')}</div>
-    <div class="v4-report-actions"><button type="button" class="v4-btn-ghost" onclick="document.getElementById('v4-report-modal').classList.add('hidden')">取消</button><button type="submit" class="v4-btn-gold">送出日報</button></div>`;
-  form.onsubmit = e => {
-    e.preventDefault();
-    const state = v4VerifyLoad();
-    const vals = Object.fromEntries(Object.keys(V4_REPORT_FIELDS).map(k => [k, Math.max(0, Math.min(99, parseInt(form.elements[k].value, 10) || 0))]));
-    state.reports[v4Today()] = { values: vals, status: 'pending', submittedAt: new Date().toISOString(), feedback: '' };
-    v4VerifySave(state);
-    v4Log({ type: 'report-submitted', source: 'report', title: `${v4Today()} 日報`, detail: Object.entries(vals).map(([k, v]) => `${V4_REPORT_FIELDS[k]} ${v}`).join('、') });
-    modal.classList.add('hidden');
-    showCustomToast('日報已送出，等待公會長審核', '📊');
-    v4RenderReportCard();
-  };
-  modal.classList.remove('hidden');
+  card.className = `v4-report-card ${entry ? 'is-approved' : 'is-none'}`;
+  card.innerHTML = `<div><small class="v4-en">DAILY REPORT</small><b class="v4-serif">今日日報（公司系統同步）</b>
+    <p>${entry ? Object.entries(V4_REPORT_FIELDS).map(([k, l]) => `${l} ${Number(values[k]) || 0}`).join('・') : '今天還沒有同步到店長已審核的日報'}</p>
+    <p>請在公司日報系統填寫，每天同步 2 次${state.lastSync ? `・上次同步 ${new Date(state.lastSync).toLocaleString('zh-TW', { hour12: false, month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}` : ''}</p></div>`;
 }
 
 function v4AfterVerifyChange() {
@@ -458,6 +421,7 @@ window.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('storage', event => {
     if (event.key === V4_RESET_KEY) v4HandleReset();
     else if (event.key === V4_VERIFY_KEY || event.key === 'sinyi-formal-manager-tasks-v1') v4SyncFromManager();
+    else if (event.key === V4_CONTENT_KEY) { v4ApplyTaskConfig(); v4AfterVerifyChange(); }
   });
   v4BuildReportCard();
   v4RenderReportCard();

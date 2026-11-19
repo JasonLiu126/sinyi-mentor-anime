@@ -3,33 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>公會長後台・信義新星</title>
+  <title>店長後台・信義新星</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Noto+Serif+TC:wght@700;900&family=Cinzel:wght@700;900&display=swap">
-  <link rel="stylesheet" href="./manager.css?v=m2">
+  <link rel="stylesheet" href="./manager.css?v=m3">
 </head>
 <body>
   <div class="m-shell">
     <aside class="m-side">
       <div class="m-brand">
         <img src="./assets/v4/mentor_guild.jpg" alt="">
-        <div><small class="m-en">GUILD MASTER</small><b class="m-serif">公會長後台</b></div>
+        <div><small class="m-en">GUILD MASTER</small><b class="m-serif">店長後台</b></div>
       </div>
+      <label class="m-viewer">示範身分（正式版由 SSO 判斷）<select id="m-viewer"></select></label>
       <nav class="m-nav" aria-label="後台功能">
         <button type="button" data-view="overview" aria-current="page"><span aria-hidden="true">🏰</span>總覽</button>
         <button type="button" data-view="reviews"><span aria-hidden="true">👑</span>任務審核<i class="m-count" data-count="reviews"></i></button>
         <button type="button" data-view="surveys"><span aria-hidden="true">🧩</span>社區勘查審核<i class="m-count" data-count="surveys"></i></button>
         <button type="button" data-view="abilities"><span aria-hidden="true">📈</span>新人能力與紀錄</button>
-        <button type="button" data-view="reports"><span aria-hidden="true">📊</span>日報審核<i class="m-count" data-count="reports"></i></button>
+        <button type="button" data-view="reports"><span aria-hidden="true">📊</span>日報同步</button>
         <button type="button" data-view="assign"><span aria-hidden="true">📜</span>指派任務</button>
       </nav>
-      <p class="m-note">尚未連接資料庫：資料讀寫這台瀏覽器的新人 APP 存檔。新人端與後台請用同一台瀏覽器（可開兩個分頁）。</p>
+      <p class="m-note">尚未連接資料庫：「本機新人」讀寫這台瀏覽器的新人 APP 存檔，其他新人是示範資料。新人端與後台請用同一台瀏覽器（可開兩個分頁）。</p>
       <a class="m-link" href="./index.html" target="_blank" rel="noopener">開啟新人 APP ↗</a>
+      <a class="m-link" href="./pm.html" target="_blank" rel="noopener">開啟 PM 後台 ↗</a>
       <button type="button" class="m-reset" id="m-reset">↺ 重置 Demo（從頭開始）</button>
     </aside>
     <main class="m-main" id="m-main" tabindex="-1"></main>
   </div>
   <div class="m-toast" id="m-toast" role="status" aria-live="polite"></div>
-  <script src="./manager.js?v=m2"></script>
+  <script src="./content-v4.js?v=m3"></script>
+  <script src="./manager.js?v=m3"></script>
 </body>
 </html>

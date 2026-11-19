@@ -166,7 +166,7 @@ function v4DecorateReview(reason) {
   const dims = [1, 2, 3, 4].map(i => {
     const el = document.getElementById('rubric-score-' + i);
     const val = parseInt(el?.textContent || '0', 10);
-    const label = el?.previousElementSibling?.textContent.replace(/^\d\.\s*/, '').replace(/[（(].*$/, '').replace(/[：:]\s*$/, '').trim() || '';
+    const label = el?.parentElement?.firstElementChild?.textContent.replace(/^\d\.\s*/, '').replace(/[（(].*$/, '').replace(/[：:]\s*$/, '').trim() || '';
     if (el) {
       el.parentElement.querySelector('.v4-seg')?.remove();
       el.insertAdjacentHTML('beforebegin', `<span class="v4-seg" aria-hidden="true">${[1, 2, 3, 4, 5].map(k => `<i class="${k <= val ? 'on' : ''}"></i>`).join('')}</span>`);
