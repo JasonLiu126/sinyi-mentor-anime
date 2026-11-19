@@ -104,12 +104,15 @@ function v4DecorateGlobal() {
 // true：每次打開網頁都從第 1 題開始，完成並按「確認職業，進入主城」後才能使用其他功能。
 // 想恢復「做過一次就直接進主城」，改成 false 即可。
 const V4_QUIZ_EVERY_VISIT = true;
+// 店長專用網址：網址加上 ?view=manager 會直接開「店長任務後台」，不強制做覺醒試煉
+const V4_MANAGER_VIEW = new URLSearchParams(location.search).get('view') === 'manager';
 let v4QuizForced = false;
 
 function v4LockForQuiz(locked) {
   document.getElementById('app-shell')?.classList.toggle('v4-quiz-lock', locked);
 }
 function v4ForceQuizOnEntry() {
+  if (V4_MANAGER_VIEW) { if (!v4QuizForced && typeof managerOpen === 'function') { v4QuizForced = true; managerOpen(); } return; }
   if (!V4_QUIZ_EVERY_VISIT || v4QuizForced) return;
   if (!v4Safe(() => isQuizCompleted, false)) { v4QuizForced = true; return; } // 首次使用：原本就會開測驗
   v4QuizForced = true;
@@ -162,6 +165,10 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     return originalSwitch.apply(this, args);
   };
+
+  // 測試後台：把「店長任務後台」移到入口清單第一個並加上皇冠，方便店長找到
+  const managerBtn = [...document.querySelectorAll('#formal-feature-links button')].find(b => b.textContent.includes('店長任務'));
+  if (managerBtn) { managerBtn.textContent = '👑 店長任務後台（審核、指派）'; managerBtn.classList.add('v4-manager-entry'); const h3 = managerBtn.parentElement.querySelector('h3'); if (h3) h3.after(managerBtn); else managerBtn.parentElement.prepend(managerBtn); }
 
   v4DecorateGlobal();
   v4RenderQuizHead();

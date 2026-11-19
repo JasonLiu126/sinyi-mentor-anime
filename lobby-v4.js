@@ -92,13 +92,17 @@ function v4BuildLobby() {
     <div class="v4-ribbon" id="v4-class-ribbon">社區開發刺客</div>
     <div class="v4-lobby-floor">
       <div class="v4-lobby-bottom">
-        <button type="button" class="v4-quest-track" onclick="switchTab('tab-tasks')" aria-label="冒險日誌：查看全部任務">
-          <div><span class="v4-tag-main">主線</span><span class="v4-quest-title" id="v4-quest-title">—</span><span class="v4-quest-more">全部任務 ›</span></div>
+        <div class="v4-quest-track" aria-label="目前主線">
+          <div><span class="v4-tag-main">主線</span><span class="v4-quest-title" id="v4-quest-title">—</span></div>
           <div><span class="v4-mini-bar"><i id="v4-quest-bar"></i></span><span class="v4-quest-count" id="v4-quest-count">0/0</span></div>
-          <small class="v4-quest-open" id="v4-all-quests-count">0 項進行中</small>
-        </button>
+        </div>
         <button type="button" class="v4-btn-gold v4-go" onclick="v4GoAdventure()">出發冒險<small id="v4-go-target">→ 冒險地圖</small></button>
       </div>
+      <button type="button" class="v4-all-quests" onclick="switchTab('tab-tasks')" aria-label="查看全部任務（冒險日誌）">
+        <span class="v4-all-quests-icon" aria-hidden="true">📜</span>
+        <span class="v4-all-quests-text"><b class="v4-serif">全部任務</b><small>冒險日誌・主線／支線／公會長指派</small></span>
+        <span class="v4-all-quests-count" id="v4-all-quests-count">0 項進行中</span><span aria-hidden="true">›</span>
+      </button>
     </div>`;
   const main = document.getElementById('app-main-scroll');
   main.insertBefore(lobby, document.getElementById('tab-tasks'));
