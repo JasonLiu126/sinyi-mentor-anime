@@ -103,7 +103,15 @@ function v4DecorateGlobal() {
 /* ---------- 每次進入都要重做職業覺醒試煉 ---------- */
 // true：每次打開網頁都從第 1 題開始，完成並按「確認職業，進入主城」後才能使用其他功能。
 // 想恢復「做過一次就直接進主城」，改成 false 即可。
-const V4_QUIZ_EVERY_VISIT = true;
+// 依規格：覺醒試煉只做一次；公會長在後台「開放重測」後，新人下次進入才會重做
+const V4_QUIZ_EVERY_VISIT = false;
+const V4_QUIZ_HISTORY_KEY = 'sinyi-v4-quiz-history-v1';
+let v4QuizRecommended = null;
+function v4QuizHistory() {
+  try { const v = JSON.parse(localStorage.getItem(V4_QUIZ_HISTORY_KEY) || 'null'); if (v && Array.isArray(v.entries)) return v; } catch { /* 讀不到就用空資料 */ }
+  return { entries: [], allowRetake: false };
+}
+function v4SaveQuizHistory(v) { try { localStorage.setItem(V4_QUIZ_HISTORY_KEY, JSON.stringify(v)); } catch { /* 略過 */ } }
 // 店長後台已獨立成 manager.html；舊的 ?view=manager 網址自動導過去
 if (new URLSearchParams(location.search).get('view') === 'manager') location.replace('./manager.html');
 const V4_MANAGER_VIEW = false;
@@ -114,7 +122,9 @@ function v4LockForQuiz(locked) {
 }
 function v4ForceQuizOnEntry() {
   if (V4_MANAGER_VIEW) { if (!v4QuizForced && typeof managerOpen === 'function') { v4QuizForced = true; managerOpen(); } return; }
-  if (!V4_QUIZ_EVERY_VISIT || v4QuizForced) return;
+  if (v4QuizForced) return;
+  const retake = v4QuizHistory().allowRetake;
+  if (!V4_QUIZ_EVERY_VISIT && !retake) return;
   if (!v4Safe(() => isQuizCompleted, false)) { v4QuizForced = true; return; } // 首次使用：原本就會開測驗
   v4QuizForced = true;
   v4LockForQuiz(true);
@@ -142,7 +152,11 @@ window.addEventListener('DOMContentLoaded', () => {
       const finishing = step > 0 && v4Safe(() => currentQuizIndex, 0) === 5;
       const result = originalNavigate.call(this, step, ...rest);
       const valid = v4Safe(() => officialQuestions.every(q => formalQuizValid(q, userQuizAnswers[q.id])), false);
-      if (finishing && valid) v4SetQuizRevealed(true);
+      if (finishing && valid) {
+        // 記下系統推薦（新人之後可能在揭曉畫面改選）
+        v4QuizRecommended = { dev: v4Safe(() => currentSelectedDevCode, ''), sal: v4Safe(() => currentSelectedSalCode, '') };
+        v4SetQuizRevealed(true);
+      }
       return result;
     };
   }
@@ -154,8 +168,19 @@ window.addEventListener('DOMContentLoaded', () => {
   confirmAndEnterApp = async function (...args) {
     const wasLocked = document.getElementById('app-shell')?.classList.contains('v4-quiz-lock');
     v4LockForQuiz(false); // 讓確認流程內的 switchTab 能執行
+    const answers = JSON.parse(JSON.stringify(v4Safe(() => userQuizAnswers, {}) || {}));
     try { return await originalConfirm.apply(this, args); }
-    finally { if (wasLocked && !document.getElementById('screen-quiz-flow')?.classList.contains('hidden')) v4LockForQuiz(true); }
+    finally {
+      const entered = document.getElementById('screen-quiz-flow')?.classList.contains('hidden');
+      if (wasLocked && !entered) v4LockForQuiz(true);
+      if (entered) {
+        // 作答紀錄：每題答案、系統推薦、新人最後選的職業（推薦與自選分開記）
+        const history = v4QuizHistory();
+        history.entries.push({ at: new Date().toISOString(), answers, recommended: v4QuizRecommended, chosen: { dev: v4Safe(() => currentSelectedDevCode, ''), sal: v4Safe(() => currentSelectedSalCode, '') }, retake: history.entries.length > 0 });
+        history.allowRetake = false;
+        v4SaveQuizHistory(history);
+      }
+    }
   };
   // 鎖定期間擋下其他入口（HUD、按鈕）切頁
   const originalSwitch = switchTab;

@@ -971,3 +971,27 @@ svg.v5-hero { width: 80%; }
 /* 測試後台：店長入口醒目 */
 #formal-feature-links .v4-manager-entry { display: block; width: 100%; margin: 4px 0 8px; height: 44px; font-weight: 900; color: var(--v4-gold-btn-text) !important;
   background: linear-gradient(180deg, var(--v4-gold-light), var(--v4-gold)) !important; border-color: #7A4A0C !important; }
+
+/* ---------- 今日日報（新人填寫、店長審核） ---------- */
+.v4-report-card { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--v4-gold-dark); background: var(--v4-wood); color: var(--v4-text); }
+.v4-report-card > div { flex: 1; min-width: 0; }
+.v4-report-card small { display: block; font-size: 10px; letter-spacing: 3px; color: var(--v4-gold); font-weight: 900; }
+.v4-report-card b { font-size: 17px; }
+.v4-report-card p { font-size: 12px; color: var(--v4-muted); margin-top: 2px; }
+.v4-report-card .v4-report-values { color: var(--v4-text); }
+.v4-report-card.is-pending { border-color: var(--v4-gold); }
+.v4-report-card.is-approved { border-color: var(--v4-teal); }
+.v4-report-card.is-returned { border-color: var(--v4-red); }
+.v4-report-card.is-returned p:first-of-type { color: #F0907A; }
+.v4-report-card > button { flex: none; padding: 10px 14px; font-size: 15px; }
+.v4-report-modal { position: fixed; inset: 0; z-index: 150; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(10,6,4,.8); }
+.v4-report-modal.hidden { display: none; }
+.v4-report-panel { width: 100%; max-width: 400px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.v4-report-hint { font-size: 12px; color: var(--v4-muted); }
+.v4-report-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.v4-report-fields label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--v4-muted); }
+.v4-report-fields input { height: 42px; border-radius: 10px; padding: 0 10px; font-size: 18px; font-weight: 900; }
+.v4-report-actions { display: flex; gap: 10px; }
+.v4-report-actions button { flex: 1; height: 46px; font-size: 16px; }
+.v4-assign-meta { font-size: 12px; font-weight: 900; color: var(--v4-gold-light) !important; }
+.v4-assign-progress { font-size: 12px; color: var(--v4-teal-light) !important; padding: 6px 0; }

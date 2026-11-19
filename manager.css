@@ -132,3 +132,12 @@ button, input, select, textarea { font: inherit; }
   .m-grid2 { grid-template-columns: 1fr; }
   .m-dl { grid-template-columns: repeat(2, 1fr); }
 }
+.m-reset { padding: 9px 12px; border-radius: 10px; border: 1.5px dashed var(--red); background: none; color: #F0907A; font-weight: 900; cursor: pointer; text-align: left; }
+.m-reset:hover { background: rgba(200,85,61,.15); }
+.m-alert { margin-bottom: 18px; padding: 12px 16px; border-radius: 12px; border: 2px solid var(--red); background: rgba(200,85,61,.18); color: #F5C2B5; font-weight: 900; }
+.m-usage { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+.m-usage b { color: var(--gold-light); }
+.m-ability-row { display: grid; grid-template-columns: 1fr 80px 16px; gap: 8px; align-items: center; margin-bottom: 6px; }
+.m-ability-row select, .m-ability-row input { padding: 7px 8px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--wood-2); color: var(--text); }
+.m-card-top .m-tag + .m-tag { margin-left: -4px; }
+.m-form-row[hidden] { display: none; }
