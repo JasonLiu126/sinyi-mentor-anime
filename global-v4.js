@@ -84,6 +84,27 @@ function v4DecorateGlobal() {
   for (const [id, text] of Object.entries(labels)) { const el = document.getElementById(id); if (el && !el.dataset.v4) { el.dataset.v4 = '1'; el.textContent = text; } }
 }
 
+/* ---------- 每次進入都要重做職業覺醒試煉 ---------- */
+// true：每次打開網頁都從第 1 題開始，完成並按「確認職業，進入主城」後才能使用其他功能。
+// 想恢復「做過一次就直接進主城」，改成 false 即可。
+const V4_QUIZ_EVERY_VISIT = true;
+let v4QuizForced = false;
+
+function v4LockForQuiz(locked) {
+  document.getElementById('app-shell')?.classList.toggle('v4-quiz-lock', locked);
+}
+function v4ForceQuizOnEntry() {
+  if (!V4_QUIZ_EVERY_VISIT || v4QuizForced) return;
+  if (!v4Safe(() => isQuizCompleted, false)) { v4QuizForced = true; return; } // 首次使用：原本就會開測驗
+  v4QuizForced = true;
+  v4LockForQuiz(true);
+  formalQuizOpen(true); // 清空本次作答，從第 1 題開始
+}
+
+// 使用紀錄讀取完成後（formal-local 會發出 formal-profile-ready）再開測驗，避免被開機流程蓋掉。
+// 該事件可能在其他 DOMContentLoaded 處理中就觸發，所以在檔案載入時就先註冊。
+window.addEventListener('formal-profile-ready', () => setTimeout(v4ForceQuizOnEntry, 0));
+
 v4BuildQuiz();
 v4BuildAwaken();
 
@@ -97,6 +118,24 @@ window.addEventListener('DOMContentLoaded', () => {
   wrap('renderSelectedRouteRecommendations', () => v4RenderAwaken());
   wrap('openChangeRouteModal', type => v4DecorateRouteModal(type));
   wrap('selectCustomRoute', () => v4RenderAwaken());
+  // 完成測驗並確認職業後解除鎖定
+  const originalConfirm = confirmAndEnterApp;
+  confirmAndEnterApp = async function (...args) {
+    const wasLocked = document.getElementById('app-shell')?.classList.contains('v4-quiz-lock');
+    v4LockForQuiz(false); // 讓確認流程內的 switchTab 能執行
+    try { return await originalConfirm.apply(this, args); }
+    finally { if (wasLocked && !document.getElementById('screen-quiz-flow')?.classList.contains('hidden')) v4LockForQuiz(true); }
+  };
+  // 鎖定期間擋下其他入口（HUD、按鈕）切頁
+  const originalSwitch = switchTab;
+  switchTab = function (...args) {
+    if (document.getElementById('app-shell')?.classList.contains('v4-quiz-lock')) {
+      showCustomToast('請先完成職業覺醒試煉，再進入主城！', '🔒');
+      return;
+    }
+    return originalSwitch.apply(this, args);
+  };
+
   v4DecorateGlobal();
   v4RenderQuizHead();
   v4RenderAwaken();

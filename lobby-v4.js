@@ -80,8 +80,7 @@ function v4BuildLobby() {
     <div class="v4-side v4-side-left">
       <button type="button" class="v4-side-btn" onclick="v4OpenGuild()"><span class="v4-side-icon">${V4_ICON.crown}<span class="v4-badge" id="v4-badge-guild" hidden></span></span><span>公會長</span></button>
       <button type="button" class="v4-side-btn" onclick="hunterHome()"><span class="v4-side-icon">${V4_ICON.calendar}<span class="v4-badge" id="v4-badge-daily" hidden>!</span></span><span>每日修練</span></button>
-      <button type="button" class="v4-side-btn" onclick="formalQuizOpen()"><span class="v4-side-icon">${V4_ICON.spark}</span><span>覺醒試煉</span></button>
-    </div>
+      <button type="button" class="v4-side-btn" onclick="formalQuizOpen()"><span class="v4-side-icon">${V4_ICON.spark}</span><span>覺醒試煉</span></button>    </div>
     <div class="v4-side v4-side-right">
       <button type="button" class="v4-limited" onclick="switchTab('tab-showcase')" aria-label="限時召喚">
         <span class="v4-limited-clip"><img src="${V4_ASSET}ip/dino2.png" alt=""><small>LIMITED</small><b>限時<br>召喚</b><em>本期 UP</em></span>
@@ -106,6 +105,11 @@ function v4BuildLobby() {
         </button>
         <button type="button" class="v4-btn-gold v4-go" onclick="v4GoAdventure()">出發冒險<small id="v4-go-target">→ 冒險地圖</small></button>
       </div>
+      <button type="button" class="v4-all-quests" onclick="switchTab('tab-tasks')" aria-label="查看全部任務（冒險日誌）">
+        <span class="v4-all-quests-icon" aria-hidden="true">📜</span>
+        <span class="v4-all-quests-text"><b class="v4-serif">全部任務</b><small>冒險日誌・主線／懸賞／每日</small></span>
+        <span class="v4-all-quests-count" id="v4-all-quests-count">0 項進行中</span><span aria-hidden="true">›</span>
+      </button>
     </div>`;
   const main = document.getElementById('app-main-scroll');
   main.insertBefore(lobby, document.getElementById('tab-tasks'));
@@ -340,6 +344,13 @@ function v4RenderLobby() {
 
   const target = v4TargetBuilding();
   document.getElementById('v4-go-target').textContent = target ? '→ ' + target.name : '→ 冒險地圖';
+
+  // 全部任務入口：目前路線未完成且已解鎖的任務＋公會長指派待完成
+  const openSlots = v4Safe(() => routeTasksData[currentActiveRouteKey || 'dev'].slots.filter(s => !s.isCompleted && !s.isHidden).length, 0);
+  const openCount = openSlots + v4ManagerPending();
+  document.getElementById('v4-all-quests-count').textContent = `${openCount} 項進行中`;
+  const questBadge = document.getElementById('v4-badge-quests');
+  if (questBadge) { questBadge.hidden = openCount <= 0; questBadge.textContent = openCount > 9 ? '9+' : openCount; }
 
   v4RotateBubble();
   clearInterval(v4BubbleTimer);

@@ -859,3 +859,30 @@ details.v4-demo > summary { padding: 8px 12px; cursor: pointer; font-weight: 900
 }
 #formal-quiz-restart { align-self: flex-end; background: var(--v4-wood) !important; color: var(--v4-gold-light) !important; border: 1.5px solid var(--v4-gold-dark) !important; border-radius: 14px !important; box-shadow: none !important; padding: 4px 12px !important; font-weight: 900; }
 #v4-quiz-head { position: relative; }
+
+/* ---------- 修正：主城底部留白、全部任務入口 ---------- */
+#app-shell.v4-lobby-mode #app-main-scroll { padding-bottom: 0 !important; }
+.v4-lobby-floor { padding-bottom: calc(var(--v4-nav-h) + 30px) !important; display: flex; flex-direction: column; gap: 10px; }
+.v4-all-quests { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border-radius: 12px; cursor: pointer; text-align: left;
+  background: linear-gradient(170deg, var(--v4-parch), var(--v4-parch-2)); color: var(--v4-parch-text); border: 2px solid var(--v4-parch-border); box-shadow: 0 4px 0 #6B4A22; }
+.v4-all-quests:active { transform: translateY(3px); box-shadow: 0 1px 0 #6B4A22; }
+.v4-all-quests-icon { font-size: 22px; }
+.v4-all-quests-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.v4-all-quests-text b { font-size: 16px; font-weight: 900; }
+.v4-all-quests-text small { font-size: 11px; color: var(--v4-parch-muted); }
+.v4-all-quests-count { flex: none; font-size: 12px; font-weight: 900; color: #fff; background: var(--v4-red-dark); border-radius: 10px; padding: 2px 8px; }
+.v4-all-quests > span:last-child { font-size: 22px; font-weight: 900; color: var(--v4-parch-muted); }
+.v4-side-emoji { font-size: 22px; line-height: 1; }
+@media (max-height: 760px) { .v4-side-left { gap: 4px; } .v4-side-left .v4-side-icon { width: 38px; height: 38px; } }
+/* 每次進入的覺醒試煉：完成前隱藏導覽與入口 */
+#app-shell.v4-quiz-lock #bottom-navbar, #app-shell.v4-quiz-lock #mentor-float, #app-shell.v4-quiz-lock #v4-hud-mail, #app-shell.v4-quiz-lock #formal-quiz-restart { display: none !important; }
+#app-shell.v4-quiz-lock #app-main-scroll { padding-bottom: 24px !important; }
+/* 角色雷達分類切換 */
+.v4-hero-levels { gap: 4px !important; }
+.v4-hero-levels > button { width: 50px; padding: 4px 0; border-radius: 10px; border: 2px solid var(--v4-gold-dark); background: rgba(20,13,8,.85); display: flex; flex-direction: column; align-items: center; cursor: pointer; color: var(--v4-text); }
+.v4-hero-levels > button b { font-size: 17px; line-height: 1.15; color: var(--v4-gold-light); }
+.v4-hero-levels > button.is-all b { font-size: 14px; }
+.v4-hero-levels > button span { font-size: 10px; color: var(--v4-muted); }
+.v4-hero-levels > button[aria-pressed="true"] { border-color: var(--v4-teal-light); background: rgba(46,140,131,.45); box-shadow: 0 0 10px rgba(127,216,200,.5); }
+.v4-hero-levels > button[aria-pressed="true"] b { color: var(--v4-teal-light); }
+.v4-hero-levels > button:active { transform: translateY(2px); }
