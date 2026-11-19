@@ -90,9 +90,9 @@ function v4BuildLobby() {
     </div>
     <div class="v4-stage" id="v4-stage">
       <div class="v4-stage-glow"></div>
-      <img class="v4-mate v4-mate-back" id="v4-mate-3" alt="" hidden>
-      <img class="v4-mate v4-mate-l" id="v4-mate-1" alt="">
-      <img class="v4-mate v4-mate-r" id="v4-mate-2" alt="">
+      <div class="v4-mate v4-mate-back" id="v4-mate-3" hidden></div>
+      <div class="v4-mate v4-mate-l" id="v4-mate-1"></div>
+      <div class="v4-mate v4-mate-r" id="v4-mate-2"></div>
       <img class="v4-hero" id="v4-hero" alt="我的角色">
       <div class="v4-bubble v4-parch" id="v4-bubble" aria-live="polite"></div>
     </div>
@@ -285,7 +285,7 @@ function v4PartyAssign(id) {
   v4RenderParty();
 }
 function v4ScrollToSummon() {
-  const target = document.querySelector('#tab-showcase > #v4-party + *');
+  const target = document.getElementById('v4-altar');
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -334,7 +334,9 @@ function v4RenderLobby() {
     if (!img) return;
     const mate = mates[i];
     img.hidden = !mate;
-    if (mate) { if (img.getAttribute('src') !== mate.img) img.src = mate.img; img.alt = '夥伴 ' + mate.name; }
+    // 依穿用星等顯示造型（升星後主城夥伴也換新外觀）
+    const key = mate ? mate.id + ':' + v4Safe(() => getEquippedFigurineStars(mate.id), 1) : '';
+    if (mate && img.dataset.v4Art !== key) { img.dataset.v4Art = key; img.innerHTML = v4FigArtHTML(mate.id, { alt: '夥伴 ' + mate.name }); }
   });
 
   const quest = v4CurrentMainQuest();

@@ -91,9 +91,14 @@ function v4BuildRoster() {
   visit.setAttribute('onclick', 'openColleagueVisitModal()');
   visit.textContent = '參觀同事主城 ›';
   title.appendChild(visit);
-  // 選擇夥伴縮圖區改名，和正式名冊區分
-  const partyRosterTitle = document.querySelector('#v4-party .v4-roster-head h3');
-  if (partyRosterTitle) partyRosterTitle.textContent = '選擇夥伴';
+  // 目前隊伍（主城站位）：點頭像設為隊長；在名冊或角色詳情按「攜帶」加入
+  const team = document.createElement('div');
+  team.id = 'v4-team';
+  team.className = 'v4-team';
+  head.after(team);
+  // 版面：召喚祭壇 → 三入口 → 夥伴名冊 → 典藏館／分店日常（原本上方的編隊縮圖區隱藏）
+  document.getElementById('v4-party')?.classList.add('v4-hidden-section');
+  document.getElementById('v4-altar-links')?.after(panel);
 
   // 既有典藏館輪播與分店日常：收進可展開區（節點本身不變）
   const carousel = document.getElementById('ip-carousel');
@@ -124,15 +129,80 @@ function v4DecorateRoster() {
     if (!info || !item) continue;
     const founder = fig.familyRole === 'founder';
     const canUpgrade = !!upgrade && !upgrade.disabled;
-    const art = v4FigArt(id);
-    card.className = `v4-rcard r-${info.rarity.toLowerCase()} ${canUpgrade ? 'can-upgrade' : ''}`;
+    const inParty = v4PartyGet().includes(id);
+    card.dataset.v4Id = id;
+    card.className = `v4-rcard r-${info.rarity.toLowerCase()} ${canUpgrade ? 'can-upgrade' : ''} ${inParty ? 'in-party' : ''}`;
     card.innerHTML = `<button type="button" class="v4-rcard-art" onclick="openFigurineDetailModal('${id}')" aria-label="查看 ${v4Esc(info.name)}">
-        ${art ? `<img src="${v4Esc(art)}" alt="" loading="lazy">` : ''}<span class="v4-rarity-tag v4-en">${info.rarity}</span></button>
+        ${v4FigArtHTML(id)}<span class="v4-rarity-tag v4-en">${info.rarity}</span>${inParty ? '<span class="v4-carry-tag">隊伍中</span>' : ''}</button>
       <div class="v4-rcard-name"><b class="v4-serif">${v4Esc(info.name)}</b><span class="v4-stars">${'★'.repeat(item.stars)}<i>${'★'.repeat(Math.max(0, info.maxStars - item.stars))}</i></span></div>
       ${founder ? `<p class="v4-rcard-note">持有 ${item.copies ?? 1} 張・融合素材</p>`
         : `<div class="v4-rcard-frag"><span aria-hidden="true">💎</span><div class="v4-frag-bar"><i style="width:${Math.min(100, item.fragments / 5 * 100)}%"></i></div><span class="v4-en">${item.fragments}/5</span></div>`}
-      ${canUpgrade ? `<button type="button" class="v4-btn-gold v4-rcard-up" onclick="upgradeFigurineStars('${id}')">升星 ★</button>` : item.stars >= info.maxStars && !founder ? '<p class="v4-rcard-note">已達最高星等</p>' : ''}`;
+      <div class="v4-rcard-actions">
+        <button type="button" class="${inParty ? 'v4-btn-ghost' : 'v4-btn-teal'} v4-rcard-carry" onclick="v4ToggleCarry('${id}')">${inParty ? '卸下' : '攜帶'}</button>
+        ${canUpgrade ? `<button type="button" class="v4-btn-gold v4-rcard-up" onclick="upgradeFigurineStars('${id}')">升星 ★</button>` : ''}
+      </div>
+      ${!canUpgrade && item.stars >= info.maxStars && !founder ? '<p class="v4-rcard-note">已達最高星等</p>' : ''}`;
   }
+  v4RenderTeam();
+}
+
+/* ---------- 攜帶夥伴（主城站位，最多 3 位） ---------- */
+function v4RenderTeam() {
+  const team = document.getElementById('v4-team');
+  if (!team) return;
+  const party = v4PartyGet();
+  const slots = [0, 1, 2].map(i => {
+    const id = party[i];
+    const info = id ? v4FigInfo(id) : null;
+    return id ? `<button type="button" class="v4-team-slot ${i === 0 ? 'is-captain' : ''}" onclick="v4SetCaptain('${id}')" aria-label="${v4Esc(info?.name || '')}${i === 0 ? '（隊長）' : '，設為隊長'}">
+        ${v4FigArtHTML(id)}<b>${i === 0 ? '隊長' : v4Esc(info?.name || '')}</b></button>`
+      : '<span class="v4-team-slot is-empty"><i>＋</i><b>空位</b></span>';
+  }).join('');
+  team.innerHTML = `<div class="v4-team-head"><b class="v4-serif">攜帶中 ${party.length}/3</b><small>會站在主城陪你・點頭像設為隊長</small></div><div class="v4-team-slots">${slots}</div>`;
+}
+function v4ToggleCarry(id) {
+  const party = [...v4PartyGet()];
+  const info = v4FigInfo(id);
+  const name = info?.name || '夥伴';
+  if (party.includes(id)) {
+    if (party.length <= 1) { showCustomToast('至少要攜帶 1 位夥伴喔！', '⚠️'); return; }
+    v4PartySet(party.filter(x => x !== id));
+    showCustomToast(`${name} 回到名冊休息`, '🏠');
+  } else {
+    if (party.length >= 3) { showCustomToast('隊伍已滿（3/3），請先卸下一位', '⚠️'); return; }
+    v4PartySet([...party, id]);
+    showCustomToast(`${name} 加入隊伍，會在主城陪你！`, '⚔️');
+  }
+  v4RefreshCarry();
+}
+function v4SetCaptain(id) {
+  const party = v4PartyGet();
+  if (party[0] === id) return;
+  v4PartySet([id, ...party.filter(x => x !== id)]);
+  showCustomToast(`${v4FigInfo(id)?.name || '夥伴'} 擔任隊長！`, '👑');
+  v4RefreshCarry();
+}
+function v4RefreshCarry() {
+  document.querySelectorAll('#warehouse-grid .v4-rcard').forEach(c => c.classList.remove('v4-rcard'));
+  v4DecorateRoster();
+  v4DecorateDetailCarry();
+  if (typeof v4RenderParty === 'function') v4RenderParty();
+}
+// 角色詳情 Modal：加「攜帶到主城／卸下」
+let v4DetailId = null;
+function v4DecorateDetailCarry(id = v4DetailId) {
+  const panel = document.getElementById('modal-figurine-detail')?.firstElementChild;
+  if (!panel || !id) return;
+  v4DetailId = id;
+  panel.querySelector('.v4-detail-carry')?.remove();
+  const owned = v4Safe(() => userWarehouse.some(w => w.id === id), false);
+  if (!owned) return;
+  const inParty = v4PartyGet().includes(id);
+  const row = document.createElement('div');
+  row.className = 'v4-detail-carry';
+  row.innerHTML = `<button type="button" class="${inParty ? 'v4-btn-ghost' : 'v4-btn-teal'}" onclick="v4ToggleCarry('${id}')">${inParty ? '從隊伍卸下' : '⚔ 攜帶到主城'}</button>${inParty && v4PartyGet()[0] !== id ? `<button type="button" class="v4-btn-gold" onclick="v4SetCaptain('${id}')">設為隊長</button>` : ''}`;
+  const name = document.getElementById('fig-detail-name')?.parentElement;
+  (name || panel.firstElementChild).after(row);
 }
 
 /* ---------- 參觀同事主城（5-8） ---------- */
@@ -198,6 +268,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const originalWarehouse = renderWarehouseUI;
   renderWarehouseUI = function (...args) { const r = originalWarehouse.apply(this, args); v4DecorateRoster(); return r; };
   openColleagueVisitModal = function () { v4OpenVisit(); };
+  const originalDetail = openFigurineDetailModal;
+  openFigurineDetailModal = function (figId, ...rest) { const r = originalDetail.call(this, figId, ...rest); v4DecorateDetailCarry(figId); return r; };
   const originalSwitchTab = switchTab;
   switchTab = function (tabId, ...rest) {
     v4CloseVisit();
