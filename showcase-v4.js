@@ -41,11 +41,11 @@ function v4BuildAltar() {
   const ten = banner.querySelector('[onclick="pullExecutiveGacha(10)"]');
   if (ten) ten.querySelector('span').textContent = '十連・950';
 
-  // 三個入口：融合工坊、進化圖鑑、IP 擂台（搬移原本的按鈕，onclick 不變）
+  // 入口：融合工坊、進化圖鑑（搬移原本的按鈕，onclick 不變）；IP 擂台入口已移除（功能程式保留、按鈕隱藏）
   const links = document.createElement('div');
   links.id = 'v4-altar-links';
   const pick = sel => tab.querySelector(`:scope > button[onclick^="${sel}"]`);
-  const entries = [[pick('openFamilyFusion'), '✦', '融合工坊'], [pick('openEvolutionCollection'), '📖', '進化圖鑑'], [pick('openAceBattle'), '⚔', 'IP 擂台']];
+  const entries = [[pick('openFamilyFusion'), '✦', '融合工坊'], [pick('openEvolutionCollection'), '📖', '進化圖鑑']];
   for (const [btn, icon, label] of entries) {
     if (!btn) continue;
     btn.className = 'v4-altar-link';
@@ -53,6 +53,8 @@ function v4BuildAltar() {
     links.appendChild(btn);
   }
   banner.after(links);
+  const arena = pick('openAceBattle');
+  if (arena) { arena.hidden = true; arena.setAttribute('aria-hidden', 'true'); arena.classList.add('v4-hidden-section'); }
 }
 
 function v4RenderAltar() {

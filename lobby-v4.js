@@ -78,15 +78,12 @@ function v4BuildLobby() {
   lobby.setAttribute('aria-label', '主城');
   lobby.innerHTML = `${v4Skyline()}
     <div class="v4-side v4-side-left">
-      <button type="button" class="v4-side-btn" onclick="v4OpenGuild()"><span class="v4-side-icon">${V4_ICON.crown}<span class="v4-badge" id="v4-badge-guild" hidden></span></span><span>公會長</span></button>
-      <button type="button" class="v4-side-btn" onclick="hunterHome()"><span class="v4-side-icon">${V4_ICON.calendar}<span class="v4-badge" id="v4-badge-daily" hidden>!</span></span><span>每日修練</span></button>
-      <button type="button" class="v4-side-btn" onclick="formalQuizOpen()"><span class="v4-side-icon">${V4_ICON.spark}</span><span>覺醒試煉</span></button>    </div>
+      <button type="button" class="v4-side-btn" onclick="hunterHome()"><span class="v4-side-icon">${V4_ICON.calendar}<span class="v4-badge" id="v4-badge-daily" hidden>!</span></span><span>每日修練</span></button>    </div>
     <div class="v4-side v4-side-right">
       <button type="button" class="v4-limited" onclick="switchTab('tab-showcase')" aria-label="限時召喚">
         <span class="v4-limited-clip"><img src="${V4_ASSET}ip/dino2.png" alt=""><small>LIMITED</small><b>限時<br>召喚</b><em>本期 UP</em></span>
         <span class="v4-badge"></span>
       </button>
-      <button type="button" class="v4-side-btn" onclick="openAceBattle()"><span class="v4-side-icon">${V4_ICON.arena}</span><span>IP 擂台</span></button>
     </div>
     <div class="v4-stage" id="v4-stage">
       <div class="v4-stage-glow"></div>
@@ -218,7 +215,6 @@ function v4BuildPartyPanel() {
     <div class="v4-party-actions">
       <button type="button" class="v4-btn-gold" onclick="v4ScrollToSummon()">召喚新夥伴</button>
       <button type="button" class="v4-btn-ghost" onclick="openFamilyFusion()">融合</button>
-      <button type="button" class="v4-btn-ghost" onclick="openAceBattle()">擂台</button>
     </div>`;
   tab.prepend(panel);
 }

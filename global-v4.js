@@ -55,7 +55,23 @@ function v4RenderAwaken() {
   block.innerHTML = `<div class="v4-awaken-rays" aria-hidden="true"></div>
     <div class="v4-awaken-title"><b class="v4-en">AWAKENED</b><span>你的雙軌起步職業</span></div>
     <div class="v4-class-pair">${classCard('dev', dev, devDef)}${classCard('sal', sal, salDef)}</div>
+    <button type="button" class="v4-back-to-quiz" onclick="v4BackToQuestions()">← 回到題目修改答案</button>
     <div class="v4-parch v4-awaken-mentor"><img src="${V4_ASSET}mentor_face.jpg" alt="阿義學長"><p>${v4Esc(devDef.dimension || '')}是你的起手式，${v4Esc(salDef.dimension || '')}幫你接住買方！</p></div>`;
+}
+
+/* ---------- 題目做完才揭曉職業 ---------- */
+// 作答中只顯示題目；第 6 題按「下一題」完成後，才切到職業揭曉畫面（隱藏題目）
+function v4SetQuizRevealed(on) {
+  const flow = document.getElementById('screen-quiz-flow');
+  if (!flow) return;
+  flow.classList.toggle('v4-quiz-revealed', on);
+  if (on) { v4RenderAwaken(); document.getElementById('app-main-scroll')?.scrollTo({ top: 0 }); }
+}
+function v4BackToQuestions() {
+  v4SetQuizRevealed(false);
+  currentQuizIndex = 5;
+  renderQuizQuestion();
+  document.getElementById('app-main-scroll')?.scrollTo({ top: 0 });
 }
 
 /* ---------- 更換職業 Modal（1-4）：每列加角色半身圖與職業名 ---------- */
@@ -115,6 +131,17 @@ window.addEventListener('DOMContentLoaded', () => {
     window[name] = function (...args) { const r = original.apply(this, args); after(...args); return r; };
   };
   wrap('renderQuizQuestion', () => v4RenderQuizHead());
+  wrap('formalQuizOpen', () => v4SetQuizRevealed(false));
+  if (typeof navigateQuiz === 'function') {
+    const originalNavigate = navigateQuiz;
+    navigateQuiz = function (step, ...rest) {
+      const finishing = step > 0 && v4Safe(() => currentQuizIndex, 0) === 5;
+      const result = originalNavigate.call(this, step, ...rest);
+      const valid = v4Safe(() => officialQuestions.every(q => formalQuizValid(q, userQuizAnswers[q.id])), false);
+      if (finishing && valid) v4SetQuizRevealed(true);
+      return result;
+    };
+  }
   wrap('renderSelectedRouteRecommendations', () => v4RenderAwaken());
   wrap('openChangeRouteModal', type => v4DecorateRouteModal(type));
   wrap('selectCustomRoute', () => v4RenderAwaken());

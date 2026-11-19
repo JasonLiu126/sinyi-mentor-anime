@@ -922,3 +922,11 @@ svg.v5-hero { width: 80%; }
 .v4-rcard-actions .v4-rcard-up { letter-spacing: 1px; }
 .v4-detail-carry { display: flex; gap: 8px; justify-content: center; }
 .v4-detail-carry button { flex: 1; max-width: 180px; height: 44px; font-size: 15px; border-radius: 12px; }
+
+/* ---------- 題目做完才揭曉職業 ---------- */
+#screen-quiz-flow:not(.v4-quiz-revealed) #card-recommendation { display: none !important; }
+#screen-quiz-flow.v4-quiz-revealed > :not(#card-recommendation) { display: none !important; }
+.v4-back-to-quiz { position: relative; align-self: center; font-size: 12px; font-weight: 900; color: var(--v4-muted); background: none; border: 1px solid var(--v4-line); border-radius: 12px; padding: 4px 12px; }
+/* IP 擂台入口移除後，召喚下方入口改 2 欄 */
+#v4-altar-links { grid-template-columns: repeat(2, 1fr) !important; }
+#tab-showcase > .v4-hidden-section { display: none !important; }
