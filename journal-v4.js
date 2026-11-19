@@ -155,14 +155,8 @@ function v4RenderJournal() {
 function v4RenderStrips(routeKey, slots, bounty, daily) {
   const container = document.getElementById('tasks-slots-container');
   if (!container) return;
+  // 每個功能只保留一個入口：公會長指派在下方「額外任務」面板操作、每日修練（阿義學長）已移除，這裡不再重複列出
   const extra = [];
-  if (bounty) extra.push(`<div class="v4-strip is-bounty"><span class="v4-pin" aria-hidden="true"></span><div class="v4-strip-body">
-      <small class="v4-en">BOUNTY <i>公會長</i></small><b class="v4-serif">${v4Esc(bounty.title)}</b><span>${v4Esc(bounty.description || '公會長指派')}</span></div>
-      <button type="button" class="v4-btn-gold v4-strip-btn" onclick="v4OpenBountyPanel()">查看</button></div>`);
-  if (daily.total) extra.push(`<div class="v4-strip is-daily ${daily.next ? '' : 'is-done'}"><span class="v4-pin" aria-hidden="true"></span><div class="v4-strip-body">
-      <small class="v4-en">DAILY <i>${daily.done}/${daily.total}</i></small><b class="v4-serif">${v4Esc(daily.next ? daily.next.name : '今日修練完成')}</b><span>每日修練・學長陪你</span></div>
-      <button type="button" class="${daily.next ? 'v4-btn-gold' : 'v4-btn-ghost'} v4-strip-btn" onclick="hunterHome()">${daily.next ? '接取' : '查看'}</button></div>`);
-
   const strips = slots.map(slot => {
     const { kind, label } = v4SlotKind(slot);
     const reward = `+${slot.rewardCoins || 150}`;

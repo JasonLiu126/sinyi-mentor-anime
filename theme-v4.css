@@ -930,3 +930,14 @@ svg.v5-hero { width: 80%; }
 /* IP 擂台入口移除後，召喚下方入口改 2 欄 */
 #v4-altar-links { grid-template-columns: repeat(2, 1fr) !important; }
 #tab-showcase > .v4-hidden-section { display: none !important; }
+
+/* ---------- 每個功能只保留一個入口；阿義學長功能先移除 ---------- */
+#mentor-float { display: none !important; }            /* 阿義學長浮動鈕（每日修練／學長引導） */
+#v4-bounty { display: none !important; }               /* 懸賞板三張單與下方列表重複 */
+#tab-handbook .ff-quiz-entry { display: none !important; } /* 每次進站都會先做測驗 */
+.v4-chip-emoji { font-size: 15px; line-height: 1; }
+.v4-quest-track { gap: 3px !important; }
+.v4-quest-more { margin-left: auto; flex: none; font-size: 12px; font-weight: 900; color: var(--v4-gold-light); }
+.v4-quest-open { font-size: 11px; color: var(--v4-muted); }
+.v4-hud-avatar { cursor: default; }
+.v4-limited { cursor: default; }

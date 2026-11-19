@@ -109,7 +109,7 @@ function v4RenderHandbook() {
   document.getElementById('v4-gear').innerHTML = `
     <div class="v4-gear-slot"><span aria-hidden="true">🛡</span><b>${V4_OUTFITS[code] || '冒險披風'}</b></div>
     <div class="v4-gear-slot"><span aria-hidden="true">👑</span><b>稱號：${title}</b></div>
-    <button type="button" class="v4-gear-slot" onclick="switchTab('tab-showcase')"><span aria-hidden="true">👥</span><b>夥伴 ×${partyCount}</b></button>
+    <div class="v4-gear-slot"><span aria-hidden="true">👥</span><b>夥伴 ×${partyCount}</b></div>
     <div class="v4-gear-slot is-locked"><span aria-hidden="true">🔒</span><b>Lv.5 解鎖</b></div>`;
 }
 

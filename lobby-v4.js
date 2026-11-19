@@ -56,11 +56,10 @@ function v4BuildHud() {
   const hud = document.createElement('div');
   hud.id = 'v4-hud';
   hud.innerHTML = `
-    <button type="button" class="v4-hud-avatar" id="v4-hud-avatar" onclick="switchTab('tab-handbook')" aria-label="角色"><span class="v4-hud-lv">Lv.<span id="v4-hud-level">1</span></span></button>
+    <div class="v4-hud-avatar" id="v4-hud-avatar" role="img" aria-label="我的角色"><span class="v4-hud-lv">Lv.<span id="v4-hud-level">1</span></span></div>
     <div class="v4-hud-name"><b id="v4-hud-name">新星</b><div class="v4-expbar" title="EXP"><i id="v4-hud-exp"></i></div></div>
-    <div class="v4-chip" title="金幣">${V4_ICON.coin}<span id="v4-hud-coins">0</span></div>
-    <div class="v4-chip" title="盲盒券">${V4_ICON.gem}<span id="v4-hud-tickets">0</span></div>
-    <button type="button" class="v4-icon-btn" id="v4-hud-mail" onclick="switchTab('tab-tasks')" aria-label="冒險日誌">${V4_ICON.mail}<span class="v4-badge" id="v4-hud-mail-badge" hidden></span></button>`;
+    <div class="v4-chip" title="金幣"><span class="v4-chip-emoji" aria-hidden="true">🪙</span><span id="v4-hud-coins">0</span></div>
+    <div class="v4-chip" title="盲盒券"><span class="v4-chip-emoji" aria-hidden="true">🎟️</span><span id="v4-hud-tickets">0</span></div>`;
   const shell = document.getElementById('app-shell');
   shell.insertBefore(hud, document.getElementById('app-main-scroll'));
 }
@@ -77,13 +76,10 @@ function v4BuildLobby() {
   lobby.className = 'hidden';
   lobby.setAttribute('aria-label', '主城');
   lobby.innerHTML = `${v4Skyline()}
-    <div class="v4-side v4-side-left">
-      <button type="button" class="v4-side-btn" onclick="hunterHome()"><span class="v4-side-icon">${V4_ICON.calendar}<span class="v4-badge" id="v4-badge-daily" hidden>!</span></span><span>每日修練</span></button>    </div>
     <div class="v4-side v4-side-right">
-      <button type="button" class="v4-limited" onclick="switchTab('tab-showcase')" aria-label="限時召喚">
+      <div class="v4-limited" role="img" aria-label="本期限時召喚 UP">
         <span class="v4-limited-clip"><img src="${V4_ASSET}ip/dino2.png" alt=""><small>LIMITED</small><b>限時<br>召喚</b><em>本期 UP</em></span>
-        <span class="v4-badge"></span>
-      </button>
+      </div>
     </div>
     <div class="v4-stage" id="v4-stage">
       <div class="v4-stage-glow"></div>
@@ -96,17 +92,13 @@ function v4BuildLobby() {
     <div class="v4-ribbon" id="v4-class-ribbon">社區開發刺客</div>
     <div class="v4-lobby-floor">
       <div class="v4-lobby-bottom">
-        <button type="button" class="v4-quest-track" onclick="switchTab('tab-tasks')">
-          <div><span class="v4-tag-main">主線</span><span class="v4-quest-title" id="v4-quest-title">—</span></div>
+        <button type="button" class="v4-quest-track" onclick="switchTab('tab-tasks')" aria-label="冒險日誌：查看全部任務">
+          <div><span class="v4-tag-main">主線</span><span class="v4-quest-title" id="v4-quest-title">—</span><span class="v4-quest-more">全部任務 ›</span></div>
           <div><span class="v4-mini-bar"><i id="v4-quest-bar"></i></span><span class="v4-quest-count" id="v4-quest-count">0/0</span></div>
+          <small class="v4-quest-open" id="v4-all-quests-count">0 項進行中</small>
         </button>
         <button type="button" class="v4-btn-gold v4-go" onclick="v4GoAdventure()">出發冒險<small id="v4-go-target">→ 冒險地圖</small></button>
       </div>
-      <button type="button" class="v4-all-quests" onclick="switchTab('tab-tasks')" aria-label="查看全部任務（冒險日誌）">
-        <span class="v4-all-quests-icon" aria-hidden="true">📜</span>
-        <span class="v4-all-quests-text"><b class="v4-serif">全部任務</b><small>冒險日誌・主線／懸賞／每日</small></span>
-        <span class="v4-all-quests-count" id="v4-all-quests-count">0 項進行中</span><span aria-hidden="true">›</span>
-      </button>
     </div>`;
   const main = document.getElementById('app-main-scroll');
   main.insertBefore(lobby, document.getElementById('tab-tasks'));

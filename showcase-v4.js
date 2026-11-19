@@ -140,7 +140,6 @@ function v4DecorateRoster() {
       ${founder ? `<p class="v4-rcard-note">持有 ${item.copies ?? 1} 張・融合素材</p>`
         : `<div class="v4-rcard-frag"><span aria-hidden="true">💎</span><div class="v4-frag-bar"><i style="width:${Math.min(100, item.fragments / 5 * 100)}%"></i></div><span class="v4-en">${item.fragments}/5</span></div>`}
       <div class="v4-rcard-actions">
-        <button type="button" class="${inParty ? 'v4-btn-ghost' : 'v4-btn-teal'} v4-rcard-carry" onclick="v4ToggleCarry('${id}')">${inParty ? '卸下' : '攜帶'}</button>
         ${canUpgrade ? `<button type="button" class="v4-btn-gold v4-rcard-up" onclick="upgradeFigurineStars('${id}')">升星 ★</button>` : ''}
       </div>
       ${!canUpgrade && item.stars >= info.maxStars && !founder ? '<p class="v4-rcard-note">已達最高星等</p>' : ''}`;
@@ -160,7 +159,7 @@ function v4RenderTeam() {
         ${v4FigArtHTML(id)}<b>${i === 0 ? '隊長' : v4Esc(info?.name || '')}</b></button>`
       : '<span class="v4-team-slot is-empty"><i>＋</i><b>空位</b></span>';
   }).join('');
-  team.innerHTML = `<div class="v4-team-head"><b class="v4-serif">攜帶中 ${party.length}/3</b><small>會站在主城陪你・點頭像設為隊長</small></div><div class="v4-team-slots">${slots}</div>`;
+  team.innerHTML = `<div class="v4-team-head"><b class="v4-serif">攜帶中 ${party.length}/3</b><small>點名冊角色→攜帶／卸下・點頭像設為隊長</small></div><div class="v4-team-slots">${slots}</div>`;
 }
 function v4ToggleCarry(id) {
   const party = [...v4PartyGet()];
