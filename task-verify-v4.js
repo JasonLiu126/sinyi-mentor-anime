@@ -192,91 +192,9 @@ function v4DecorateVerifyStrips() {
 
 function v4AfterVerifyChange() {
   if (typeof switchRoute === 'function') switchRoute(v4Safe(() => currentActiveRouteKey, 'dev'));
-  v4RenderReviewQueue();
-  v4RenderReportForm();
 }
 
-/* ---------- 測試後台：今日日報（模擬） ---------- */
-function v4BuildReportForm() {
-  const body = document.querySelector('#test-admin-modal .ta-body');
-  if (!body || document.getElementById('v4-report-form')) return;
-  const section = document.createElement('section');
-  section.id = 'v4-report-form';
-  section.className = 'v4-report-form';
-  body.prepend(section);
-  v4RenderReportForm();
-}
-function v4RenderReportForm() {
-  const section = document.getElementById('v4-report-form');
-  if (!section) return;
-  const report = v4TodayReport();
-  const waiting = Object.keys(v4VerifyLoad().waiting).length;
-  section.innerHTML = `<h3>今日日報（模擬）</h3>
-    <p>模擬公司日報表。送出後，📊 類任務會自動核對；等待中 ${waiting} 項。</p>
-    <div class="v4-report-grid">${Object.entries(V4_REPORT_FIELDS).map(([k, label]) => `<label>${label}<input type="number" min="0" max="99" inputmode="numeric" name="${k}" value="${Number(report[k]) || 0}"></label>`).join('')}</div>
-    <div class="ta-actions"><button type="button" data-v4-report="save">送出日報</button><button type="button" data-v4-report="sample">產生範例日報</button><button type="button" data-v4-report="clear">清除今日日報</button></div>`;
-  section.querySelectorAll('[data-v4-report]').forEach(btn => btn.addEventListener('click', () => v4ReportAction(btn.dataset.v4Report)));
-}
-function v4ReportAction(action) {
-  const state = v4VerifyLoad();
-  const today = v4Today();
-  if (action === 'clear') delete state.reports[today];
-  else if (action === 'sample') state.reports[today] = { visits: 2, gatekeeper: 1, calls: 3, appointments: 1, cold: 1 };
-  else {
-    const values = {};
-    document.querySelectorAll('#v4-report-form input[name]').forEach(input => { values[input.name] = Math.max(0, Math.min(99, parseInt(input.value, 10) || 0)); });
-    state.reports[today] = values;
-  }
-  v4VerifySave(state);
-  const done = action === 'clear' ? [] : v4ProcessWaiting();
-  showCustomToast(action === 'clear' ? '已清除今日日報' : done.length ? `日報核對完成：${done.join('、')}` : '日報已送出，沒有等待核對的任務', '📊');
-  v4AfterVerifyChange();
-}
-
-/* ---------- 店長後台：任務審核 ---------- */
-function v4BuildReviewQueue() {
-  const dialog = document.getElementById('mt-dialog');
-  const anchor = dialog?.querySelector('.mt-compose') || dialog?.querySelector('.mt-body');
-  if (!anchor || document.getElementById('v4-review-queue')) return;
-  const section = document.createElement('section');
-  section.id = 'v4-review-queue';
-  section.className = 'fl-panel v4-review-queue';
-  if (anchor.classList.contains('mt-body')) anchor.prepend(section); else anchor.before(section);
-  v4RenderReviewQueue();
-}
-function v4RenderReviewQueue() {
-  const section = document.getElementById('v4-review-queue');
-  if (!section) return;
-  const reviews = Object.entries(v4VerifyLoad().reviews).filter(([, r]) => r.status === 'pending');
-  section.innerHTML = `<h3>任務審核 <small>${reviews.length} 件待審</small></h3>
-    ${reviews.length ? reviews.map(([id, r]) => `<article class="v4-review-item" data-id="${id}">
-      <div class="v4-review-top"><b>${v4Esc(r.tag || '')}｜${v4Esc(r.title || '')}</b><small>${new Date(r.submittedAt).toLocaleString('zh-TW', { hour12: false })}</small></div>
-      <pre class="v4-review-content">${v4Esc(r.content || '')}</pre>
-      <label>退回原因（退回時必填）<textarea rows="2" maxlength="300" data-feedback></textarea></label>
-      <div class="ta-actions"><button type="button" value="approved" class="fl-primary">核可</button><button type="button" value="returned">退回補正</button></div>
-    </article>`).join('') : '<p class="mt-empty">目前沒有待審核的任務。</p>'}`;
-  section.querySelectorAll('.v4-review-item').forEach(item => item.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
-    v4ReviewDecide(item.dataset.id, btn.value, item.querySelector('[data-feedback]').value.trim());
-  })));
-}
-function v4ReviewDecide(id, decision, feedback) {
-  const state = v4VerifyLoad();
-  const review = state.reviews[id];
-  if (!review) return;
-  if (decision === 'returned') {
-    if (!feedback) { showCustomToast('退回時請填寫補正原因。', '⚠️'); return; }
-    review.status = 'returned';
-    review.feedback = feedback;
-    v4VerifySave(state);
-    showCustomToast(`已退回「${review.title}」`, '↩');
-  } else {
-    delete state.reviews[id];
-    v4VerifySave(state);
-    v4CompleteTask(review.routeKey, id, review.content);
-    showCustomToast(`已核可「${review.title}」，獎勵已發放`, '✅');
-  }
-  v4AfterVerifyChange();
-}
+// 日報登錄與任務審核介面在公會長後台（manager.html / manager.js），資料共用 sinyi-v4-task-verify-v1
 
 /* ---------- 啟動與包裝 ---------- */
 window.addEventListener('DOMContentLoaded', () => {
@@ -290,15 +208,30 @@ window.addEventListener('DOMContentLoaded', () => {
   };
   const originalRoute = switchRoute;
   switchRoute = function (...args) { const r = originalRoute.apply(this, args); v4DecorateVerifyStrips(); return r; };
-  if (typeof managerOpen === 'function') {
-    const originalManagerOpen = managerOpen;
-    managerOpen = function (...args) { const r = originalManagerOpen.apply(this, args); v4BuildReviewQueue(); v4RenderReviewQueue(); return r; };
-  }
-  if (typeof openTestAdmin === 'function') {
-    const originalAdmin = openTestAdmin;
-    openTestAdmin = function (...args) { const r = originalAdmin.apply(this, args); v4BuildReportForm(); v4RenderReportForm(); return r; };
-  }
-  v4BuildReviewQueue();
-  v4BuildReportForm();
+  // 店長的審核與日報已搬到獨立的公會長後台（manager.html）；新人 APP 只負責讀取結果並入帳
+  const originalSwitchTab = switchTab;
+  switchTab = function (...args) { const r = originalSwitchTab.apply(this, args); v4SyncFromManager(); return r; };
+  window.addEventListener('storage', event => { if (event.key === V4_VERIFY_KEY) v4SyncFromManager(); });
   v4DecorateVerifyStrips();
 });
+
+/* ---------- 從公會長後台同步：核可的任務、登錄的日報 ---------- */
+let v4Syncing = false;
+function v4SyncFromManager() {
+  if (v4Syncing || document.getElementById('app-shell')?.classList.contains('v4-quiz-lock') || !v4Safe(() => isQuizCompleted, false)) return;
+  v4Syncing = true;
+  try {
+    const state = v4VerifyLoad();
+    const approved = Object.entries(state.reviews).filter(([, r]) => r.status === 'approved');
+    const titles = [];
+    for (const [id, review] of approved) {
+      delete state.reviews[id];
+      v4VerifySave(state);
+      if (v4CompleteTask(review.routeKey, id, review.content)) titles.push(review.title);
+    }
+    const reportDone = v4ProcessWaiting();
+    if (titles.length) showCustomToast(`公會長已核可：${titles.join('、')}`, '👑');
+    else if (reportDone.length) showCustomToast(`日報核對通過：${reportDone.join('、')}`, '📊');
+    if (titles.length || reportDone.length || approved.length) v4AfterVerifyChange();
+  } finally { v4Syncing = false; }
+}
