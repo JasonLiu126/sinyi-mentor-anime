@@ -4,6 +4,8 @@
    - 探索副本：既有 9 欄勘查表單（formal-local.js）原封不動，外面加「情報拼圖」：
      點碎片 → 數字鍵盤／文字框寫回原本的 input，並觸發原本的 input 事件；
      暫存／送審／核可／領獎仍由原本的表單與按鈕處理。
+   - 11/24：地圖只開放新人 D1 範圍內的大樓（目前 b1～b3 視為 D1），每一棟是一個勘查任務；
+     店長核可後才顯示完整資訊；D1 全部核可後解鎖整張地圖，D1 以外只能瀏覽、不當任務。
    ========================================================= */
 
 // 地圖版面設定（百分比座標）；stars＝難度星等（顯示用）
@@ -14,8 +16,8 @@ const V4_MAP_LAYOUT = {
 };
 const V4_MAP_DECOR = [
   { kind: 'base', x: 23, y: 55, label: '分店據點' },
-  { kind: 'fog', x: 78, y: 62, label: '未探索' },
-  { kind: 'fog', x: 14, y: 84, label: '未探索' }
+  { kind: 'fog', x: 78, y: 62, label: 'D1 以外' },
+  { kind: 'fog', x: 14, y: 84, label: 'D1 以外' }
 ];
 const V4_PLAYER_POS = { x: 30, y: 80 };
 // 情報拼圖：9 塊碎片＝既有 9 欄（順序＝3×3 由左上到右下）
@@ -45,6 +47,8 @@ function v4ExploreRate() {
   const approved = ids.filter(id => v4RecordOf(id)?.status === 'approved').length;
   return { approved, total: ids.length, pct: ids.length ? Math.round(approved / ids.length * 100) : 0 };
 }
+// D1 全部核可才解鎖整張地圖
+function v4D1Cleared() { const r = v4ExploreRate(); return r.total > 0 && r.approved >= r.total; }
 function v4BuildingState(id) {
   const record = v4RecordOf(id);
   if (record?.status === 'approved') return 'explored';
@@ -82,7 +86,7 @@ function v4BuildMap() {
   region.id = 'v4-region';
   region.className = 'v4-region';
   region.innerHTML = `<div><small class="v4-en">REGION · XINYI</small><b class="v4-serif">松智生活圈</b></div>
-    <div class="v4-region-rate"><span>探索度</span><b class="v4-en" id="v4-explore-pct">0%</b><div class="v4-expbar"><i id="v4-explore-bar"></i></div></div>`;
+    <div class="v4-region-rate"><span>D1 進度</span><b class="v4-en" id="v4-explore-pct">0%</b><div class="v4-expbar"><i id="v4-explore-bar"></i></div></div>`;
   const stage = document.createElement('div');
   stage.id = 'v4-map-stage';
   stage.className = 'v4-map-stage';
@@ -114,7 +118,7 @@ function v4RenderMap() {
   const stage = document.getElementById('v4-map-stage');
   if (!stage) return;
   const rate = v4ExploreRate();
-  document.getElementById('v4-explore-pct').textContent = rate.pct + '%';
+  document.getElementById('v4-explore-pct').textContent = `${rate.approved}/${rate.total}`;
   document.getElementById('v4-explore-bar').style.width = rate.pct + '%';
 
   const selected = v4Safe(() => currentSelectedBuildingId, null);
@@ -128,12 +132,18 @@ function v4RenderMap() {
     const state = v4BuildingState(id);
     const name = v4Safe(() => buildingDatabase[id].name, id);
     return `<button type="button" class="v4-hex is-${state} ${id === selected ? 'is-selected' : ''}" style="left:${pos.x}%;top:${pos.y}%"
-      onclick="selectMapBuilding('${id}')" aria-label="${v4Esc(name)}（${{ explored: '已探索', target: '任務目標', open: '可探索' }[state]}）" aria-pressed="${id === selected}">
+      onclick="selectMapBuilding('${id}')" aria-label="${v4Esc(name)}（D1 大樓・${{ explored: '已完成', target: '勘查中', open: '未勘查' }[state]}）" aria-pressed="${id === selected}">
       ${state === 'target' ? '<span class="v4-hex-alert" aria-hidden="true">!</span>' : ''}
       <span class="v4-hex-shape">${V4_CASTLE}</span><span class="v4-hex-label">${v4Esc(name)}</span></button>`;
   }).join('');
-  const decor = V4_MAP_DECOR.map(d => `<div class="v4-hex is-${d.kind}" style="left:${d.x}%;top:${d.y}%" aria-hidden="true">
-      <span class="v4-hex-shape">${d.kind === 'fog' ? '🔒' : V4_CASTLE}</span><span class="v4-hex-label">${d.label}</span></div>`).join('');
+  const cleared = v4D1Cleared();
+  const decor = V4_MAP_DECOR.map(d => {
+    const locked = d.kind === 'fog' && !cleared;
+    const kind = d.kind === 'fog' ? (locked ? 'fog' : 'browse') : d.kind;
+    const label = d.kind === 'fog' ? (locked ? 'D1 完成後解鎖' : 'D1 以外・可瀏覽') : d.label;
+    return `<div class="v4-hex is-${kind}" style="left:${d.x}%;top:${d.y}%" title="${locked ? '先完成 D1 所有大樓的勘查，才會解鎖整張地圖' : 'D1 以外的社區只能瀏覽，不是任務'}">
+      <span class="v4-hex-shape">${locked ? '🔒' : V4_CASTLE}</span><span class="v4-hex-label">${label}</span></div>`;
+  }).join('');
   const avatar = `<div class="v4-map-player" style="left:${V4_PLAYER_POS.x}%;top:${V4_PLAYER_POS.y}%;background-image:url('${v4ClassArt(v4DevCode())}')" aria-hidden="true"></div>`;
   stage.innerHTML = v4MapBackground() + path + decor + markers + avatar;
   v4RenderMapCard();
@@ -151,7 +161,7 @@ function v4RenderMapCard() {
   const tagClass = { '可售': 'g', '潛案': 'y', '逾案': 'n', '開發機會': 'r' };
   const mission = v4SurveyMission();
   const reward = mission && !mission.isCompleted ? mission : null;
-  const statusText = record ? { pending: '鑑定中', approved: '已探索', returned: '待補正' }[record.status] : { target: '任務目標', open: '可探索' }[state];
+  const statusText = record ? { pending: '店長審核中', approved: '已完成・完整資訊已開放', returned: '退回補正' }[record.status] : { target: 'D1 勘查任務', open: 'D1 勘查任務・未勘查' }[state];
   card.innerHTML = `<div class="v4-map-card-top">
       <span class="v4-hex-shape is-${state}">${V4_CASTLE}</span>
       <div><b class="v4-serif">${v4Esc(b.name)} <span class="v4-stars">${v4Stars(V4_MAP_LAYOUT[id]?.stars || 1)}</span></b>
@@ -382,7 +392,7 @@ function v4DecorateSubtab(tab) {
   if (tab === 'trends' || tab === 'specs') {
     const empty = container.querySelector('.fl-note');
     if (empty && empty.textContent.includes('沒有已核可')) {
-      container.innerHTML = `<div class="v4-fog-lock"><span aria-hidden="true">🔒</span><b class="v4-serif">情報被迷霧遮住了</b><p>拼完情報拼圖，交給公會長鑑定通過即可解鎖</p>
+      container.innerHTML = `<div class="v4-fog-lock"><span aria-hidden="true">🔒</span><b class="v4-serif">情報被迷霧遮住了</b><p>這棟是 D1 勘查任務：拼完情報拼圖、店長審核通過後，才會顯示完整資訊</p>
         <button type="button" class="v4-btn-gold" onclick="switchBuildingSubtab('summary')">去拼情報拼圖</button></div>`;
     }
   }

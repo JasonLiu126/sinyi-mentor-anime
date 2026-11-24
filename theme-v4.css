@@ -348,6 +348,7 @@ div.v4-hex { cursor: default; }
 .v4-hex.is-target .v4-hex-shape, .v4-hex-shape.is-target { background: var(--v4-gold); color: var(--v4-gold-btn-text); }
 .v4-hex.is-base .v4-hex-shape { background: var(--v4-teal); }
 .v4-hex.is-fog .v4-hex-shape { background: #5F5650; filter: blur(.2px); opacity: .85; }
+.v4-hex.is-browse .v4-hex-shape { background: #8C7B66; opacity: .9; }
 .v4-hex.is-selected .v4-hex-shape { filter: drop-shadow(0 0 6px #fff) brightness(1.08); }
 .v4-hex.is-selected { z-index: 3; }
 .v4-hex-label { font-size: 11px; font-weight: 900; color: var(--v4-parch-text); background: var(--v4-parch); border: 1.5px solid var(--v4-parch-border); border-radius: 5px; padding: 1px 6px; white-space: nowrap; }

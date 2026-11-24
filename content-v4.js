@@ -7,7 +7,7 @@
    ========================================================= */
 const V4_CONTENT_KEY = 'sinyi-v4-content-v1';
 
-// 公司日報的行程分類：行程項目 → 行程方式 → 經營行為。
+// 日報表的行程分類（新人 KEY 日報表、店長審核後產生的「行程資料表」使用同一套分類）：行程項目 → 行程方式 → 經營行為。
 // 公開版只放示意分類；真實分類放在本機的 trip-catalog.local.js（不上傳），存在時優先使用。
 // 一筆行程的代碼＝「項目|方式|行為」；行為寫 * 代表該方式下全部行為；第 3 欄是行程項目說明
 const V4C_TRIP_SAMPLE = [
@@ -38,7 +38,7 @@ const V4C_ROUTES = { dev: '開發路線', sal: '銷售路線', com: '冒險基�
 // 系統任務預設值：判定方式、日報規則、難度、成長能力（[分類, 技能, 權重]，最多 3 項，權重合計 1）
 // native：社區勘查沿用既有流程（店長在後台審核勘查內容）
 const V4C_BASE_TASKS = {
-  dev_m_01: { route: 'dev', title: '從地圖選一個想了解的社區', mode: 'manager', native: true, tier: 'M', abilities: [['soft_dev', 'dev_local', 0.5], ['hard_know', 'market', 0.5]] },
+  dev_m_01: { route: 'dev', title: '完成 D1 大樓的社區勘查', mode: 'manager', native: true, tier: 'M', abilities: [['soft_dev', 'dev_local', 0.5], ['hard_know', 'market', 0.5]] },
   dev_m_02: { route: 'dev', title: '實地走訪，辨識主力大樓生活機能', mode: 'report', trips: ['社區經營|面訪|拜訪社區管理員'], min: 1, tier: 'S', abilities: [['soft_dev', 'dev_local', 0.6], ['soft_dev', 'dev_track', 0.4]] },
   dev_m_03: { route: 'dev', title: '整理社區筆記與三個想請教的問題', mode: 'manager', tier: 'M', abilities: [['hard_know', 'market', 0.6], ['soft_dev', 'dev_local', 0.4]] },
   dev_m_04: { route: 'dev', title: '社區管理員破冰並獲得第一手情資', mode: 'manager', tier: 'M', abilities: [['soft_dev', 'dev_local', 1]] },
@@ -50,11 +50,14 @@ const V4C_BASE_TASKS = {
   com_m_02: { route: 'com', title: '比較相鄰兩個生活圈的環境差異', mode: 'manager', tier: 'M', abilities: [['hard_know', 'market', 1]] },
   com_m_03: { route: 'com', title: '追蹤所選生活圈的一項新市場訊號', mode: 'manager', tier: 'M', abilities: [['hard_know', 'market', 0.5], ['soft_dev', 'dev_track', 0.5]] }
 };
+// 待派清單：任務庫依這個順序派入（PM 可調整；目前三條路線輪流）
+const V4C_POOL_ORDER = ['dev_m_01', 'sal_m_01', 'com_m_01', 'dev_m_02', 'sal_m_02', 'com_m_02', 'dev_m_03', 'sal_m_03', 'com_m_03', 'dev_m_04', 'sal_m_04'];
 // 本機有真實分類時，系統任務改用真實行程
 if (typeof window !== 'undefined' && window.V4C_TASK_TRIPS_LOCAL) for (const [id, trips] of Object.entries(window.V4C_TASK_TRIPS_LOCAL)) if (V4C_BASE_TASKS[id]) V4C_BASE_TASKS[id].trips = trips;
 // 系統參數預設值
-const V4C_BASE_PARAMS = { perDay: 3, expPerDay: 120, active: 5, reviewDays: 2, maxReturns: 3 };
-const V4C_PARAM_NAMES = { perDay: '店長每日指派件數上限（每位新人）', expPerDay: '店長每日指派經驗上限（每位新人）', active: '指派任務同時進行中上限', reviewDays: '店長審核期限（天）', maxReturns: '退回次數上限' };
+// 11/24：不設店長審核期限；新增任務庫數量 N（新人任務庫一直維持 N 個系統任務，完成一個自動補一個）
+const V4C_BASE_PARAMS = { poolSize: 5, perDay: 3, expPerDay: 120, active: 5, maxReturns: 3 };
+const V4C_PARAM_NAMES = { poolSize: '任務庫數量 N（每位新人同時進行的系統任務）', perDay: '店長每日派發件數上限（每位新人）', expPerDay: '店長每日派發經驗上限（每位新人）', active: '派發任務同時進行中上限', maxReturns: '退回次數上限' };
 
 const v4cClone = v => JSON.parse(JSON.stringify(v));
 function v4cLoad() {

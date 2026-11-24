@@ -103,7 +103,7 @@ function v4DecorateGlobal() {
 /* ---------- 每次進入都要重做職業覺醒試煉 ---------- */
 // true：每次打開網頁都從第 1 題開始，完成並按「確認職業，進入主城」後才能使用其他功能。
 // 想恢復「做過一次就直接進主城」，改成 false 即可。
-// 依規格：覺醒試煉只做一次；公會長在後台「開放重測」後，新人下次進入才會重做
+// 11/24：覺醒試煉只做一次，第一期不開放重測；做過就直接進主頁
 const V4_QUIZ_EVERY_VISIT = false;
 const V4_QUIZ_HISTORY_KEY = 'sinyi-v4-quiz-history-v1';
 let v4QuizRecommended = null;
@@ -123,7 +123,7 @@ function v4LockForQuiz(locked) {
 function v4ForceQuizOnEntry() {
   if (V4_MANAGER_VIEW) { if (!v4QuizForced && typeof managerOpen === 'function') { v4QuizForced = true; managerOpen(); } return; }
   if (v4QuizForced) return;
-  const retake = v4QuizHistory().allowRetake;
+  const retake = false; // 第一期不開放重測（店長後台已拿掉開放重測）
   if (!V4_QUIZ_EVERY_VISIT && !retake) return;
   if (!v4Safe(() => isQuizCompleted, false)) { v4QuizForced = true; return; } // 首次使用：原本就會開測驗
   v4QuizForced = true;

@@ -271,7 +271,7 @@ function setupCommunityMap() {
     mark();
   };
   // Reuse the existing map mission and its single-reward completion guard.
-  const mission = { title: '完成一筆社區勘查', desc: '到地圖填寫社區資料，送店長核可後領取任務獎勵。' };
+  const mission = { title: '完成 D1 大樓的社區勘查', desc: '到冒險地圖勘查 D1 大樓，送店長審核通過後領取獎勵；D1 全部完成會解鎖整張地圖。' };
   Object.assign(formalRouteDefaults.dev.slots[0], mission);
   const liveMission = routeTasksData.dev.slots[0];
   if (!liveMission.isCompleted && liveMission.type === 'navigate_map') Object.assign(liveMission, mission);

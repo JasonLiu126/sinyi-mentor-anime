@@ -1,6 +1,6 @@
 /* =========================================================
    新人 APP：遊戲內通知、使用紀錄、AI 對練評分紀錄
-   - 通知：任務核可、退回、店長指派、日報同步完成、開放重測、指派快到期
+   - 通知：任務完成、退回或結束、店長派發新任務、行程資料表同步後完成；每天提醒還有哪些任務待完成
    - 使用紀錄：每次開啟到離開的時間、各分頁停留秒數（給 PM 後台統計）
    - AI 對練：只存各面向分數、總分、評語（不存對話）
    - 尚未接資料庫：存在 localStorage；之後換成 API
@@ -8,7 +8,7 @@
 const V4_NOTIFY_KEY = 'sinyi-v4-notify-v1';
 const V4_USAGE_KEY = 'sinyi-v4-usage-v1';
 const V4_PRACTICE_KEY = 'sinyi-v4-practice-v1';
-const V4_NOTIFY_ICON = { approved: '🎉', returned: '↩️', closed: '⛔', assigned: '📜', report: '📊', retake: '🧭', due: '⏰' };
+const V4_NOTIFY_ICON = { approved: '🎉', returned: '↩️', closed: '⛔', assigned: '📜', report: '📊', remind: '📋' };
 
 function v4JsonLoad(key, fallback) { try { return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback; } catch { return fallback; } }
 function v4JsonSave(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* 無法存檔時略過 */ } }
@@ -22,18 +22,18 @@ function v4Notify(type, title, body = '') {
   v4JsonSave(V4_NOTIFY_KEY, state);
   v4RenderNotifyBadge();
 }
-// 比對後台資料與上次看到的狀態，產生退回、新指派、快到期、開放重測的通知
+// 比對後台資料與上次看到的狀態，產生退回、新派發的通知；每天第一次打開時提醒待完成任務
 function v4NotifySnapshot() {
   const verify = v4VerifyLoad();
   const assign = v4AssignLoad();
   const reviews = Object.fromEntries(Object.entries(verify.reviews).map(([id, r]) => [id, `${r.status}:${r.returnCount || 0}`]));
   const tasks = Object.fromEntries((assign?.tasks || []).filter(t => t.member === assign.active).map(t => [t.id, `${t.status}:${t.returnCount || 0}`]));
-  return { reviews, tasks, retake: !!v4QuizHistory().allowRetake };
+  return { reviews, tasks };
 }
 function v4NotifyScan() {
   const now = v4NotifySnapshot();
   const state = v4NotifyLoad();
-  if (!state) { v4JsonSave(V4_NOTIFY_KEY, { items: [], seen: { ...now, tasks: {}, due: {} } }); return v4NotifyScan(); } // 第一次：送審狀態只記現況，未完成的指派任務照樣通知
+  if (!state) { v4JsonSave(V4_NOTIFY_KEY, { items: [], seen: { ...now, tasks: {} } }); return v4NotifyScan(); } // 第一次：送審狀態只記現況，未完成的派發任務照樣通知
   const seen = state.seen || {};
   const verify = v4VerifyLoad();
   const assign = v4AssignLoad();
@@ -48,17 +48,20 @@ function v4NotifyScan() {
     if (task.member !== assign.active) continue;
     const sig = now.tasks[task.id];
     const before = seen.tasks?.[task.id];
-    if (!before && task.status === 'todo') notices.push(['assigned', `店長指派新任務：${task.title}`, `${task.verify === 'report' ? '📊 日報判定' : '👑 店長判定'}${task.due ? `・期限 ${task.due}` : ''}`]);
-    else if (before && before !== sig && task.status === 'todo' && (task.returnCount || 0) > Number(before.split(':')[1] || 0)) notices.push(['returned', `指派任務被退回：${task.title}`, `回饋：${task.feedback || '—'}`]);
-    else if (before && before !== sig && task.status === 'cancelled' && task.returnCount >= V4_MAX_RETURNS) notices.push(['closed', `指派任務已結束：${task.title}`, task.feedback || '']);
-    const daysLeft = task.due ? Math.round((Date.parse(task.due) - Date.parse(v4Today())) / 864e5) : null;
-    if (task.status === 'todo' && daysLeft !== null && daysLeft >= 0 && daysLeft <= 1 && !seen.due?.[task.id]) {
-      notices.push(['due', `指派任務快到期：${task.title}`, daysLeft === 0 ? '今天到期' : '明天到期']);
-      seen.due = { ...(seen.due || {}), [task.id]: true };
-    }
+    if (!before && task.status === 'todo') notices.push(['assigned', `店長派發新任務：${task.title}`, `${task.verify === 'report' ? '📊 日報表判定' : '👑 店長審核'}${task.due ? `・期限 ${task.due}` : ''}`]);
+    else if (before && before !== sig && task.status === 'todo' && (task.returnCount || 0) > Number(before.split(':')[1] || 0)) notices.push(['returned', `派發任務被退回：${task.title}`, `回饋：${task.feedback || '—'}`]);
+    else if (before && before !== sig && task.status === 'cancelled' && task.returnCount >= V4_MAX_RETURNS) notices.push(['closed', `派發任務已結束：${task.title}`, task.feedback || '']);
+    else if (before && before !== sig && task.status === 'closed') notices.push(['closed', `派發任務已結束：${task.title}`, task.feedback || '']);
   }
-  if (now.retake && !seen.retake) notices.push(['retake', '店長開放重測覺醒試煉', '下次進入 APP 會重新作答，可以重新選擇職業']);
-  state.seen = { ...now, due: seen.due || {} };
+  // 每日提醒（正式版由每日排程推播）：每天第一次打開 APP 時，列出還有哪些任務待完成；不另外發到期通知
+  const today = v4Today();
+  const ready = v4Safe(() => isQuizCompleted, false);
+  if (ready && seen.remindDay !== today) {
+    const pool = v4Safe(() => v4PoolOrder().filter(([, s]) => v4InPool(s.id, verify)).map(([, s]) => s.title), []);
+    const mine = (assign?.tasks || []).filter(t => t.member === assign.active && ['todo', 'review'].includes(t.status)).map(t => t.title + (t.due ? `（期限 ${t.due}）` : ''));
+    if (pool.length || mine.length) notices.push(['remind', `今天還有 ${pool.length + mine.length} 個任務待完成`, [...pool, ...mine].join('、')]);
+  }
+  state.seen = { ...now, remindDay: ready ? today : seen.remindDay };
   v4JsonSave(V4_NOTIFY_KEY, state);
   notices.forEach(n => v4Notify(...n));
   if (!notices.length) v4RenderNotifyBadge();
@@ -193,7 +196,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const done = originalComplete.call(this, routeKey, id, content, via);
     if (done) {
       const slot = v4SlotById(routeKey, id);
-      if (via === 'report') v4Notify('report', `日報同步後自動完成：${slot?.title || id}`, `+${slot?.rewardExp || ''} EXP`);
+      if (via === 'report') v4Notify('report', `行程資料表同步後自動完成：${slot?.title || id}`, `+${slot?.rewardExp || ''} EXP`);
       else v4Notify('approved', `店長核可：${slot?.title || id}`, `+${slot?.rewardExp || ''} EXP，獎勵已發放`);
     }
     return done;
@@ -201,7 +204,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const originalAssigned = v4SyncAssigned;
   v4SyncAssigned = function (...args) {
     const titles = originalAssigned.apply(this, args);
-    titles.forEach(t => v4Notify('approved', `指派任務完成：${t}`, '經驗已發放'));
+    titles.forEach(t => v4Notify('approved', `店長派發任務完成：${t}`, '經驗與金幣已發放'));
     return titles;
   };
   const originalSync = v4SyncFromManager;
