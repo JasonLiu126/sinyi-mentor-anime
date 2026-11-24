@@ -68,17 +68,6 @@ function v4ReportSum(trips, sinceDate, state = v4VerifyLoad()) {
     .reduce((sum, [, entry]) => sum + v4cTripCount(v4ReportValues(entry), trips), 0);
 }
 
-/* ---------- 個資檢查 ---------- */
-const V4_PII_RULES = [
-  [/09\d{2}[-\s]?\d{3}[-\s]?\d{3}/, '手機號碼'],
-  [/\b[A-Z][12]\d{8}\b/i, '身分證字號'],
-  [/[\w.+-]+@[\w-]+\.[\w.]+/, 'Email']
-];
-function v4PiiFound(text) {
-  const hit = V4_PII_RULES.find(([re]) => re.test(String(text || '')));
-  return hit ? hit[1] : null;
-}
-
 /* ---------- 系統任務 ---------- */
 function v4SlotById(routeKey, id) { return v4Safe(() => routeTasksData[routeKey].slots.find(s => s.id === id), null); }
 function v4AllSlots() {
@@ -213,8 +202,6 @@ function v4HandleSubmit(original, args) {
   if (prev?.status === 'pending') { showCustomToast('已在公會長審核中，請耐心等候。', '👑'); return; }
   if (prev?.status === 'closed') { showCustomToast(`這個任務已退回 ${V4_MAX_RETURNS} 次，任務已結束。`, '⛔'); return; }
   const content = v4CollectContent(slot);
-  const pii = v4PiiFound(content);
-  if (pii) { showCustomToast(`內容疑似包含客戶${pii}，請刪除個資後再送審`, '🔒'); return; }
   state.reviews[slot.id] = { status: 'pending', routeKey, title: slot.title, tag: slot.tag, content, feedback: prev?.feedback || '', returnCount: prev?.returnCount || 0, submittedAt: new Date().toISOString() };
   v4VerifySave(state);
   v4Log({ type: 'submitted', source: 'system', taskId: slot.id, title: slot.title, detail: content.slice(0, 200) });
@@ -443,7 +430,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const originalManagerRender = managerRender;
     managerRender = function (...args) { const r = originalManagerRender.apply(this, args); v4DecorateAssignCards(); return r; };
   }
-  // 店長派發任務：日報表判定的「完成」＝改待確認；店長審核的文字回報送出前檢查個資
+  // 店長派發任務：日報表判定的「完成」＝改待確認；店長審核的文字回報不做個資檢查（11/24）
   if (typeof managerTransition === 'function') {
     const originalTransition = managerTransition;
     managerTransition = function (id, action, ...rest) {
@@ -462,8 +449,6 @@ window.addEventListener('DOMContentLoaded', () => {
         return;
       }
       if (action === 'submit') {
-        const pii = v4PiiFound(document.getElementById('mt-report-' + id)?.value);
-        if (pii) { showCustomToast(`內容疑似包含客戶${pii}，請刪除個資後再回報`, '🔒'); return; }
         const task = v4AssignLoad()?.tasks.find(t => t.id === id);
         if (task) v4Log({ type: 'submitted', source: 'assign', taskId: id, title: task.title, detail: (document.getElementById('mt-report-' + id)?.value || '').slice(0, 200) });
       }
