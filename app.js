@@ -1551,7 +1551,7 @@ let isQuizCompleted = false;
           id: 'dev_hero_01',
           badge: '主線 01｜進行中',
           badgeClass: 'bg-lego-red text-white text-[9px] font-pixel px-2 py-0.5 rounded',
-          time: '接取於 10:15',
+          time: '派入於 10:15',
           title: '認識你的第一塊地盤',
           desc: '目標：前往信義地圖，選一個想了解的社區大樓標記為耕耘目標。',
           cond: '前往信義地圖，鎖定大器四方或周邊大樓標記',
@@ -1579,7 +1579,7 @@ let isQuizCompleted = false;
             title: '實地走訪，辨識主力大樓生活機能',
             desc: '憑日報表完成街廓走訪自動核對',
             isOngoing: false,
-            btnText: '接取與執行',
+            btnText: '執行',
             rewardExp: 25,
             rewardCoins: 180,
             cat: 'soft_dev',
@@ -1597,7 +1597,7 @@ let isQuizCompleted = false;
             title: '整理社區筆記與三個想請教的問題',
             desc: '於 APP 內儲存大樓行情重點與疑難筆記',
             isOngoing: false,
-            btnText: '接取與執行',
+            btnText: '執行',
             rewardExp: 30,
             rewardCoins: 200,
             cat: 'hard_know',
@@ -1627,7 +1627,7 @@ let isQuizCompleted = false;
           id: 'sal_hero_01',
           badge: '主線 01｜進行中',
           badgeClass: 'bg-lego-blue text-white text-[9px] font-pixel px-2 py-0.5 rounded',
-          time: '接取於 10:40',
+          time: '派入於 10:40',
           title: '接收可聯繫的舊買資源並了解現況',
           desc: '目標：盤點店長提供的舊買清單，重新梳理購屋預算與目標區域。',
           cond: '完成首筆名單狀態標記與未知條件盤點',
@@ -1655,7 +1655,7 @@ let isQuizCompleted = false;
             title: '準備釐清需求的問題清單',
             desc: '確認預算、區域、不可妥協條件與自備款',
             isOngoing: false,
-            btnText: '接取與執行',
+            btnText: '執行',
             rewardExp: 25,
             rewardCoins: 180,
             cat: 'soft_sal',
@@ -1673,7 +1673,7 @@ let isQuizCompleted = false;
             title: '完成首次電話或訊息聯繫',
             desc: '電話聯繫舊買，邀約週末現場看屋',
             isOngoing: false,
-            btnText: '接取與執行',
+            btnText: '執行',
             rewardExp: 30,
             rewardCoins: 200,
             cat: 'soft_sal',
@@ -1702,7 +1702,7 @@ let isQuizCompleted = false;
           id: 'com_hero_01',
           badge: '支線 01｜進行中',
           badgeClass: 'bg-lego-green text-white text-[9px] font-pixel px-2 py-0.5 rounded',
-          time: '接取於 09:30',
+          time: '派入於 09:30',
           title: '嘗試一次陌生接觸，練習非主力技能',
           desc: '目標：不以取得委託或成交為條件，練習自然合宜的開場與提問。',
           cond: '日報表或對練紀錄中有一次初次接觸',
@@ -1734,7 +1734,7 @@ let isQuizCompleted = false;
             title: '比較相鄰兩個生活圈的環境差異',
             desc: '整理交通、學區與商圈特色對照表',
             isOngoing: false,
-            btnText: '接取與執行',
+            btnText: '執行',
             rewardExp: 20,
             rewardCoins: 150,
             cat: 'hard_know',
@@ -1747,7 +1747,7 @@ let isQuizCompleted = false;
             title: '追蹤所選生活圈的一項新市場訊號',
             desc: '記錄一筆新案動態或自售看板變化',
             isOngoing: false,
-            btnText: '接取與執行',
+            btnText: '執行',
             rewardExp: 25,
             rewardCoins: 180,
             cat: 'soft_dev',
@@ -1851,7 +1851,7 @@ let isQuizCompleted = false;
                     執行中 ➔
                    </button>`
                 : `<button onclick="openTaskActionModal('${routeKey}', '${slot.id}')" class="px-3 py-1.5 bg-lego-blue hover:bg-lego-darkblue text-white rounded-lg text-xs font-black lego-btn whitespace-nowrap">
-                    ${slot.btnText || '接取與執行'}
+                    ${slot.btnText || '執行'}
                    </button>`
               }
             </div>
@@ -2026,7 +2026,7 @@ let isQuizCompleted = false;
             id: `${routeKey}_hero_${nextSlot.id}`,
             badge: `${nextSlot.tag}｜進行中`,
             badgeClass: routeKey === 'dev' ? 'bg-lego-red text-white text-[9px] font-pixel px-2 py-0.5 rounded' : routeKey === 'sal' ? 'bg-lego-blue text-white text-[9px] font-pixel px-2 py-0.5 rounded' : 'bg-lego-green text-white text-[9px] font-pixel px-2 py-0.5 rounded',
-            time: '接取於 剛才',
+            time: '派入於 剛才',
             title: nextSlot.title,
             desc: `目標：${nextSlot.desc}，點擊下方按鈕即可開啟檢核與執行。`,
             cond: '完成該課題各項指標登錄',

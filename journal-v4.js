@@ -163,8 +163,11 @@ function v4RenderStrips(routeKey, slots, bounty, daily) {
     let right;
     if (slot.isHidden) right = `<span class="v4-lock">🔒 ${v4Esc(slot.desc || '')}</span>`;
     else if (slot.isCompleted) right = '<span class="v4-stamp-done v4-en">CLEAR</span>';
-    else right = `<button type="button" class="v4-btn-gold v4-strip-btn" onclick="openTaskActionModal('${routeKey}', '${slot.id}')">${slot.isOngoing ? '執行中' : '接取'}</button>`;
-    return `<div class="v4-strip is-${kind} ${slot.isHidden ? 'is-locked' : ''} ${slot.isCompleted ? 'is-done' : ''}">
+    // 11/24：不用接任務。任務庫裡的任務直接「執行」；還在待派清單的顯示「待派入」
+    else if (typeof v4InPool === 'function' && !v4InPool(slot.id) && !v4Safe(() => v4VerifyLoad().reviews[slot.id], null)) right = '<span class="v4-lock">⏳ 待派入</span>';
+    else right = `<button type="button" class="v4-btn-gold v4-strip-btn" onclick="openTaskActionModal('${routeKey}', '${slot.id}')">執行</button>`;
+    const waiting = right.includes('待派入');
+    return `<div class="v4-strip is-${kind} ${slot.isHidden || waiting ? 'is-locked' : ''} ${slot.isCompleted ? 'is-done' : ''}">
       <span class="v4-pin" aria-hidden="true"></span>
       <div class="v4-strip-body"><small class="v4-en">${v4Esc(label)} <i>${reward}</i> <i class="v4-exp">+${slot.rewardExp || 20}EXP</i></small>
       <b class="v4-serif">${v4Esc(slot.title)}</b>${slot.isHidden ? '' : `<span>${v4Esc(slot.desc || '')}</span>`}</div>${right}</div>`;
