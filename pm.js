@@ -106,7 +106,7 @@ function pParamsView() {
   const state = pState();
   const pub = v4cPublished(state);
   const open = state.changes.filter(c => c.type === 'params' && ['draft', 'pending', 'returned'].includes(c.status));
-  return `<div class="m-title"><h1 class="m-serif">系統參數</h1><p>店長派發上限、審核期限、退回上限由總部統一設定，修改同樣要 PO 核准。</p></div>
+  return `<div class="m-title"><h1 class="m-serif">系統參數</h1><p>任務庫數量、店長派發上限、派發金幣上限由總部統一設定，修改同樣要 PO 核准。</p></div>
     ${open.length ? pPanel('送審中的修改', 'CHANGES', open.map(c => pChangeCard(c, c.status === 'pending' ? '' : `<div class="m-actions"><button type="button" class="m-btn-gold" data-submit="${c.id}">送 PO 核准</button><button type="button" class="m-btn-ghost" data-drop="${c.id}">刪除草稿</button></div>`)).join('')) : ''}
     ${pPanel('目前生效的參數', 'PARAMS', `<form id="p-params-form" class="m-assign-form">
       ${Object.entries(V4C_PARAM_NAMES).map(([k, l]) => `<label class="m-field">${l}<input type="number" name="${k}" min="1" max="999" value="${pub.params[k]}" ${open.some(c => c.status === 'pending') ? 'disabled' : ''}></label>`).join('')}

@@ -96,14 +96,20 @@ function mRookies() {
     const live = v4rHasData(r.id);
     const journey = live ? (mR(r.id, 'journey', {}) || {}) : {};
     const first = (mR(r.id, 'quizHistory', { entries: [] })?.entries || [])[0]?.at;
-    return { ...r, live, name: journey.name && journey.name !== '新夥伴' ? journey.name : r.name, joined: r.joined || (first || new Date().toISOString()).slice(0, 10), active: r.id === v4rActive() };
+    return { ...r, live, emp: r.emp || M_DEMO_EMP[r.id] || r.id, name: journey.name && journey.name !== '新夥伴' ? journey.name : r.name, joined: r.joined || (first || new Date().toISOString()).slice(0, 10), active: r.id === v4rActive() };
   });
 }
+// 示範員編（正式版取自人事資料）；11/25：新人依員編由小到大排序
+const M_DEMO_EMP = { self: 'S200318', '00000000-0000-4000-8000-00000000000a': 'S199862', '00000000-0000-4000-8000-00000000000b': 'S200104', '00000000-0000-4000-8000-00000000000c': 'S199735', '00000000-0000-4000-8000-00000000000d': 'S200421' };
 const mNameOf = id => mRookies().find(r => r.id === id)?.name || '新人';
 function mScope() {
   const v = mViewer();
-  return mRookies().filter(r => v.role === 'area' ? (v.branchFilter === 'all' || r.branch === v.branchFilter) : r.branch === v.branch);
+  return mRookies().filter(r => v.role === 'area' ? (v.branchFilter === 'all' || r.branch === v.branchFilter) : r.branch === v.branch)
+    .sort((a, b) => String(a.emp).localeCompare(String(b.emp)));
 }
+// 11/25：區主管只能看、不能審核；派發任務只能取消自己派的
+const mCanReview = () => mViewer().role !== 'area';
+const mCanCancel = t => (t.byKey || `store:${mRookies().find(r => r.id === t.member)?.branch}`) === mViewer().key; // 舊資料沒有派發人，視為新人所屬分店店長派的
 function mSelected() {
   const scope = mScope();
   return scope.find(r => r.id === mViewer().rookie) || scope[0] || null;
@@ -189,7 +195,7 @@ function mPending() {
 
 /* ---------- 需要關注的新人 ---------- */
 function mAttention(p) {
-  if (!p.live) return [['還沒開始使用 APP', 'info']];
+  if (!p.live) return []; // 還沒用過 APP：卡片反灰標「尚未啟用」，不算需要關注（11/25）
   const out = [];
   const usage = mR(p.id, 'usage', { sessions: [] })?.sessions || [];
   const last = usage.map(s => s.end).sort().at(-1);
@@ -198,9 +204,7 @@ function mAttention(p) {
   const returned = Object.values(mVerify(p.id).reviews).some(r => (r.returnCount || 0) >= 2 && r.status !== 'closed')
     || mAssign().tasks.some(t => t.member === p.id && (t.returnCount || 0) >= 2 && ['todo', 'review'].includes(t.status));
   if (returned) out.push(['有任務被退回 2 次以上', 'warn']);
-  const done = p.routes.reduce((s, r) => s + r.done, 0), total = p.routes.reduce((s, r) => s + r.total, 0);
-  const expected = Math.floor(total * Math.min(1, mDayOf(p.joined) / M_COMPANION_DAYS));
-  if (done < expected - 1) out.push(['進度落後', 'warn']);
+  // 11/25：「進度落後」第一階段不做
   return out;
 }
 const mAttnTags = list => list.map(([t, k]) => `<span class="m-attn is-${k}">${k === 'warn' ? '⚠ ' : ''}${mEsc(t)}</span>`).join('');
@@ -220,23 +224,25 @@ function mOverview() {
     + mPanel('今天要處理的事', todo.length ? `<ul class="m-todo">${todo.map(([n, t, go]) => `<li><button type="button" data-go="${go}"><b class="m-en">${n}</b> ${t}<span>前往 ›</span></button></li>`).join('')}</ul>` : '<p class="m-done">目前沒有待處理的事 👍</p>')
     + mPanel(`新人（${rookies.length} 位）`, rookies.length ? `<div class="m-rcards">${rookies.map(r => {
         const done = r.routes.reduce((s, x) => s + x.done, 0), total = r.routes.reduce((s, x) => s + x.total, 0);
-        return `<button type="button" class="m-rcard" data-rookie="${r.id}"><div class="m-rcard-top"><b class="m-serif">${mEsc(r.name)}</b><span class="m-en">Lv.${r.level}</span></div>
+        return `<button type="button" class="m-rcard${r.live ? '' : ' is-inactive'}" data-rookie="${r.id}"><div class="m-rcard-top"><b class="m-serif">${mEsc(r.name)}</b><span class="m-en">Lv.${r.level}</span></div>
+          <small class="m-rcard-emp m-en">${mEsc(r.emp)}</small>
           <small class="m-muted">${mViewer().role === 'area' ? `${V4R_BRANCHES[r.branch]}・` : ''}到職第 ${mDayOf(r.joined)} 天${r.active ? '・APP 目前新人' : ''}</small>
           <div class="m-rcard-bar"><div class="m-bar"><i style="width:${total ? done / total * 100 : 0}%"></i></div><span>任務 ${done}/${total}</span></div>
-          <div class="m-rcard-attn">${r.attn.length ? mAttnTags(r.attn) : '<span class="m-attn is-ok">進度正常</span>'}</div></button>`; }).join('')}</div>` : mEmpty('這個範圍沒有陪伴期中的新人。'), watch ? `<span class="m-badge">${watch} 位需要關注</span>` : '');
+          <div class="m-rcard-attn">${!r.live ? '<span class="m-attn is-info">尚未啟用</span>' : r.attn.length ? mAttnTags(r.attn) : '<span class="m-attn is-ok">進度正常</span>'}</div></button>`; }).join('')}</div>` : mEmpty('這個範圍沒有陪伴期中的新人。'), watch ? `<span class="m-badge">${watch} 位需要關注</span>` : '');
 }
 
 /* ---------- 審核：收件匣，一件一行，點開才看內容 ---------- */
 function mReviews() {
   const items = mInbox();
-  const maxReturns = mParams().maxReturns;
-  const row = i => `<details class="m-inbox-item ${mOverdue(i.at) ? 'is-overdue' : ''}" data-kind="${i.kind}" data-id="${mEsc(i.id)}" data-rid="${i.rid}">
+  const canReview = mCanReview();
+  // 11/25：不設退回上限、不標逾期；區主管只能看，沒有核可與退回按鈕
+  const row = i => `<details class="m-inbox-item" data-kind="${i.kind}" data-id="${mEsc(i.id)}" data-rid="${i.rid}">
       <summary><span class="m-tag ${i.kind === 'verify' ? 'is-gold' : i.kind === 'survey' ? 'is-teal' : ''}">${i.label}</span><b>${mEsc(i.name)}</b><span class="m-inbox-title">${mEsc(i.title)}</span>
-        ${i.returns ? `<span class="m-tag">已退回 ${i.returns} 次</span>` : ''}<small>${i.at ? (mDaysAgo(i.at) ? `${mDaysAgo(i.at)} 天前送出` : '今天送出') : ''}${mOverdue(i.at) ? '・逾期' : ''}</small></summary>
+        ${i.returns ? `<span class="m-tag">已退回 ${i.returns} 次</span>` : ''}<small>${i.at ? (mDaysAgo(i.at) ? `${mDaysAgo(i.at)} 天前送出` : '今天送出') : ''}</small></summary>
       <div class="m-inbox-body">${i.body}
-        <div class="m-return" hidden><label class="m-field">退回原因${i.kind === 'survey' ? '' : `（第 ${maxReturns} 次退回任務即結束）`}<textarea rows="2" maxlength="300" data-feedback></textarea></label></div>
-        <div class="m-actions"><button type="button" class="m-btn-gold" data-act="approve">核可</button><button type="button" class="m-btn-ghost" data-act="return">退回…</button></div></div></details>`;
-  return mTitle('審核', '任務回報、派發任務回報、D1 社區勘查都在這裡審核，依送出時間排序，不設審核期限。核可後新人 APP 自動發放獎勵；D1 勘查核可後該棟才顯示完整資訊。') + mBranchPicker()
+        ${canReview ? `<div class="m-return" hidden><label class="m-field">退回原因（必填，新人修改後可再送審）<textarea rows="2" maxlength="500" data-feedback></textarea></label></div>
+        <div class="m-actions"><button type="button" class="m-btn-gold" data-act="approve">核可</button><button type="button" class="m-btn-ghost" data-act="return">退回…</button></div>` : '<p class="m-muted">區主管只能查看，由新人的店長審核。</p>'}</div></details>`;
+  return mTitle('審核', canReview ? '任務回報、派發任務回報、D1 社區勘查都在這裡審核，依送出時間排序，不設審核期限。退回不設次數上限，核可後新人 APP 自動發放獎勵；D1 勘查核可後該棟才顯示完整資訊。' : '區主管可查看轄區內的待審項目，審核由各分店店長進行。') + mBranchPicker()
     + (items.length ? `<div class="m-inbox">${items.map(row).join('')}</div>` : `<div class="m-panel"><p class="m-done">目前沒有待審核的項目 👍</p></div>`);
 }
 
@@ -254,7 +260,7 @@ const M_ROOKIE_TABS = [['summary', '概況'], ['skills', '能力'], ['tasks', '�
 function mRookieView() {
   const sel = mSelected();
   const scope = mScope(), v = mViewer();
-  const picker = `<div class="m-picker">${mBranchPicker().replace(/^<div class="m-picker">|<\/div>$/g, '')}<label>新人<select id="m-rookie-picker">${scope.map(r => `<option value="${r.id}" ${sel?.id === r.id ? 'selected' : ''}>${mEsc(r.name)}${v.role === 'area' ? `（${V4R_BRANCHES[r.branch]}）` : ''}</option>`).join('')}</select></label></div>`;
+  const picker = `<div class="m-picker">${mBranchPicker().replace(/^<div class="m-picker">|<\/div>$/g, '')}<label>新人<select id="m-rookie-picker">${scope.map(r => `<option value="${r.id}" ${sel?.id === r.id ? 'selected' : ''}>${mEsc(r.emp)} ${mEsc(r.name)}${v.role === 'area' ? `（${V4R_BRANCHES[r.branch]}）` : ''}</option>`).join('')}</select></label></div>`;
   if (!sel) return mTitle('新人') + picker + mEmpty('這個範圍沒有新人。');
   const p = mProfile(sel);
   const tab = M_ROOKIE_TABS.some(([k]) => k === mRookieView.tab) ? mRookieView.tab : 'summary';
@@ -273,14 +279,16 @@ function mRookieView() {
           <div class="m-hero-nums"><div><b class="m-en">Lv.${p.level}</b><small>等級</small></div><div><b class="m-en">${p.exp}</b><small>經驗值</small></div><div><b class="m-en">${done}/${total}</b><small>完成任務</small></div><div><b class="m-en">${practice}</b><small>AI 對練</small></div></div>
           <div class="m-rcard-attn">${attn.length ? mAttnTags(attn) : '<span class="m-attn is-ok">進度正常</span>'}</div></div>
         <div class="m-hero-radar">${mRadar(all6, 220)}<small>綜合能力</small></div></section>
-      ${mPanel('各路線進度', `<div class="m-route-bars">${p.routes.map(r => `<div><span>${r.label}</span><div class="m-bar"><i style="width:${r.total ? r.done / r.total * 100 : 0}%"></i></div><em class="m-en">${r.done}/${r.total}</em></div>`).join('')}</div>`)}`;
+      ${mPanel('各路線進度', `<div class="m-route-bars">${p.routes.map(r => `<div><span>${r.label}</span><div class="m-bar"><i style="width:${r.total ? r.done / r.total * 100 : 0}%"></i></div><em class="m-en">${r.done}/${r.total}</em></div>`).join('')}</div>`)}
+      ${(() => { const d1Total = Object.keys(M_BUILDINGS).length, d1Done = Math.min(d1Total, p.approvedSurveys || 0), pct = d1Total ? Math.round(d1Done / d1Total * 100) : 0; // 11/25：新人詳情顯示 D1 勘查進度
+        return mPanel('D1 勘查進度', `<div class="m-route-bars"><div><span>已核可</span><div class="m-bar"><i style="width:${pct}%"></i></div><em class="m-en">${d1Done}/${d1Total}（${pct}%）</em></div></div><p class="m-muted">${d1Total && d1Done >= d1Total ? '🗺️ D1 大樓全部核可，已解鎖整張地圖' : '🔒 D1 大樓全部核可後才解鎖整張地圖'}</p>`); })()}`;
   } else if (tab === 'skills') {
     body = `<div class="m-grid3">${p.groups.map(g => mPanel(`${g.label}（Lv${g.level}）`, `${mRadar(g.items, 200)}
       <table class="m-table"><thead><tr><th>技能</th><th>等級</th><th>分數</th></tr></thead><tbody>${g.items.map(i => `<tr><td>${mEsc(i.name)}</td><td class="m-en">Lv${i.level}</td><td><div class="m-bar"><i style="width:${i.ratio * 100}%"></i></div><span class="m-en">${i.score}/${i.level * 50}</span></td></tr>`).join('')}</tbody></table>`)).join('')}</div>`;
   } else if (tab === 'tasks') {
     const routeTitles = mRoutes();
     const log = p.live ? [...(mR(p.id, 'log', []) || []), ...(mLoad('managerLog', []) || []).filter(e => (e.rookie || 'self') === p.id)].sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 60) : [];
-    const logType = { accepted: '派入任務庫', finished: '按完成', submitted: '送審', approved: '核可', returned: '退回', closed: '結束', completed: '完成', 'report-synced': '行程資料表同步', assigned: '派發' };
+    const logType = { accepted: '派入任務庫', finished: '按完成', submitted: '送審', approved: '核可', returned: '退回', closed: '結束', cancelled: '取消', completed: '完成', 'report-synced': '行程資料表同步', assigned: '派發' };
     const pooled = p.live ? (mVerify(p.id).accepted || {}) : {};
     body = `<div class="m-grid3">${p.routes.map(r => mPanel(`${r.label} ${r.done}/${r.total}`, p.live ? `<ul class="m-list">${(routeTitles[r.key] || []).map(([id, title]) => { const d = r.rows.find(x => x.id === id)?.done; return `<li class="${d ? 'is-done' : ''}">${d ? '✅' : pooled[id] ? '📌' : '⏳'} ${mEsc(title)}${d ? '' : pooled[id] ? `<small class="m-muted">（任務庫・派入 ${mEsc(pooled[id])}）</small>` : '<small class="m-muted">（待派）</small>'}</li>`; }).join('')}</ul>` : `<div class="m-bar"><i style="width:${r.total ? r.done / r.total * 100 : 0}%"></i></div>`)).join('')}</div>
       ${p.live ? mPanel('紀錄', log.length ? `<table class="m-table"><thead><tr><th>時間</th><th>事件</th><th>任務</th><th>內容／獎勵</th></tr></thead><tbody>${log.map(e => `<tr><td>${mTime(e.at)}</td><td>${logType[e.type] || e.type}</td><td>${mEsc(e.title || '')}</td><td>${e.exp ? `+${e.exp} 經驗（${mEsc(e.abilities || '')}）` : mEsc(e.detail || e.feedback || '')}</td></tr>`).join('')}</tbody></table>` : mEmpty('還沒有任務紀錄。')) : ''}`;
@@ -319,7 +327,7 @@ function mAssignView() {
   const list = state.tasks.filter(t => scopeIds.includes(t.member) && (filter === 'all' || t.status === filter)).slice().reverse();
   const skillOptions = sel => `<option value="">（不選）</option>${Object.entries(V4C_SKILLS).map(([gk, g]) => `<optgroup label="${g.label}">${Object.entries(g.items).map(([k, n]) => `<option value="${gk}:${k}" ${sel === `${gk}:${k}` ? 'selected' : ''}>${n}</option>`).join('')}</optgroup>`).join('')}`;
   const abilityRow = (i, w, sel = '') => `<div class="m-ability-row"><select name="ability${i}">${skillOptions(sel)}</select><input type="number" name="weight${i}" min="0" max="100" step="10" value="${w}"><span>%</span></div>`;
-  const counts = Object.fromEntries(['todo', 'review', 'done', 'closed', 'expired', 'cancelled'].map(k => [k, state.tasks.filter(t => scopeIds.includes(t.member) && t.status === k).length]));
+  const counts = Object.fromEntries(['todo', 'review', 'done', 'expired', 'cancelled'].map(k => [k, state.tasks.filter(t => scopeIds.includes(t.member) && t.status === k).length]));
   return mTitle('派發任務', `派發後直接進新人的任務庫，新人不能拒絕。每位新人每天最多 ${limits.perDay} 件、經驗合計 ${limits.expPerDay}、進行中最多 ${limits.active} 件。完成後發經驗＋你設定的金幣。`) + mBranchPicker()
     + mPanel('新增任務', `<form id="m-assign-form" class="m-assign-form">
         <div class="m-form-row"><label class="m-field">任務名稱<input name="title" required maxlength="80" placeholder="例如：整理松智路社區的近期成交"></label>
@@ -334,15 +342,15 @@ function mAssignView() {
           <div class="m-report-rule" hidden><fieldset class="m-field"><legend>行程（任一筆都算）</legend>${v4cTripPickerHTML('reportTrips')}</fieldset>
             <label class="m-field">累計幾筆算完成<input type="number" name="reportMin" min="1" max="99" value="1"></label></div>
           <div class="m-form-row"><label class="m-field">難度<select name="tier">${Object.entries(M_TIERS).map(([k, [n, e]]) => `<option value="${k}" ${k === 'S' ? 'selected' : ''}>${n}（+${e} 經驗）</option>`).join('')}</select></label>
-          <label class="m-field">金幣<input type="number" name="coins" required min="0" max="9999" step="10" value="100"></label></div>
+          <label class="m-field">金幣（0～${limits.coinMax || 500}）<input type="number" name="coins" required min="0" max="${limits.coinMax || 500}" step="10" value="100"></label></div>
           <fieldset class="m-field"><legend>成長能力（依任務類型預設，可改；最多 3 項，合計 100%）</legend>${abilityRow(1, 100, M_CATEGORY_ABILITY[M_CATEGORIES[0]])}${abilityRow(2, 0)}${abilityRow(3, 0)}</fieldset>
         <div class="m-actions"><button type="submit" class="m-btn-gold">派發</button></div></form>`)
-    + mPanel('任務清單', `<div class="m-filters">${[['todo', '進行中'], ['review', '待確認／待審'], ['done', '已完成'], ['closed', '已結束'], ['expired', '已失效'], ['cancelled', '已取消'], ['all', '全部']].map(([k, l]) => `<button type="button" data-filter="${k}" aria-pressed="${k === filter}">${l}${counts[k] !== undefined ? ` ${counts[k]}` : ''}</button>`).join('')}</div>
+    + mPanel('任務清單', `<div class="m-filters">${[['todo', '進行中'], ['review', '待確認／待審'], ['done', '已完成'], ['expired', '已失效'], ['cancelled', '已取消'], ['all', '全部']].map(([k, l]) => `<button type="button" data-filter="${k}" aria-pressed="${k === filter}">${l}${counts[k] !== undefined ? ` ${counts[k]}` : ''}</button>`).join('')}</div>
         ${list.length ? `<div class="m-inbox">${list.map(t => `<details class="m-inbox-item" data-kind="assign" data-id="${t.id}" data-rid="${t.member}"><summary><span class="m-tag ${t.status === 'done' ? 'is-teal' : t.status === 'review' ? 'is-gold' : ''}">${M_ASSIGN_STATUS[t.status]}</span><b>${mEsc(mNameOf(t.member))}</b><span class="m-inbox-title">${mEsc(t.title)}</span><small>${t.due ? '期限 ' + mEsc(t.due) : ''}</small></summary>
           <div class="m-inbox-body">${t.detail ? `<p class="m-muted">詳細描述：${mEsc(t.detail)}</p>` : ''}<p class="m-muted">完成條件：${mEsc(t.description)}</p>
           <p class="m-muted">${t.verify === 'report' ? `📊 日報表：${mEsc(v4cRuleText(t.reportTrips, t.reportMin))}${t.status === 'review' ? '（新人已按完成，等行程資料表比對）' : ''}` : '👑 店長審核'}・難度${M_TIERS[t.tier]?.[0] || ''}（+${M_TIERS[t.tier]?.[1] || 0} 經驗）${Number(t.coins) > 0 ? `・🪙 ${t.coins}` : ''}${t.abilities?.length ? `・${t.abilities.map(([, k, w]) => `${mSkillName(k)} ${Math.round(w * 100)}%`).join('、')}` : ''}${t.rewarded ? '・已入帳' : ''}</p>
           ${t.report ? `<pre class="m-content">${mEsc(t.report)}</pre>` : ''}${t.feedback ? `<p class="m-muted">回饋：${mEsc(t.feedback)}</p>` : ''}
-          ${['todo', 'review'].includes(t.status) ? '<div class="m-actions"><button type="button" class="m-btn-ghost" data-act="cancel">取消任務</button></div>' : ''}</div></details>`).join('')}</div>` : mEmpty('沒有這類任務。')}`);
+          ${['todo', 'review'].includes(t.status) ? (mCanCancel(t) ? '<div class="m-actions"><button type="button" class="m-btn-ghost" data-act="cancel">取消任務</button></div>' : '<p class="m-muted">只有派發的人可以取消這個任務。</p>') : ''}</div></details>`).join('')}</div>` : mEmpty('沒有這類任務。')}`);
 }
 
 /* ---------- Demo 工具：模擬行程資料表同步 ---------- */
@@ -378,8 +386,9 @@ function mSyncView() {
 /* ---------- 動作 ---------- */
 function mAct(card, act) {
   const kind = card.dataset.kind, id = card.dataset.id, rid = card.dataset.rid;
-  const maxReturns = mParams().maxReturns;
   const feedback = card.querySelector('[data-feedback]')?.value.trim() || '';
+  // 11/25：區主管不能審核（後端也要擋）
+  if ((act === 'approve' || act === 'return') && !mCanReview()) { mToast('區主管只能查看，由新人的店長審核'); return; }
   if (act === 'return') {
     const box = card.querySelector('.m-return');
     if (box?.hidden) { box.hidden = false; card.querySelector('[data-act=return]').textContent = '確定退回'; card.querySelector('[data-feedback]').focus(); return; }
@@ -389,25 +398,30 @@ function mAct(card, act) {
     const v = mVerify(rid); const r = v.reviews[id]; if (!r || r.status !== 'pending') return;
     if (act === 'approve') { r.status = 'approved'; r.approvedAt = new Date().toISOString(); mLog(rid, { type: 'approved', source: 'system', taskId: id, title: r.title }); mToast(`已核可「${r.title}」，新人 APP 會自動發獎勵`); }
     else {
-      r.returnCount = (r.returnCount || 0) + 1; r.feedback = feedback;
-      r.status = r.returnCount >= maxReturns ? 'closed' : 'returned';
-      mLog(rid, { type: r.status === 'closed' ? 'closed' : 'returned', source: 'system', taskId: id, title: r.title, feedback });
-      mToast(r.status === 'closed' ? `「${r.title}」已退回 ${maxReturns} 次，任務結束` : `已退回「${r.title}」（第 ${r.returnCount} 次）`);
+      // 11/25：不設退回上限，退回後一律可修改重送
+      r.returnCount = (r.returnCount || 0) + 1; r.feedback = feedback.slice(0, 500);
+      r.status = 'returned';
+      mLog(rid, { type: 'returned', source: 'system', taskId: id, title: r.title, feedback });
+      mToast(`已退回「${r.title}」（第 ${r.returnCount} 次），新人修改後可再送審`);
     }
     mSaveVerify(rid, v);
   } else if (kind === 'assign') {
     const s = mAssign(); const t = s.tasks.find(x => x.id === id); if (!t) return;
-    if (act === 'cancel') { if (!['todo', 'review'].includes(t.status)) return; t.status = 'cancelled'; mLog(t.member, { type: 'closed', source: 'assign', taskId: id, title: t.title, feedback: '店長取消' }); mToast('已取消任務'); }
+    if (act === 'cancel') {
+      if (!['todo', 'review'].includes(t.status)) return;
+      if (!mCanCancel(t)) { mToast('只有派發的人可以取消這個任務'); return; }
+      if (!confirm(`確定要取消「${t.title}」嗎？取消後新人拿不到這個任務的獎勵。`)) return;
+      t.status = 'cancelled'; mLog(t.member, { type: 'cancelled', source: 'assign', taskId: id, title: t.title, feedback: `${mViewer().role === 'area' ? '區主管' : '店長'}取消` }); mToast('已取消任務');
+    }
     else {
       if (t.status !== 'review') return;
       t.feedback = feedback.slice(0, 500); t.reviewed = new Date().toISOString();
       if (act === 'approve') { t.status = 'done'; mLog(t.member, { type: 'approved', source: 'assign', taskId: id, title: t.title }); mToast('已確認完成，新人 APP 會自動發放經驗'); }
       else {
         t.returnCount = (t.returnCount || 0) + 1;
-        t.status = t.returnCount >= maxReturns ? 'closed' : 'todo';
-        if (t.status === 'closed') t.feedback = `${t.feedback}（已退回 ${maxReturns} 次，任務結束）`;
-        mLog(t.member, { type: t.status === 'closed' ? 'closed' : 'returned', source: 'assign', taskId: id, title: t.title, feedback });
-        mToast(t.status === 'closed' ? `已退回 ${maxReturns} 次，任務結束` : `已退回（第 ${t.returnCount} 次），新人可補充後再回報`);
+        t.status = 'todo'; // 11/25：不設退回上限
+        mLog(t.member, { type: 'returned', source: 'assign', taskId: id, title: t.title, feedback });
+        mToast(`已退回（第 ${t.returnCount} 次），新人可補充後再回報`);
       }
     }
     mSave('assign', s);
@@ -450,6 +464,8 @@ function mSubmitAssign(form) {
   const limits = mParams();
   const title = String(data.get('title')).trim(), description = String(data.get('description')).trim(), detail = String(data.get('detail') || '').trim(), due = String(data.get('due') || '');
   const coins = Math.max(0, parseInt(data.get('coins'), 10) || 0);
+  const coinMax = limits.coinMax || 500;
+  if (coins > coinMax) { mToast(`金幣上限是 ${coinMax}`); return; }
   const verify = String(data.get('verify') || ''), tier = String(data.get('tier'));
   if (!title || !detail || !description || !members.length) { mToast('請填寫任務名稱、詳細描述、完成條件，並至少選一位新人'); return; }
   if (!due) { mToast('請選擇期限'); return; }
@@ -476,7 +492,7 @@ function mSubmitAssign(form) {
     if (!s.members.some(m => m.id === member)) s.members.push({ id: member, name: mNameOf(member) });
     const task = {
       id: crypto.randomUUID(), title: title.slice(0, 80), detail: detail.slice(0, 1000), description: description.slice(0, 1000), category: String(data.get('category')), due, member,
-      status: 'todo', report: '', feedback: '', created, verify, tier, exp, coins,
+      status: 'todo', report: '', feedback: '', created, byKey: mViewer().key, verify, tier, exp, coins,
       reportTrips: verify === 'report' ? reportTrips : [], reportMin: verify === 'report' ? Math.max(1, parseInt(data.get('reportMin'), 10) || 1) : 0,
       abilities: abilities.map(([a, w]) => { const [g, k] = a.split(':'); return [g, k, w / 100]; }), returnCount: 0
     };

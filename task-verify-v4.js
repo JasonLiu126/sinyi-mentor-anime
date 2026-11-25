@@ -2,7 +2,7 @@
    任務檢核（新人端）：依《信義新星 任務與成長系統規格》
    - 11/24 規則：新人不用接任務。任務庫一直維持 N 個系統任務（PM 參數），完成或結束一個就從待派清單補一個
    - 📊 日報表判定：新人 KEY 日報表、店長審核後產生「行程資料表」；依該表更新頻率同步，從「派入日」起累計達標即完成
-   - 👑 店長判定：新人送審 → 店長核可／退回（最多退回 3 次，第 3 次退回任務結束）
+   - 👑 店長判定：新人送審 → 店長核可／退回；不設退回上限，退回幾次都可以修改重送，核可後照常發獎勵（11/25）
    - 經驗值依難度（小 20／中 40／大 80），分配到最多 3 項能力
    - 每筆任務的派入、送審、審核、完成都寫入任務紀錄，給店長後台查看
    - 尚未接資料庫：資料存在本機瀏覽器；之後替換 v4VerifyLoad／v4VerifySave／v4Log 即可
@@ -324,7 +324,7 @@ function v4DecorateVerifyModal(routeKey, id) {
     box.innerHTML = `<b>👑 店長審核</b><p>${cfg.native ? '到冒險地圖勘查 D1 大樓，送出後由店長在後台（Web）審核。' : '用文字回報成果，送出後由店長在後台（Web）審核，核可後自動發放獎勵。請勿填寫客戶個資。'}</p>${growth}
       ${!v4InPool(slot.id, state) && !status ? '<p class="v4-verify-state">⏳ 這個任務還在待派清單，完成任務庫裡的任務後會自動補上</p>' : ''}
       ${status === 'pending' ? '<p class="v4-verify-state">⏳ 審核中：已送出，等待公會長核可</p>' : ''}
-      ${status === 'returned' ? `<p class="v4-verify-state is-returned">↩ 退回補正（第 ${review?.returnCount || 1} 次，最多 ${V4_MAX_RETURNS} 次）：${v4Esc(review?.feedback || '')}</p>` : ''}
+      ${status === 'returned' ? `<p class="v4-verify-state is-returned">↩ 退回補正（第 ${review?.returnCount || 1} 次，修改後可再送審）：${v4Esc(review?.feedback || '')}</p>` : ''}
       ${status === 'closed' ? `<p class="v4-verify-state is-returned">⛔ 已退回 ${V4_MAX_RETURNS} 次，任務結束</p>` : ''}`;
     if (submit && !cfg.native) {
       const waiting = !v4InPool(slot.id, state) && !status;

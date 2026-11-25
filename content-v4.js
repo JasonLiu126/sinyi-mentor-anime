@@ -56,8 +56,9 @@ const V4C_POOL_ORDER = ['dev_m_01', 'sal_m_01', 'com_m_01', 'dev_m_02', 'sal_m_0
 if (typeof window !== 'undefined' && window.V4C_TASK_TRIPS_LOCAL) for (const [id, trips] of Object.entries(window.V4C_TASK_TRIPS_LOCAL)) if (V4C_BASE_TASKS[id]) V4C_BASE_TASKS[id].trips = trips;
 // 系統參數預設值
 // 11/24：不設店長審核期限；新增任務庫數量 N（新人任務庫一直維持 N 個系統任務，完成一個自動補一個）
-const V4C_BASE_PARAMS = { poolSize: 5, perDay: 3, expPerDay: 120, active: 5, maxReturns: 3 };
-const V4C_PARAM_NAMES = { poolSize: '任務庫數量 N（每位新人同時進行的系統任務）', perDay: '店長每日派發件數上限（每位新人）', expPerDay: '店長每日派發經驗上限（每位新人）', active: '派發任務同時進行中上限', maxReturns: '退回次數上限' };
+// 11/25：不設退回上限（退回幾次都不結束任務）；店長派發金幣上限暫定 500
+const V4C_BASE_PARAMS = { poolSize: 5, perDay: 3, expPerDay: 120, active: 5, coinMax: 500 };
+const V4C_PARAM_NAMES = { poolSize: '任務庫數量 N（每位新人同時進行的系統任務）', perDay: '店長每日派發件數上限（每位新人）', expPerDay: '店長每日派發經驗上限（每位新人）', active: '派發任務同時進行中上限', coinMax: '店長派發金幣上限' };
 
 const v4cClone = v => JSON.parse(JSON.stringify(v));
 function v4cLoad() {

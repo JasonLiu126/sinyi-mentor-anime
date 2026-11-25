@@ -186,6 +186,9 @@ button, input, select, textarea { font: inherit; }
 .m-attn.is-warn { background: rgba(200,85,61,.22); color: #F5C2B5; }
 .m-attn.is-ok { background: rgba(46,140,131,.25); color: var(--teal-light); }
 .m-attn.is-info { background: rgba(255,255,255,.08); color: var(--muted); }
+/* 11/25：還沒用過 APP 的新人卡片反灰，標「尚未啟用」 */
+.m-rcard.is-inactive { opacity: .5; filter: grayscale(1); }
+.m-rcard-emp { font-size: 12px; color: var(--muted); }
 .m-tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 2px solid var(--line); flex-wrap: wrap; }
 .m-tabs button { padding: 10px 16px; border: 0; background: none; color: var(--muted); font-weight: 900; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
 .m-tabs button[aria-selected="true"] { color: var(--gold-light); border-bottom-color: var(--gold); }

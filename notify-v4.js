@@ -41,7 +41,7 @@ function v4NotifyScan() {
   for (const [id, sig] of Object.entries(now.reviews)) {
     if (seen.reviews?.[id] === sig) continue;
     const r = verify.reviews[id];
-    if (r.status === 'returned') notices.push(['returned', `任務被退回：${r.title}`, `原因：${r.feedback || '—'}（第 ${r.returnCount} 次，最多 ${V4_MAX_RETURNS} 次）`]);
+    if (r.status === 'returned') notices.push(['returned', `任務被退回：${r.title}`, `原因：${r.feedback || '—'}（第 ${r.returnCount} 次，修改後可再送審）`]);
     if (r.status === 'closed') notices.push(['closed', `任務已結束：${r.title}`, `已退回 ${V4_MAX_RETURNS} 次。原因：${r.feedback || '—'}`]);
   }
   for (const task of assign?.tasks || []) {
@@ -50,7 +50,7 @@ function v4NotifyScan() {
     const before = seen.tasks?.[task.id];
     if (!before && task.status === 'todo') notices.push(['assigned', `店長派發新任務：${task.title}`, `${task.verify === 'report' ? '📊 日報表判定' : '👑 店長審核'}${task.due ? `・期限 ${task.due}` : ''}`]);
     else if (before && before !== sig && task.status === 'todo' && (task.returnCount || 0) > Number(before.split(':')[1] || 0)) notices.push(['returned', `派發任務被退回：${task.title}`, `回饋：${task.feedback || '—'}`]);
-    else if (before && before !== sig && task.status === 'cancelled' && task.returnCount >= V4_MAX_RETURNS) notices.push(['closed', `派發任務已結束：${task.title}`, task.feedback || '']);
+    else if (before && before !== sig && task.status === 'cancelled') notices.push(['closed', `派發任務已取消：${task.title}`, '店長取消了這個任務']);
     else if (before && before !== sig && task.status === 'closed') notices.push(['closed', `派發任務已結束：${task.title}`, task.feedback || '']);
   }
   // 每日提醒（正式版由每日排程推播）：每天第一次打開 APP 時，列出還有哪些任務待完成；不另外發到期通知
