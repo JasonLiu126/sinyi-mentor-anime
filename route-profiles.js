@@ -1,9 +1,9 @@
 // Quiz-selected development/sales profiles drive live missions without resetting rewards.
-let formalActiveDevCode='A',formalActiveSalCode='E';
+let formalActiveDevCode='A',formalActiveSalCode='D';
 let formalManualDevCode=null,formalManualSalCode=null;
 const formalRouteDefaults=JSON.parse(JSON.stringify(routeTasksData));
-const formalPathByDev={A:'community',B:'district',C:'social',D:'network',E:'company',F:'market'};
-const formalPathNames={community:'社區經營',district:'商圈經營',social:'網路社群經營',network:'私人人脈經營',company:'公司既有人脈經營',market:'市場物件經營',luxury:'豪宅專研'};
+const formalPathByDev={A:'community',B:'district',C:'social',D:'network',F:'market'};
+const formalPathNames={community:'社區經營',district:'商圈經營',social:'網路社群經營',network:'人脈經營',company:'人脈經營',market:'市場物件經營',luxury:'豪宅專研'};
 const formalRouteProfiles={
   dev:{
     B:[
@@ -19,16 +19,10 @@ const formalRouteProfiles={
       ['規劃下一週的社群內容','排出發布主題、預計時間與觀察指標。']
     ],
     D:[
-      ['盤點可以自然聯繫的人脈','整理熟悉的人脈類型與合適的關心切入點。',['分出親友、同學與前同事等類型','選出一位適合關心近況的對象','準備不涉及推銷的開場問題']],
-      ['準備一次自然的近況關心','寫下關心的切入點與想了解的需求。'],
-      ['整理人脈互動的下一步','確認對方需要的資訊與可接受的聯繫方式。',['整理本次聽到的需求','確認是否方便後續聯繫','規劃一項能提供的實用資訊']],
-      ['規劃長期人脈關心節奏','記下未來的關心時機與可以提供的服務。']
-    ],
-    E:[
-      ['整理公司既有屋主資源','依分店授權範圍盤點可回訪的紀錄。',['確認名單來源與可聯繫範圍','查看先前互動紀錄','列出需要更新的屋況或出售意願']],
-      ['準備舊客回訪問題','寫下近況關心、需求更新與後續服務問題。'],
-      ['整理回訪狀態與後續安排','更新可跟進的事項。',['確認目前是否仍有服務需求','標記適合的下次聯繫時機','整理可提供的市場資訊']],
-      ['完成舊客經營計畫','依回訪結果安排下一輪跟進。']
+      ['盤點認識你或公司的人','整理自己的親友、同學、前同事，以及分店授權範圍內的公司舊客名單。',['分出親友、同學、前同事與公司舊客','查看舊客先前的互動紀錄','選出一位適合關心近況的對象']],
+      ['準備一次自然的近況關心','寫下關心的切入點，以及想了解的賣房或換屋需求。'],
+      ['整理聯繫後的下一步','確認對方需要的資訊與可接受的聯繫方式。',['整理本次聽到的需求','確認是否方便後續聯繫','規劃一項能提供的實用資訊']],
+      ['規劃長期人脈關心節奏','依名單安排下一輪關心時機與可以提供的服務。']
     ],
     F:[
       ['建立市場物件觀察清單','選擇公開在售或自售物件，觀察特色與價格。',['確認公開資料來源','整理物件位置與主要特色','記錄價格與值得進一步了解的問題']],
@@ -54,7 +48,7 @@ function formalUpdateRouteData(){
         const original=formalRouteDefaults[kind].slots[index];
         if(!profile){Object.assign(slot,JSON.parse(JSON.stringify(original)));return;}
         const [title,desc,checks]=profile[index];
-        Object.assign(slot,{title,desc,type:checks?'checklist':'input_notes',defaultNote:'',noteLabel:kind==='dev'?'開發行動紀錄：':'銷售準備與互動紀錄：',cat:kind==='dev'?'soft_dev':'soft_sal',sub:kind==='dev'?(code==='C'?'dev_brand':code==='F'?'dev_track':code==='E'?'dev_resource':'dev_local'):(code==='C'?'sal_present':code==='D'?'sal_resource':'sal_market')});
+        Object.assign(slot,{title,desc,type:checks?'checklist':'input_notes',defaultNote:'',noteLabel:kind==='dev'?'開發行動紀錄：':'銷售準備與互動紀錄：',cat:kind==='dev'?'soft_dev':'soft_sal',sub:kind==='dev'?(code==='C'?'dev_brand':code==='F'?'dev_track':code==='D'?'dev_resource':'dev_local'):(code==='C'?'sal_market':code==='D'?'sal_resource':'sal_stranger')});
         if(checks)slot.checkItems=checks.map(text=>({text,checked:false}));
       });
       route.formalProfileCode=code;

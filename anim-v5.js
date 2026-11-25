@@ -234,12 +234,12 @@ window.addEventListener('DOMContentLoaded', () => {
     return result;
   });
 
-  // F：第 6 題完成後、職業揭曉之前
+  // F：最後一題完成後、職業揭曉之前
   wrap('navigateQuiz', original => function (step, ...rest) {
-    const finishing = step > 0 && v4Safe(() => currentQuizIndex, 0) === 5;
+    const finishing = step > 0 && v4Safe(() => currentQuizIndex, 0) === v4Safe(() => officialQuestions.length - 1, 12);
     const result = original.call(this, step, ...rest);
     const valid = v4Safe(() => officialQuestions.every(q => formalQuizValid(q, userQuizAnswers[q.id])), true);
-    if (finishing && valid) v5Enqueue(() => playAwakeningAnimation({ dev: v4Safe(() => currentSelectedDevCode, 'A'), sal: v4Safe(() => currentSelectedSalCode, 'E') }));
+    if (finishing && valid) v5Enqueue(() => playAwakeningAnimation({ dev: v4Safe(() => currentSelectedDevCode, 'A'), sal: v4Safe(() => currentSelectedSalCode, 'D') }));
     return result;
   });
 

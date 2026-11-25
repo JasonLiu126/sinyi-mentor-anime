@@ -22,10 +22,12 @@ const M_KEYS = {
   assign: 'sinyi-formal-manager-tasks-v1',       // 店長派發任務（所有新人）
   viewer: 'sinyi-v4-manager-view'                // 示範用：目前身分與選取的新人
 };
+// 舊資料的 E（公司既有人脈）視為 D（人脈）
+const mNormCode = code => code === 'E' ? 'D' : code;
 const M_CLASSES = {
   A: ['社區開發刺客', '社區經營型', 'class-assassin.png'], B: ['商圈法師', '商圈經營型', 'class-mage.png'],
-  C: ['社群吟遊詩人', '網路社群經營型', 'class-bard.png'], D: ['人脈召喚師', '私人人脈經營型', 'class-summoner.png'],
-  E: ['名單鍊金術士', '公司既有人脈經營型', 'class-alchemist.png'], F: ['物件遊俠', '市場物件經營型', 'class-ranger.png']
+  C: ['社群吟遊詩人', '網路社群經營型', 'class-bard.png'], D: ['人脈召喚師', '人脈經營型', 'class-summoner.png'],
+  F: ['物件遊俠', '市場物件經營型', 'class-ranger.png']
 };
 const M_SKILL_DEFAULTS = {
   hard_know: { tax: 45, mortgage: 30, contract: 25, law: 10, market: 10 },
@@ -115,7 +117,7 @@ function mRoutes() {
   return out;
 }
 function mProfile(r) {
-  const seed = r.seed || { exp: 0, dev: 'A', sal: 'E', routes: {}, surveys: 0, party: 0, scores: {} };
+  const seed = r.seed || { exp: 0, dev: 'A', sal: 'D', routes: {}, surveys: 0, party: 0, scores: {} };
   const journey = r.live ? (mR(r.id, 'journey', {}) || {}) : {};
   const quiz = r.live ? (mR(r.id, 'quiz', {}) || {}) : {};
   const scores = r.live ? (journey.runtime?.scores || {}) : (seed.scores || {});
@@ -238,6 +240,15 @@ function mReviews() {
     + (items.length ? `<div class="m-inbox">${items.map(row).join('')}</div>` : `<div class="m-panel"><p class="m-done">目前沒有待審核的項目 👍</p></div>`);
 }
 
+/* ---------- 適性測驗每題作答（店長、區主管可看；11/25 定案） ---------- */
+function mQuizDetail(e) {
+  if (!Array.isArray(e.detail) || !e.detail.length) return '<span class="m-muted">這筆紀錄沒有作答明細</span>';
+  const names = { A: '社區', B: '商圈', C: '網路社群', D: '人脈', E: '人脈', F: '市場物件' };
+  const score = part => e.scores && e.scores[part] ? Object.entries(e.scores[part]).sort((x, y) => y[1] - x[1]).map(([k, v]) => `${names[k] || k} ${v}`).join('、') : '';
+  const block = (part, label) => `<p><b>${label}</b>${score(part) ? `<span class="m-muted">（分數：${mEsc(score(part))}）</span>` : ''}</p><ol start="${e.detail.find(d => d.part === part)?.id || 1}">${e.detail.filter(d => d.part === part).map(d => `<li>${mEsc(d.q)}<br><span class="m-muted">→ ${mEsc(d.a)}</span></li>`).join('')}</ol>`;
+  return `<details><summary>看每題作答</summary>${block('dev', '找屋主（開發）')}${block('sal', '找買方（銷售）')}</details>`;
+}
+
 /* ---------- 新人：分頁（概況／能力／任務紀錄／AI 對練／適性測驗） ---------- */
 const M_ROOKIE_TABS = [['summary', '概況'], ['skills', '能力'], ['tasks', '任務紀錄'], ['practice', 'AI 對練'], ['quiz', '適性測驗']];
 function mRookieView() {
@@ -247,7 +258,7 @@ function mRookieView() {
   if (!sel) return mTitle('新人') + picker + mEmpty('這個範圍沒有新人。');
   const p = mProfile(sel);
   const tab = M_ROOKIE_TABS.some(([k]) => k === mRookieView.tab) ? mRookieView.tab : 'summary';
-  const cls = M_CLASSES[p.dev] || M_CLASSES.A, salCls = M_CLASSES[p.sal] || M_CLASSES.E;
+  const cls = M_CLASSES[mNormCode(p.dev)] || M_CLASSES.A, salCls = M_CLASSES[mNormCode(p.sal)] || M_CLASSES.D;
   const tabs = `<div class="m-tabs" role="tablist">${M_ROOKIE_TABS.map(([k, l]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${k === tab}">${l}</button>`).join('')}</div>`;
   const notStarted = p.live ? '' : '<p class="m-note-inline">這位新人還沒在新人 APP 使用過，以下是示範數字。在新人 APP 右上 👤 切換成他，就能實際操作。</p>';
   let body = '';
@@ -278,10 +289,10 @@ function mRookieView() {
     body = mPanel('AI 對練紀錄', practice.length ? `<table class="m-table"><thead><tr><th>時間</th><th>情境</th><th>各面向分數</th><th>總分</th><th>結果</th><th>評語</th></tr></thead><tbody>${practice.map(x => `<tr><td>${mTime(x.at)}<br><small class="m-muted">第 ${x.attempt} 次</small></td><td>${mEsc(x.scenario)}</td><td>${x.dims.map(d => `${mEsc(d.label)} ${d.score}`).join('<br>')}</td><td class="m-en">${x.total}/20</td><td>${x.passed ? '<span class="m-tag is-teal">通過</span>' : '<span class="m-tag is-red">未通過</span>'}</td><td class="m-comment">${mEsc(x.comment)}</td></tr>`).join('')}</tbody></table>` : mEmpty('還沒有 AI 對練紀錄。'));
   } else {
     const history = p.live ? (mR(p.id, 'quizHistory', { entries: [], allowRetake: false }) || { entries: [] }) : { entries: [] };
-    const cname = code => code ? (M_CLASSES[code]?.[0] || code) : '—';
-    body = mPanel('適性測驗紀錄', `${history.entries.length ? `<table class="m-table"><thead><tr><th>時間</th><th>系統推薦</th><th>新人選擇</th><th></th></tr></thead><tbody>${history.entries.slice().reverse().map(e => {
+    const cname = code => code ? (M_CLASSES[mNormCode(code)]?.[0] || code) : '—';
+    body = mPanel('適性測驗紀錄', `${history.entries.length ? `<table class="m-table"><thead><tr><th>時間</th><th>系統推薦</th><th>新人選擇</th><th>每題作答</th></tr></thead><tbody>${history.entries.slice().reverse().map(e => {
         const diff = e.recommended && (e.recommended.dev !== e.chosen?.dev || e.recommended.sal !== e.chosen?.sal);
-        return `<tr><td>${mTime(e.at)}</td><td>開發 ${cname(e.recommended?.dev)}<br>銷售 ${cname(e.recommended?.sal)}</td><td>開發 ${cname(e.chosen?.dev)}<br>銷售 ${cname(e.chosen?.sal)}</td><td>${diff ? '<span class="m-tag is-gold">和推薦不同</span>' : ''}</td></tr>`; }).join('')}</tbody></table>` : mEmpty('還沒有作答紀錄。')}
+        return `<tr><td>${mTime(e.at)}</td><td>開發 ${cname(e.recommended?.dev)}<br>銷售 ${cname(e.recommended?.sal)}</td><td>開發 ${cname(e.chosen?.dev)}<br>銷售 ${cname(e.chosen?.sal)}</td><td>${diff ? '<span class="m-tag is-gold">和推薦不同</span><br>' : ''}${mQuizDetail(e)}</td></tr>`; }).join('')}</tbody></table>` : mEmpty('還沒有作答紀錄。')}
       <p class="m-muted" style="margin-top:12px">第一期不開放重測：新人做過一次，之後登入直接進主頁。</p>`);
   }
   return mTitle('新人') + picker + notStarted + tabs + body;

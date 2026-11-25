@@ -14,7 +14,7 @@ function hunterNewState(today=hunterDay()){
 function hunterValidDate(s){return typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!Number.isNaN(Date.parse(s))&&new Date(s+'T00:00:00Z').toISOString().slice(0,10)===s;}
 function hunterValidate(raw){
   if(!raw||raw.version!==1||!hunterValidDate(raw.start)||typeof raw.name!=='string'||raw.name.length>24||!['community','district','social','network','company','market','luxury'].includes(raw.path)||!raw.days||typeof raw.days!=='object'||Array.isArray(raw.days)||!Array.isArray(raw.milestones))throw Error('成長存檔格式不正確');
-  const result=hunterNewState(raw.start);result.name=raw.name;result.path=raw.path;if(['A','B','C','D','E','F'].includes(raw.quizDevRoute))result.quizDevRoute=raw.quizDevRoute;
+  const result=hunterNewState(raw.start);result.name=raw.name;result.path=raw.path==='company'?'network':raw.path;const quizDev=normalizeRouteCode(raw.quizDevRoute);if(['A','B','C','D','F'].includes(quizDev))result.quizDevRoute=quizDev;
   for(const [date,day] of Object.entries(raw.days)){
     if(!hunterValidDate(date)||hunterOrdinal(date)<hunterOrdinal(raw.start)||!day||!day.tasks||typeof day.tasks!=='object')throw Error('日誌格式不正確');
     const clean={tasks:{},journal:typeof day.journal==='string'?day.journal.slice(0,1000):'',mood:['steady','charged','tired'].includes(day.mood)?day.mood:'steady'};

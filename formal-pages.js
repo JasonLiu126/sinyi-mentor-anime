@@ -7,15 +7,15 @@ async function requestFormalPreview(path, body) {
   const fail = (status, message) => { throw Object.assign(new Error(message), { status }); };
   const profile = () => ({
     completed: !!state.onboarding || isQuizCompleted,
-    dev: state.onboarding?.dev ?? formalActiveDevCode,
-    sal: state.onboarding?.sal ?? formalActiveSalCode,
+    dev: normalizeRouteCode(state.onboarding?.dev ?? formalActiveDevCode),
+    sal: normalizeRouteCode(state.onboarding?.sal ?? formalActiveSalCode),
     records: state.records,
     drafts: state.drafts
   });
 
   if (path === 'profile') return profile();
   if (path === 'onboarding') {
-    if (!officialQuestions.every(q => formalQuizValid(q, body.answers[q.id]))) fail(400, '請先完成全部 6 題。');
+    if (!officialQuestions.every(q => formalQuizValid(q, body.answers[q.id]))) fail(400, `請先完成全部 ${officialQuestions.length} 題。`);
     state.onboarding = { dev: body.dev, sal: body.sal };
     save();
     return profile();
