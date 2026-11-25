@@ -1308,115 +1308,161 @@ let isQuizCompleted = false;
       }
     }
 
-    // 業務風格定義 (開發 6 型 + 銷售 5 型)
+    // 業務風格定義（開發 5 型＋銷售 4 型；11/24 適性測驗定版）
+    // 代號：A 社區、B 商圈、C 網路社群、D 人脈、F 市場物件（僅開發）。舊版的 E（公司既有人脈）已併入 D。
     const devStyleDefinitions = {
-      'A': { code: 'A', name: '社區經營型', dimension: '地緣深耕', icon: '🏘️', desc: '鎖定特定社區大樓，針對管委會、物業人員與住戶建立長期關係與高頻互動，以掌握第一手屋況動態與委託機會。' },
-      'B': { code: 'B', name: '商圈經營型', dimension: '地緣深耕', icon: '🏬', desc: '針對特定地理街廓進行廣度耕耘，對在地店家、里長、開放式住戶做日常拜訪與曝光。' },
-      'C': { code: 'C', name: '網路社群經營型', dimension: '線上經營', icon: '📱', desc: '針對線上數位平台進行內容耕耘，對買賣社團、粉絲做個人品牌曝光與互動吸客。' },
-      'D': { code: 'D', name: '私人人脈經營型', dimension: '人脈關係', icon: '🤝', desc: '針對個人既有生活圈進行關係盤點，對親友、同學、前同事做日常關懷與專業價值輸出。' },
-      'E': { code: 'E', name: '公司既有人脈經營型', dimension: '人脈關係', icon: '🗄️', desc: '針對公司系統資料庫進行名單活化，對歷年成交舊客、過期委託屋主做定期回訪。' },
-      'F': { code: 'F', name: '市場物件經營型', dimension: '精準標的鎖定', icon: '🎯', desc: '針對特定在售或異動地址進行精準鎖定，對自售屋主、同業在售案屋主做主動查址與直接開發。' }
+      'A': { code: 'A', name: '社區經營型', dimension: '地緣深耕', icon: '🏘️', desc: '鎖定 1～3 棟社區大樓，和管委會、物業人員與住戶建立長期關係，掌握第一手屋況與委託機會。' },
+      'B': { code: 'B', name: '商圈經營型', dimension: '地緣深耕', icon: '🏬', desc: '鎖定分店周邊街廓，對在地店家、里長、透天與公寓住戶做日常拜訪與曝光。' },
+      'C': { code: 'C', name: '網路社群經營型', dimension: '線上經營', icon: '📱', desc: '在地方社團、個人社群經營內容，讓屋主主動私訊委託。' },
+      'D': { code: 'D', name: '人脈經營型', dimension: '人脈關係', icon: '🤝', desc: '從已經認識或接觸過的人出發：親友、同學、前同事，以及公司名單上的成交舊客與委託過期屋主，做定期關心與需求喚醒。' },
+      'F': { code: 'F', name: '市場物件經營型', dimension: '精準標的', icon: '🎯', desc: '鎖定自售、同業在售、產權異動等特定物件，查到地址後直接開發。' }
     };
 
     const salStyleDefinitions = {
-      'A': { code: 'A', name: '社區經營型', dimension: '地緣深耕', icon: '🏘️', desc: '把特定社區摸透並深耕物業與住戶關係，讓自己成為該社區的代名詞。' },
-      'B': { code: 'B', name: '商圈經營型', dimension: '地緣深耕', icon: '🏬', desc: '針對特定地理範圍進行廣度經營，對在地店家、鄰里住戶進行駐點曝光。' },
-      'C': { code: 'C', name: '網路社群經營型', dimension: '線上經營', icon: '📱', desc: '針對線上社群平台進行開箱行銷與互動，主動吸引看屋買方。' },
-      'D': { code: 'D', name: '私人人脈經營型', dimension: '人脈關係', icon: '🤝', desc: '針對身邊親友進行長期關懷、購屋需求盤點與促動轉介紹。' },
-      'E': { code: 'E', name: '公司既有人脈經營型', dimension: '人脈關係', icon: '🗄️', desc: '針對公司系統資料庫進行名單經營，對歷年已成交舊客做定期回訪與精準配案。' }
+      'A': { code: 'A', name: '社區經營型', dimension: '地緣深耕', icon: '🏘️', desc: '把特定社區摸透，讓管理員、住戶與想買該社區的買方第一個想到你。' },
+      'B': { code: 'B', name: '商圈經營型', dimension: '地緣深耕', icon: '🏬', desc: '在特定區域經營在地人群（店家、鄰里、在地活動），讓想在這區買房的人想到你。' },
+      'C': { code: 'C', name: '網路社群經營型', dimension: '線上經營', icon: '📱', desc: '在買賣社團與個人社群做物件開箱與互動，也主動回覆尋屋貼文。' },
+      'D': { code: 'D', name: '人脈經營型', dimension: '人脈關係', icon: '🤝', desc: '對親友、同學、前同事做購屋需求盤點與轉介紹；對公司名單上的舊買方、帶看未購客定期更新需求並配案。' }
     };
 
-    // 官方 6 題完整測驗資料庫
+    // 舊存檔的 E（公司既有人脈）一律視為 D（人脈）
+    function normalizeRouteCode(code) { return code === 'E' ? 'D' : code; }
+
+    // 適性測驗：開發 7 題（1～7）、銷售 6 題（8～13）
+    // facet：start 啟動意願、cost 能接受的代價、natural 自然傾向／促成優勢、strength 自認優勢、resource 現有資源、rhythm 工作節奏、worst 最不想做
     const officialQuestions = [
-      {
-        id: 1, part: 'dev', type: 'sort', category: '開發｜啟動意願【排序題】', targetCount: 6,
-        title: '你剛下分店第一週，店長請你開始找屋主簽委託。以下 6 種具體做法，請依照你「最想先嘗試」的順序排列：',
-        hint: '請使用右側上下箭頭微調順序（由上而下代表最想先做至最後）：',
+      { id: 1, part: 'dev', facet: 'start', type: 'top2', targetCount: 2, category: '找屋主｜最想先試的做法【選前 2 名】',
+        title: '你剛到分店第一週，店長請你開始找屋主。下面 5 種做法，你最想先試哪 2 種？',
+        hint: '請依順序選出第 1、2 名：',
         options: [
-          { key: 'A', rawText: '挑定 1～2 棟主力社區大樓，每天去跟管理員聊天打關係、投遞社區信箱（對應：社區經營）' },
-          { key: 'B', rawText: '走訪分店周邊街道，逐一拜訪一樓店面老闆、里長與鄰居自我介紹（對應：商圈經營）' },
-          { key: 'C', rawText: '在臉書在地社團、買賣社團發文互動，或拍攝看屋短影音吸引屋主私訊（對應：網路社群經營）' },
-          { key: 'D', rawText: '盤點自己的親朋好友、同學與前同事名單，主動聯繫分享自己入行的消息（對應：私人人脈經營）' },
-          { key: 'E', rawText: '從公司電腦系統裡，撈出過去曾成交過或委託過期的舊屋主名單逐一致電關心（對應：公司既有人脈經營）' },
-          { key: 'F', rawText: '去街上或網路上找自售、同業在售的物件，或調閱繼承／異動謄本直接去找屋主（對應：市場物件經營／踩線）' }
-        ]
-      },
-      {
-        id: 2, part: 'dev', type: 'top2', category: '開發｜抗壓適性【選前 2 名並排序】', targetCount: 2,
-        title: '假設你認真跑了一個月，卻連一張委託都還沒簽到。面對以下 6 種「需要忍受挫折、重複做」的日常，哪 2 種是你最不排斥、最願意繼續撐下去的？',
-        hint: '請依優先順序選出第 1 名與第 2 名：',
+          { key: 'A', rawText: '選 1～2 棟大樓，每天去跟管理員打招呼、投社區信箱（對應：社區）' },
+          { key: 'B', rawText: '在分店附近的街上一家一家拜訪店家、里長與鄰居（對應：商圈）' },
+          { key: 'C', rawText: '在地方社團發文、拍短影片，讓屋主主動私訊你（對應：網路社群）' },
+          { key: 'D', rawText: '聯絡已經認識你或公司的人（親友、舊客戶），問問有沒有賣房打算（對應：人脈）' },
+          { key: 'F', rawText: '找網路或路上的自售、同業在賣的房子，查到地址後去拜訪屋主（對應：市場物件）' }
+        ] },
+      { id: 2, part: 'dev', facet: 'cost', type: 'top2', targetCount: 2, category: '找屋主｜最能接受的辛苦【選前 2 名】',
+        title: '每種找屋主的方法都有辛苦的地方。假設你跑了一個月還沒簽到委託，下面哪 2 種情況你最能接受、還願意繼續做下去？',
+        hint: '請依順序選出第 1、2 名：',
         options: [
-          { key: 'A', rawText: '就算警衛一開始很冷淡，仍願意每天固定去同一棟大樓報到、送飲料聊天，直到混熟為止（對應：社區經營）' },
-          { key: 'B', rawText: '頂著大太陽或風雨在街區裡沿路發傳單、進店面遞名片，就算被多數路人拒絕也沒關係（對應：商圈經營）' },
-          { key: 'C', rawText: '花時間剪輯影片、寫房市分析文發上網，就算一開始沒什麼人按讚留言，仍願意持續調整內容（對應：網路社群經營）' },
-          { key: 'D', rawText: '持續在 LINE 上關心親友近況、提供免費房價試算，耐心等待身邊朋友未來有賣房需求（對應：私人人脈經營）' },
-          { key: 'E', rawText: '每天坐在電腦前打幾十通電話給系統裡的舊客戶，就算常遇到空號或被掛電話，仍願意繼續洗名單（對應：公司既有人脈經營）' },
-          { key: 'F', rawText: '每天盯著同業新上架的物件照片去現場比對確切門牌，或研究謄本資料去敲陌生屋主的門（對應：市場物件經營／踩線）' }
-        ]
-      },
-      {
-        id: 3, part: 'dev', type: 'single', category: '開發｜日常行為偏好【單選題】', targetCount: 1,
-        title: '今天下午你有 3 個小時的完整空檔，店長沒有安排特別任務，你最自然會想把時間花在哪裡？',
-        hint: '請單選一項最符合你直覺的安排：',
+          { key: 'A', rawText: '每天到同一棟大樓報到，管理員一直對你很冷淡（對應：社區）' },
+          { key: 'B', rawText: '每天在街上拜訪，大部分店家與路人不想理你（對應：商圈）' },
+          { key: 'C', rawText: '每天寫文、拍片，做了一個月幾乎沒人看（對應：網路社群）' },
+          { key: 'D', rawText: '定期關心親友與舊客戶，常常已讀不回或電話打不通（對應：人脈）' },
+          { key: 'F', rawText: '照著查到的地址去拜訪，大多沒人在家或已被別人接走（對應：市場物件）' }
+        ] },
+      { id: 3, part: 'dev', facet: 'natural', type: 'single', targetCount: 1, category: '找屋主｜空檔時間【單選】',
+        title: '下午有 3 小時空檔，店長沒有安排工作，你最可能自己去做哪件事？',
+        hint: '請單選一項：',
         options: [
-          { key: 'A', rawText: '去重點大樓整理歷年成交行情表，把每一棟的格局跟優缺點背熟（對應：社區經營）' },
-          { key: 'B', rawText: '去附近的傳統市場、公園或里長辦公室走動，跟在地大哥大姐泡茶聊天聽八卦（對應：商圈經營）' },
-          { key: 'C', rawText: '去拍幾間漂亮房子的開箱素材，研究怎麼把貼文或短影音做得更吸睛（對應：網路社群經營）' },
-          { key: 'D', rawText: '約以前的朋友、同學或老客戶出來喝咖啡敘舊，順便聊聊彼此最近的財務與居住規劃（對應：私人人脈經營）' },
-          { key: 'E', rawText: '打開公司資料庫，把過去三年曾接觸過但沒下文的屋主紀錄全部翻出來看，準備電話跟進（對應：公司既有人脈經營）' },
-          { key: 'F', rawText: '上網搜尋哪裡有屋主自售、同業新接案件，直接騎車去現場找地址貼開發信（對應：市場物件經營／踩線）' }
-        ]
-      },
-      {
-        id: 4, part: 'sal', type: 'sort', category: '銷售｜啟動意願【排序題】', targetCount: 5,
-        title: '店裡剛接進一間條件不錯的房子，你要開始找買方來看屋。以下 5 種找買方的做法，請依照你「最想先採取」的順序排列：',
-        hint: '請使用右側上下箭頭微調順序（由上而下代表最想先做至最後）：',
+          { key: 'A', rawText: '去常去的那棟大樓，和管理員聊聊最近誰家有動靜（對應：社區）' },
+          { key: 'B', rawText: '去附近市場、公園走走，和店家與鄰居閒聊（對應：商圈）' },
+          { key: 'C', rawText: '拍素材、剪一支影片或寫一篇貼文（對應：網路社群）' },
+          { key: 'D', rawText: '跟幾位好久不見的朋友或舊客戶聯絡一下近況（對應：人脈）' },
+          { key: 'F', rawText: '上網找新的自售物件，騎車去現場確認地址（對應：市場物件）' }
+        ] },
+      { id: 4, part: 'dev', facet: 'strength', type: 'top2', targetCount: 2, category: '你的強項【選前 2 名】',
+        title: '不管工作或生活，下面哪 2 件事你覺得自己做得比大多數人好？',
+        hint: '請依順序選出第 1、2 名：',
         options: [
-          { key: 'A', rawText: '把這間房所在的社區大樓摸透，去跟該大樓管理員宣傳、找換屋或親友買同社區買方（對應：社區經營）' },
-          { key: 'B', rawText: '印製售屋傳單，到附近的路口、菜市場定點舉牌駐點，或沿街塞信箱攔截路過買方（對應：商圈經營）' },
-          { key: 'C', rawText: '拍這間房子的開箱短影音或圖文，貼到各大臉書買賣社團、IG 吸引網友私訊看屋（對應：網路社群經營）' },
-          { key: 'D', rawText: '思考身邊有哪些親朋好友最近有買房打算，主動傳資料推薦給他們（對應：私人人脈經營）' },
-          { key: 'E', rawText: '從公司系統裡撈出舊買方名單，逐一打電話邀約帶看（對應：公司既有人脈經營）' }
-        ]
-      },
-      {
-        id: 5, part: 'sal', type: 'top2', category: '銷售｜抗壓適性【選前 2 名並排序】', targetCount: 2,
-        title: '如果這個月你手上一直沒有合適的買方可以帶看，你最願意靠哪 2 種日常基本功來突破僵局？',
-        hint: '請依優先順序選出第 1 名與第 2 名：',
+          { key: 'A', rawText: '和同一群人反覆見面，慢慢變成自己人（對應：社區）' },
+          { key: 'B', rawText: '走進陌生店家主動打招呼也不會尷尬（對應：商圈）' },
+          { key: 'C', rawText: '拍照、寫文案或剪影片（對應：網路社群）' },
+          { key: 'D', rawText: '跟認識的人保持聯絡，大家有事會先想到我（對應：人脈）' },
+          { key: 'F', rawText: '從零散的資訊裡找線索，查出答案（對應：市場物件）' }
+        ] },
+      { id: 5, part: 'dev', facet: 'resource', type: 'multi', targetCount: 5, category: '你現在的狀況【可複選】',
+        title: '下面哪些符合你現在的狀況？',
+        hint: '可複選，都不符合也可以直接下一題：',
         options: [
-          { key: 'A', rawText: '鎖定一兩個熱門社區深度研究，做到只要有買方去問管理員，大家第一個就推薦你（對應：社區經營）' },
-          { key: 'B', rawText: '每天固定時段去人潮多的街口駐點發傳單，練習跟停下來的路人主動搭話（對應：商圈經營）' },
-          { key: 'C', rawText: '每天固定在網路社團尋找回覆尋屋貼文，並持續拍攝不同物件介紹影片累積粉絲（對應：網路社群經營）' },
-          { key: 'D', rawText: '定期聯繫已成交的舊客戶與親友，請他們幫忙留意身邊有沒有朋友想買房並轉介紹（對應：私人人脈經營）' },
-          { key: 'E', rawText: '每天耐心地把公司系統裡的舊買方名單重新打過一輪，更新看屋條件與預算（對應：公司既有人脈經營）' }
-        ]
-      },
-      {
-        id: 6, part: 'sal', type: 'single', category: '銷售｜促成優勢【單選題】', targetCount: 1,
-        title: '想像一位買方正在考慮要不要跟你看房，你覺得自己最容易靠哪一種方式贏得買方的信任？',
-        hint: '請單選一項最符合你的優勢方式：',
+          { key: 'A', rawText: '分店附近有我住過或很熟的大樓（對應：社區）' },
+          { key: 'B', rawText: '我住在或很熟分店所在的區域（對應：商圈）' },
+          { key: 'C', rawText: '我有在經營的社群帳號，或做過影片、文章（對應：網路社群）' },
+          { key: 'D', rawText: '我的親友圈裡常有人聊到買房、賣房或換屋（對應：人脈）' },
+          { key: 'F', rawText: '我有機車或方便的交通工具，可以隨時去現場看（對應：市場物件）' }
+        ] },
+      { id: 6, part: 'dev', facet: 'rhythm', type: 'single', targetCount: 1, category: '喜歡的工作方式【單選】',
+        title: '下面哪一種「一天」最像你喜歡的工作方式？',
+        hint: '請單選一項：',
         options: [
-          { key: 'A', rawText: '把特定幾棟大樓的歷史成交價、格局優缺點摸到最熟，解答買方對社區的所有疑問（對應：社區經營）' },
-          { key: 'B', rawText: '常在街頭巷尾駐點發傳單，面對面聊個兩句就能快速跟陌生買方拉近距離（對應：商圈經營）' },
-          { key: 'C', rawText: '持續在網路上整理看屋分析或拍攝流暢開箱短影音，讓買方先對你的內容產生好感（對應：網路社群經營）' },
-          { key: 'D', rawText: '平常就跟身邊親友保持良好互動，透過熟人牽線推薦，讓買方一開始就放心找你（對應：私人人脈經營）' },
-          { key: 'E', rawText: '詳細記錄每位接觸過買方的看屋條件，一有符合的新案子仍主動精準推薦（對應：公司既有人脈經營）' }
-        ]
-      }
+          { key: 'A', rawText: '每天去固定幾個地方，跟熟面孔慢慢累積信任（對應：社區）' },
+          { key: 'B', rawText: '每天在外面走動，遇到很多不同的人（對應：商圈）' },
+          { key: 'C', rawText: '自己安排時間，在手機或電腦前創作（對應：網路社群）' },
+          { key: 'D', rawText: '手上有一份認識的人的名單，定期一個一個關心（對應：人脈）' },
+          { key: 'F', rawText: '像尋寶，每天追新的線索（對應：市場物件）' }
+        ] },
+      { id: 7, part: 'dev', facet: 'worst', type: 'worst', targetCount: 1, category: '最不想做的事【單選】',
+        title: '下面哪一件事，是你最不想每天做的？',
+        hint: '請單選一項：',
+        options: [
+          { key: 'A', rawText: '每天去同一棟大樓和管理員寒暄（對應：社區）' },
+          { key: 'B', rawText: '每天在街上跟陌生人搭話（對應：商圈）' },
+          { key: 'C', rawText: '每天想內容、拍片、經營社群（對應：網路社群）' },
+          { key: 'D', rawText: '一直打給認識的人談房子的事（對應：人脈）' },
+          { key: 'F', rawText: '每天去敲陌生屋主的門（對應：市場物件）' }
+        ] },
+      { id: 8, part: 'sal', facet: 'start', type: 'top2', targetCount: 2, category: '找買方｜最想先試的做法【選前 2 名】',
+        title: '店裡剛接進一間條件不錯的房子，你要找買方來看。下面 4 種做法，你最想先試哪 2 種？',
+        hint: '接下來是找買方的題目，請重新依直覺作答。請依順序選出第 1、2 名：',
+        options: [
+          { key: 'A', rawText: '去這間房子所在的大樓，請管理員與住戶幫忙留意想買同社區的人（對應：社區）' },
+          { key: 'B', rawText: '在附近路口、市場駐點發傳單，跟路過的人介紹這間房子（對應：商圈）' },
+          { key: 'C', rawText: '拍開箱影片與圖文，貼到買賣社團與個人社群（對應：網路社群）' },
+          { key: 'D', rawText: '聯絡已經認識你或公司的人（親友、舊買方），問問有沒有興趣（對應：人脈）' }
+        ] },
+      { id: 9, part: 'sal', facet: 'cost', type: 'top2', targetCount: 2, category: '找買方｜最能接受的辛苦【選前 2 名】',
+        title: '每種找買方的方法都有辛苦的地方。假設這個月你一直找不到合適的買方，下面哪 2 種情況你最能接受、還願意繼續做下去？',
+        hint: '請依順序選出第 1、2 名：',
+        options: [
+          { key: 'A', rawText: '把幾棟大樓研究透後，要等好幾個月才有一組買方問到（對應：社區）' },
+          { key: 'B', rawText: '每天在街頭發傳單，大部分路人不接（對應：商圈）' },
+          { key: 'C', rawText: '每天回覆尋屋貼文、拍新影片，私訊的人大多只是問問（對應：網路社群）' },
+          { key: 'D', rawText: '一輪一輪聯絡親友與舊買方，大多數人暫時沒有需要（對應：人脈）' }
+        ] },
+      { id: 10, part: 'sal', facet: 'natural', type: 'single', targetCount: 1, category: '找買方｜贏得信任的方式【單選】',
+        title: '一位買方正在考慮要不要跟你看房，你覺得自己最容易靠什麼讓他信任你？',
+        hint: '請單選一項：',
+        options: [
+          { key: 'A', rawText: '對這棟大樓的大小事瞭若指掌（對應：社區）' },
+          { key: 'B', rawText: '面對面聊幾句就能讓陌生人放鬆（對應：商圈）' },
+          { key: 'C', rawText: '他在見面前就看過你的內容，已經有好感（對應：網路社群）' },
+          { key: 'D', rawText: '他是熟人介紹來的，或你記得他之前說過的需求（對應：人脈）' }
+        ] },
+      { id: 11, part: 'sal', facet: 'resource', type: 'multi', targetCount: 4, category: '你現在的狀況【可複選】',
+        title: '下面哪些符合你現在的狀況？',
+        hint: '可複選，都不符合也可以直接下一題：',
+        options: [
+          { key: 'A', rawText: '分店附近有我住過或很熟的大樓（對應：社區）' },
+          { key: 'B', rawText: '我常參加分店附近的在地活動，或認識附近店家（對應：商圈）' },
+          { key: 'C', rawText: '我有在經營的社群帳號，或做過影片、文章（對應：網路社群）' },
+          { key: 'D', rawText: '我的親友圈裡近幾年有人要結婚、生小孩或換屋（對應：人脈）' }
+        ] },
+      { id: 12, part: 'sal', facet: 'rhythm', type: 'single', targetCount: 1, category: '找買方｜喜歡的方式【單選】',
+        title: '找買方時，你最喜歡哪一種方式？',
+        hint: '請單選一項：',
+        options: [
+          { key: 'A', rawText: '只專注幾棟自己最熟的大樓（對應：社區）' },
+          { key: 'B', rawText: '在一區裡處處跑、接觸很多新面孔（對應：商圈）' },
+          { key: 'C', rawText: '先在網路上聊過、確定有興趣才約見面（對應：網路社群）' },
+          { key: 'D', rawText: '服務認識的人或他們介紹的人（對應：人脈）' }
+        ] },
+      { id: 13, part: 'sal', facet: 'worst', type: 'worst', targetCount: 1, category: '找買方｜最不想做的事【單選】',
+        title: '下面哪一件事，是你最不想每天做的？',
+        hint: '請單選一項：',
+        options: [
+          { key: 'A', rawText: '把同一棟大樓的行情與住戶狀況反覆更新（對應：社區）' },
+          { key: 'B', rawText: '在路口發傳單、跟路人搭話（對應：商圈）' },
+          { key: 'C', rawText: '每天發文、回覆留言與私訊（對應：網路社群）' },
+          { key: 'D', rawText: '一直請認識的人幫你介紹買方（對應：人脈）' }
+        ] }
     ];
 
     let currentQuizIndex = 0;
-    let userQuizAnswers = {
-      1: ['A', 'B', 'C', 'D', 'E', 'F'],
-      2: ['A', 'B'],
-      3: 'A',
-      4: ['E', 'A', 'B', 'C', 'D'],
-      5: ['E', 'A'],
-      6: 'E'
-    };
+    let userQuizAnswers = {};
+    let quizResults = { dev: null, sal: null };
 
     let currentSelectedDevCode = 'A';
-    let currentSelectedSalCode = 'E';
+    let currentSelectedSalCode = 'D';
 
     /* ========================================================= */
     /* 成長手冊：PRD 13項能力與等級算分資料庫                     */
@@ -3645,11 +3691,11 @@ let isQuizCompleted = false;
       const q = officialQuestions[currentQuizIndex];
       if (!q) return;
 
-      document.getElementById('quiz-qnum-badge').innerText = `第 ${q.id} 題／共 6 題`;
+      document.getElementById('quiz-qnum-badge').innerText = `第 ${q.id} 題／共 ${officialQuestions.length} 題`;
       document.getElementById('quiz-type-label').innerText = q.category;
       document.getElementById('quiz-question-title').innerText = q.title;
 
-      const pct = Math.round(((currentQuizIndex + 1) / 6) * 100);
+      const pct = Math.round(((currentQuizIndex + 1) / officialQuestions.length) * 100);
       document.getElementById('quiz-progress-bar').style.width = `${pct}%`;
 
       const prevBtn = document.getElementById('btn-prev-q');
@@ -3657,7 +3703,7 @@ let isQuizCompleted = false;
 
       const nextBtn = document.getElementById('btn-next-q');
       if (nextBtn) {
-        nextBtn.innerText = currentQuizIndex === 5 ? '計算適性成果 ➔' : '下一題 →';
+        nextBtn.innerText = currentQuizIndex === officialQuestions.length - 1 ? '計算適性成果 ➔' : '下一題 →';
       }
 
       const sortFooter = document.getElementById('quiz-sort-footer');
@@ -3673,9 +3719,12 @@ let isQuizCompleted = false;
       } else if (q.type === 'top2') {
         sortFooter.classList.remove('hidden');
         renderTop2TypeQuestion(q, optionsArea);
-      } else if (q.type === 'single') {
+      } else if (q.type === 'single' || q.type === 'worst') {
         sortFooter.classList.add('hidden');
         renderSingleTypeQuestion(q, optionsArea);
+      } else if (q.type === 'multi') {
+        sortFooter.classList.add('hidden');
+        renderMultiTypeQuestion(q, optionsArea);
       }
 
       calculateAndApplyResults();
@@ -3781,6 +3830,34 @@ let isQuizCompleted = false;
       });
     }
 
+    function renderMultiTypeQuestion(q, container) {
+      if (!Array.isArray(userQuizAnswers[q.id])) userQuizAnswers[q.id] = [];
+      const picked = userQuizAnswers[q.id];
+
+      q.options.forEach(opt => {
+        const cleanText = cleanOptionText(opt.rawText);
+        const isSelected = picked.includes(opt.key);
+        const row = document.createElement('div');
+        row.className = isSelected
+          ? "p-2.5 rounded-xl border-2 border-slate-900 bg-emerald-50 flex items-center justify-between cursor-pointer lego-btn transition-all font-black shadow-sm"
+          : "p-2.5 rounded-xl border-2 border-slate-800 bg-white hover:bg-slate-50 flex items-center justify-between cursor-pointer lego-btn transition-all font-bold text-slate-800";
+        row.onclick = () => {
+          const list = userQuizAnswers[q.id];
+          const at = list.indexOf(opt.key);
+          if (at === -1) list.push(opt.key); else list.splice(at, 1);
+          renderQuizQuestion();
+        };
+        row.innerHTML = `
+          <div class="flex items-start space-x-2 text-[11px] leading-snug">
+            <span class="font-pixel text-[10px] ${isSelected ? 'text-lego-red' : 'text-slate-400'} shrink-0 mt-0.5">${opt.key}.</span>
+            <span>${cleanText}</span>
+          </div>
+          <span class="w-5 h-5 rounded border border-slate-900 flex items-center justify-center text-[10px] shrink-0 ml-2 ${isSelected ? 'bg-lego-green text-white shadow' : 'bg-slate-100 text-transparent'}">${isSelected ? '✔' : ''}</span>
+        `;
+        container.appendChild(row);
+      });
+    }
+
     function toggleRankItem(qId, key, maxCount) {
       if (!userQuizAnswers[qId]) userQuizAnswers[qId] = [];
       const order = userQuizAnswers[qId];
@@ -3798,19 +3875,21 @@ let isQuizCompleted = false;
       if (q) {
         if (q.type === 'sort') {
           userQuizAnswers[q.id] = q.options.map(o => o.key);
+        } else if (q.type === 'single' || q.type === 'worst') {
+          delete userQuizAnswers[q.id];
         } else {
           userQuizAnswers[q.id] = [];
         }
         renderQuizQuestion();
-        showCustomToast('已重設本題選項順序！', '↺');
+        showCustomToast('已重設本題選項！', '↺');
       }
     }
 
     function navigateQuiz(step) {
       const nextIdx = currentQuizIndex + step;
       if (nextIdx < 0) return;
-      if (nextIdx >= 6) {
-        showCustomToast('🎉 6 題適性測驗作答完畢！已為你精算推薦最佳起步路線。', '🧭');
+      if (nextIdx >= officialQuestions.length) {
+        showCustomToast(`🎉 ${officialQuestions.length} 題適性測驗作答完畢！已為你算出推薦的起步路線。`, '🧭');
         calculateAndApplyResults();
         const recCard = document.getElementById('card-recommendation');
         if (recCard) recCard.scrollIntoView({ behavior: 'smooth' });
@@ -3828,86 +3907,76 @@ let isQuizCompleted = false;
           userQuizAnswers[q.id] = [q.options[0].key, q.options[1].key];
         } else if (q.type === 'single') {
           userQuizAnswers[q.id] = q.options[0].key;
+        } else if (q.type === 'multi') {
+          userQuizAnswers[q.id] = [q.options[0].key];
+        } else if (q.type === 'worst') {
+          userQuizAnswers[q.id] = q.options[q.options.length - 1].key;
         }
       });
-      showCustomToast('⚡ [PM 模式] 已快速預填 6 題官方題組！', '✅');
+      showCustomToast(`⚡ [PM 模式] 已快速預填 ${officialQuestions.length} 題官方題組！`, '✅');
       renderQuizQuestion();
     }
 
+    // 計分（判斷規則 B-07）：選前 2 名 +3／+2、單選 +2、多選每項 +1、最不想做 −2
+    // 同分依序比：代價題名次 → 啟動題名次 → 沒被選為最不想做 → 固定順序（社區、商圈優先，11/25 定案）
+    const QUIZ_TIE_ORDER = ['A', 'B', 'D', 'C', 'F'];
+    function scoreQuizPart(part) {
+      const keys = Object.keys(part === 'dev' ? devStyleDefinitions : salStyleDefinitions);
+      const scores = Object.fromEntries(keys.map(k => [k, 0]));
+      const questions = officialQuestions.filter(q => q.part === part);
+      questions.forEach(q => {
+        const a = userQuizAnswers[q.id];
+        if (a === undefined || a === null) return;
+        if (q.type === 'top2') a.forEach((k, i) => { if (k in scores) scores[k] += [3, 2][i] || 0; });
+        else if (q.type === 'single') { if (a in scores) scores[a] += 2; }
+        else if (q.type === 'multi') a.forEach(k => { if (k in scores) scores[k] += 1; });
+        else if (q.type === 'worst') { if (a in scores) scores[a] -= 2; }
+      });
+      const byFacet = f => questions.find(q => q.facet === f);
+      const rankIn = (q, k) => { const a = q && userQuizAnswers[q.id]; const i = Array.isArray(a) ? a.indexOf(k) : -1; return i === -1 ? 99 : i; };
+      const worst = byFacet('worst'), cost = byFacet('cost'), start = byFacet('start');
+      const isWorst = k => (worst && userQuizAnswers[worst.id] === k) ? 1 : 0;
+      const ranked = keys.slice().sort((x, y) =>
+        (scores[y] - scores[x]) || (rankIn(cost, x) - rankIn(cost, y)) || (rankIn(start, x) - rankIn(start, y)) ||
+        (isWorst(x) - isWorst(y)) || (QUIZ_TIE_ORDER.indexOf(x) - QUIZ_TIE_ORDER.indexOf(y)));
+      return { scores, ranked, close: scores[ranked[0]] - scores[ranked[1]] <= 1 };
+    }
+
     function calculateAndApplyResults() {
-      const devScores = { 'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0, 'F': 0 };
-      const q1Rank = userQuizAnswers[1] || [];
-      if (q1Rank[0]) devScores[q1Rank[0]] += 3;
-      if (q1Rank[1]) devScores[q1Rank[1]] += 2;
-      if (q1Rank[2]) devScores[q1Rank[2]] += 1;
-
-      const q2Rank = userQuizAnswers[2] || [];
-      if (q2Rank[0]) devScores[q2Rank[0]] += 3;
-      if (q2Rank[1]) devScores[q2Rank[1]] += 2;
-
-      const q3Pick = userQuizAnswers[3];
-      if (q3Pick && devScores[q3Pick] !== undefined) devScores[q3Pick] += 2;
-
-      let topDev = 'A';
-      let maxDevScore = -1;
-      ['A', 'B', 'C', 'D', 'E', 'F'].forEach(key => {
-        if (devScores[key] > maxDevScore) {
-          maxDevScore = devScores[key];
-          topDev = key;
-        } else if (devScores[key] === maxDevScore) {
-          const rankA = q2Rank.indexOf(topDev);
-          const rankB = q2Rank.indexOf(key);
-          const tieA = rankA !== -1 ? rankA : 99;
-          const tieB = rankB !== -1 ? rankB : 99;
-          if (tieB < tieA) topDev = key;
-        }
-      });
-      currentSelectedDevCode = topDev;
-
-      const salScores = { 'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0 };
-      const q4Rank = userQuizAnswers[4] || [];
-      if (q4Rank[0]) salScores[q4Rank[0]] += 3;
-      if (q4Rank[1]) salScores[q4Rank[1]] += 2;
-      if (q4Rank[2]) salScores[q4Rank[2]] += 1;
-
-      const q5Rank = userQuizAnswers[5] || [];
-      if (q5Rank[0]) salScores[q5Rank[0]] += 3;
-      if (q5Rank[1]) salScores[q5Rank[1]] += 2;
-
-      const q6Pick = userQuizAnswers[6];
-      if (q6Pick && salScores[q6Pick] !== undefined) salScores[q6Pick] += 2;
-
-      let topSal = 'E';
-      let maxSalScore = -1;
-      ['A', 'B', 'C', 'D', 'E'].forEach(key => {
-        if (salScores[key] > maxSalScore) {
-          maxSalScore = salScores[key];
-          topSal = key;
-        } else if (salScores[key] === maxSalScore) {
-          const rankA = q5Rank.indexOf(topSal);
-          const rankB = q5Rank.indexOf(key);
-          const tieA = rankA !== -1 ? rankA : 99;
-          const tieB = rankB !== -1 ? rankB : 99;
-          if (tieB < tieA) topSal = key;
-        }
-      });
-      currentSelectedSalCode = topSal;
-
+      quizResults = { dev: scoreQuizPart('dev'), sal: scoreQuizPart('sal') };
+      currentSelectedDevCode = quizResults.dev.ranked[0];
+      currentSelectedSalCode = quizResults.sal.ranked[0];
       renderSelectedRouteRecommendations();
     }
 
-    function renderSelectedRouteRecommendations() {
-      const devObj = devStyleDefinitions[currentSelectedDevCode];
-      document.getElementById('rec-dev-dimension').innerText = devObj.dimension;
-      document.getElementById('rec-dev-icon').innerText = devObj.icon;
-      document.getElementById('rec-dev-title').innerText = devObj.name;
-      document.getElementById('rec-dev-desc').innerText = devObj.desc;
+    // 結果顯示（判斷規則 B-08）：各顯示前兩名，差 1 分內提示兩種都很適合
+    function quizResultSummary(part) {
+      const r = quizResults[part];
+      if (!r) return '';
+      const defs = part === 'dev' ? devStyleDefinitions : salStyleDefinitions;
+      const [first, second] = r.ranked;
+      const line = `測驗結果：① ${defs[first].name}（${r.scores[first]} 分）　② ${defs[second].name}（${r.scores[second]} 分）`;
+      return r.close ? line + '｜兩種都很適合，可以自己選一個當主要類型' : line;
+    }
 
-      const salObj = salStyleDefinitions[currentSelectedSalCode];
-      document.getElementById('rec-sal-dimension').innerText = salObj.dimension;
-      document.getElementById('rec-sal-icon').innerText = salObj.icon;
-      document.getElementById('rec-sal-title').innerText = salObj.name;
-      document.getElementById('rec-sal-desc').innerText = salObj.desc;
+    function renderSelectedRouteRecommendations() {
+      for (const [part, code, defs] of [['dev', currentSelectedDevCode, devStyleDefinitions], ['sal', currentSelectedSalCode, salStyleDefinitions]]) {
+        const obj = defs[code];
+        if (!obj) continue;
+        document.getElementById(`rec-${part}-dimension`).innerText = obj.dimension;
+        document.getElementById(`rec-${part}-icon`).innerText = obj.icon;
+        document.getElementById(`rec-${part}-title`).innerText = obj.name;
+        const desc = document.getElementById(`rec-${part}-desc`);
+        desc.innerText = obj.desc;
+        let note = document.getElementById(`rec-${part}-rank`);
+        if (!note) {
+          note = document.createElement('p');
+          note.id = `rec-${part}-rank`;
+          note.className = 'text-[10px] font-bold text-slate-600 mt-1 leading-snug';
+          desc.insertAdjacentElement('afterend', note);
+        }
+        note.innerText = quizResultSummary(part);
+      }
     }
 
     function openChangeRouteModal(type) {
@@ -3920,8 +3989,8 @@ let isQuizCompleted = false;
       const keys = Object.keys(defMap);
 
       title.innerText = isDev 
-        ? "更換開發起步路線（共 6 種業務風格）" 
-        : "更換銷售起步路線（共 5 種業務風格）";
+        ? `更換開發起步路線（共 ${keys.length} 種業務風格）`
+        : `更換銷售起步路線（共 ${keys.length} 種業務風格）`;
 
       keys.forEach(k => {
         const item = defMap[k];

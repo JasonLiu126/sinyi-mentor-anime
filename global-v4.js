@@ -2,7 +2,7 @@
    V4 全域：職業覺醒（1-1～1-4）、全域 Modal（7-1～7-4）、學長浮動頭像
    - 測驗計分、路線選擇、店長後台、測試後台、每日修練、學長引導的功能都不變，只換外觀。
    ========================================================= */
-const V4_ROMANS = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+const v4QuizTotal = () => v4Safe(() => officialQuestions.length, 13);
 
 /* ---------- 覺醒試煉（1-1／1-2） ---------- */
 function v4BuildQuiz() {
@@ -11,8 +11,8 @@ function v4BuildQuiz() {
   flow.firstElementChild?.classList.add('v4-old-quiz-intro');
   const head = document.createElement('div');
   head.id = 'v4-quiz-head';
-  head.innerHTML = `<div class="v4-quiz-top"><div><small class="v4-en">AWAKENING TRIAL</small><h2 class="v4-serif">職業覺醒試煉</h2></div><b class="v4-en" id="v4-quiz-roman">I / VI</b></div>
-    <div class="v4-gems" id="v4-gems" aria-hidden="true">${V4_ROMANS.map(() => '<i></i>').join('')}</div>`;
+  head.innerHTML = `<div class="v4-quiz-top"><div><small class="v4-en">AWAKENING TRIAL</small><h2 class="v4-serif">職業覺醒試煉</h2></div><b class="v4-en" id="v4-quiz-roman">1 / ${v4QuizTotal()}</b></div>
+    <div class="v4-gems" id="v4-gems" aria-hidden="true">${'<i></i>'.repeat(v4QuizTotal())}</div>`;
   flow.prepend(head);
   const title = document.getElementById('quiz-question-title');
   const card = title?.parentElement;
@@ -25,8 +25,21 @@ function v4BuildQuiz() {
 function v4RenderQuizHead() {
   const idx = v4Safe(() => currentQuizIndex, 0);
   const roman = document.getElementById('v4-quiz-roman');
-  if (roman) roman.textContent = `${V4_ROMANS[idx] || idx + 1} / VI`;
+  if (roman) roman.textContent = `${idx + 1} / ${v4QuizTotal()}`;
   document.querySelectorAll('#v4-gems i').forEach((gem, i) => { gem.className = i < idx ? 'is-done' : i === idx ? 'is-current' : ''; });
+}
+
+/* ---------- 作答明細：店長與區主管可看每題答案（11/25 定案） ---------- */
+function v4QuizDetail(answers) {
+  const text = (q, key) => (q.options.find(o => o.key === key)?.rawText || key).replace(/（對應：[^）]+）/g, '');
+  return officialQuestions.map(q => {
+    const a = answers[q.id];
+    let shown = '—';
+    if (q.type === 'top2' && Array.isArray(a)) shown = a.map((k, i) => `${i ? '②' : '①'} ${text(q, k)}`).join('　');
+    else if (q.type === 'multi' && Array.isArray(a)) shown = a.length ? a.map(k => text(q, k)).join('、') : '都不符合';
+    else if (a) shown = text(q, a);
+    return { id: q.id, part: q.part, q: q.title, a: shown };
+  });
 }
 
 /* ---------- 職業揭曉（1-3） ---------- */
@@ -44,7 +57,7 @@ function v4RenderAwaken() {
   const block = document.getElementById('v4-awaken');
   if (!block) return;
   const dev = v4Safe(() => currentSelectedDevCode, 'A');
-  const sal = v4Safe(() => currentSelectedSalCode, 'E');
+  const sal = v4Safe(() => currentSelectedSalCode, 'D');
   const devDef = v4Safe(() => devStyleDefinitions[dev], {}) || {};
   const salDef = v4Safe(() => salStyleDefinitions[sal], {}) || {};
   const classCard = (kind, code, def) => `<div class="v4-class-card is-${kind}">
@@ -55,12 +68,13 @@ function v4RenderAwaken() {
   block.innerHTML = `<div class="v4-awaken-rays" aria-hidden="true"></div>
     <div class="v4-awaken-title"><b class="v4-en">AWAKENED</b><span>你的雙軌起步職業</span></div>
     <div class="v4-class-pair">${classCard('dev', dev, devDef)}${classCard('sal', sal, salDef)}</div>
+    <div class="v4-parch v4-awaken-rank"><p>開發｜${v4Esc(v4Safe(() => quizResultSummary('dev'), ''))}</p><p>銷售｜${v4Esc(v4Safe(() => quizResultSummary('sal'), ''))}</p></div>
     <button type="button" class="v4-back-to-quiz" onclick="v4BackToQuestions()">← 回到題目修改答案</button>
     <div class="v4-parch v4-awaken-mentor"><img src="${V4_ASSET}mentor_face.jpg" alt="阿義學長"><p>${v4Esc(devDef.dimension || '')}是你的起手式，${v4Esc(salDef.dimension || '')}幫你接住買方！</p></div>`;
 }
 
 /* ---------- 題目做完才揭曉職業 ---------- */
-// 作答中只顯示題目；第 6 題按「下一題」完成後，才切到職業揭曉畫面（隱藏題目）
+// 作答中只顯示題目；最後一題按「下一題」完成後，才切到職業揭曉畫面（隱藏題目）
 function v4SetQuizRevealed(on) {
   const flow = document.getElementById('screen-quiz-flow');
   if (!flow) return;
@@ -68,8 +82,10 @@ function v4SetQuizRevealed(on) {
   if (on) { v4RenderAwaken(); document.getElementById('app-main-scroll')?.scrollTo({ top: 0 }); }
 }
 function v4BackToQuestions() {
+  // 回去改答案後一律改回系統推薦，手動改選不保留（11/25 定案）
+  v4Safe(() => { formalManualDevCode = null; formalManualSalCode = null; });
   v4SetQuizRevealed(false);
-  currentQuizIndex = 5;
+  currentQuizIndex = officialQuestions.length - 1;
   renderQuizQuestion();
   document.getElementById('app-main-scroll')?.scrollTo({ top: 0 });
 }
@@ -149,7 +165,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (typeof navigateQuiz === 'function') {
     const originalNavigate = navigateQuiz;
     navigateQuiz = function (step, ...rest) {
-      const finishing = step > 0 && v4Safe(() => currentQuizIndex, 0) === 5;
+      const finishing = step > 0 && v4Safe(() => currentQuizIndex, 0) === v4Safe(() => officialQuestions.length - 1, 12);
       const result = originalNavigate.call(this, step, ...rest);
       const valid = v4Safe(() => officialQuestions.every(q => formalQuizValid(q, userQuizAnswers[q.id])), false);
       if (finishing && valid) {
@@ -176,7 +192,7 @@ window.addEventListener('DOMContentLoaded', () => {
       if (entered) {
         // 作答紀錄：每題答案、系統推薦、新人最後選的職業（推薦與自選分開記）
         const history = v4QuizHistory();
-        history.entries.push({ at: new Date().toISOString(), answers, recommended: v4QuizRecommended, chosen: { dev: v4Safe(() => currentSelectedDevCode, ''), sal: v4Safe(() => currentSelectedSalCode, '') }, retake: history.entries.length > 0 });
+        history.entries.push({ at: new Date().toISOString(), answers, detail: v4Safe(() => v4QuizDetail(answers), []), scores: v4Safe(() => ({ dev: quizResults.dev.scores, sal: quizResults.sal.scores }), null), recommended: v4QuizRecommended, chosen: { dev: v4Safe(() => currentSelectedDevCode, ''), sal: v4Safe(() => currentSelectedSalCode, '') }, retake: history.entries.length > 0 });
         history.allowRetake = false;
         v4SaveQuizHistory(history);
       }

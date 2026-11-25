@@ -10,7 +10,6 @@ const V4_CLASSES = {
   B: { name: '商圈法師', art: 'class-mage.png' },
   C: { name: '社群吟遊詩人', art: 'class-bard.png' },
   D: { name: '人脈召喚師', art: 'class-summoner.png' },
-  E: { name: '名單鍊金術士', art: 'class-alchemist.png' },
   F: { name: '物件遊俠', art: 'class-ranger.png' }
 };
 
@@ -22,9 +21,9 @@ function v4DevCode() {
   return v4Safe(() => (typeof formalActiveDevCode !== 'undefined' && formalActiveDevCode) || currentSelectedDevCode, 'A');
 }
 function v4SalCode() {
-  return v4Safe(() => (typeof formalActiveSalCode !== 'undefined' && formalActiveSalCode) || currentSelectedSalCode, 'E');
+  return v4Safe(() => (typeof formalActiveSalCode !== 'undefined' && formalActiveSalCode) || currentSelectedSalCode, 'D');
 }
-function v4ClassOf(code) { return V4_CLASSES[code] || V4_CLASSES.A; }
+function v4ClassOf(code) { return V4_CLASSES[code === 'E' ? 'D' : code] || V4_CLASSES.A; }
 function v4ClassArt(code) { return V4_ASSET + v4ClassOf(code).art; }
 function v4OriginalTypeName(code) { return v4Safe(() => devStyleDefinitions[code].name, ''); }
 
